@@ -1,0 +1,17 @@
+abstract class AppRoutes {
+  static const splash = '/splash';
+  static const authLanding = '/auth/landing';
+  static const phoneAuth = '/auth/phone';
+  static const otpVerification = '/auth/otp';
+  static const userRegistration = '/auth/registration';
+  static const onboarding = '/onboarding';
+  static const search = '/search';
+  static const home = '/';
+  static const profile = '/profile';
+  static const editProfile = '/profile/edit';
+
+  static const bookingService = '/booking/service';
+  static const bookingTime = '/booking/time';
+  static const bookingSummary = '/booking/summary';
+  static const bookingHistory = '/booking/history';
+}
