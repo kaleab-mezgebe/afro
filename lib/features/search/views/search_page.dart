@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import '../../../core/theme/butter_theme.dart';
+import '../../../core/theme/shegabet_theme.dart';
 import '../../../domain/entities/provider.dart';
 
 class SearchPage extends StatefulWidget {
@@ -40,10 +40,10 @@ class _SearchPageState extends State<SearchPage> {
         title: const Text('Search Stylists'),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: ButterTheme.primaryGolden),
+        iconTheme: const IconThemeData(color: ShegabetTheme.deepRoyalPurple),
       ),
       body: Container(
-        decoration: BoxDecoration(gradient: ButterTheme.primaryLinearGradient),
+        decoration: BoxDecoration(gradient: ShegabetTheme.primaryGradient),
         child: SafeArea(
           child: Column(
             children: [
@@ -94,9 +94,9 @@ class _SearchPageState extends State<SearchPage> {
         onChanged: (query) {},
         decoration: InputDecoration(
           hintText: 'Search stylists or services...',
-          prefixIcon: const Icon(Icons.search, color: ButterTheme.textLight),
+          prefixIcon: const Icon(Icons.search, color: ShegabetTheme.textLight),
           filled: true,
-          fillColor: ButterTheme.butterCard,
+          fillColor: Colors.white,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
@@ -107,11 +107,11 @@ class _SearchPageState extends State<SearchPage> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: ButterTheme.primaryGolden),
+            borderSide: const BorderSide(color: ShegabetTheme.ethiopianGold),
           ),
-          hintStyle: const TextStyle(color: ButterTheme.textLight),
+          hintStyle: const TextStyle(color: ShegabetTheme.textLight),
         ),
-        style: const TextStyle(color: ButterTheme.textPrimary),
+        style: const TextStyle(color: ShegabetTheme.textPrimary),
       ),
     );
   }
@@ -137,8 +137,8 @@ class _SearchPageState extends State<SearchPage> {
                 hint: const Text('Select category'),
                 items: const [],
                 onChanged: (value) {},
-                style: const TextStyle(color: ButterTheme.primaryGolden),
-                dropdownColor: ButterTheme.primaryGolden,
+                style: const TextStyle(color: ShegabetTheme.ethiopianGold),
+                dropdownColor: ShegabetTheme.ethiopianGold,
                 elevation: 0,
               ),
             ),
@@ -171,7 +171,7 @@ class _SearchPageState extends State<SearchPage> {
                   min: 0.0,
                   max: 5.0,
                   divisions: 10,
-                  activeColor: ButterTheme.primaryGolden,
+                  activeColor: ShegabetTheme.ethiopianGold,
                   inactiveColor: Colors.white.withOpacity(0.7),
                   onChanged: (value) {},
                 ),
@@ -201,7 +201,7 @@ class _SearchPageState extends State<SearchPage> {
                         min: 0.0,
                         max: 100.0,
                         divisions: 20,
-                        activeColor: ButterTheme.primaryGolden,
+                        activeColor: ShegabetTheme.ethiopianGold,
                         inactiveColor: Colors.white.withOpacity(0.7),
                         onChanged: (value) {},
                       ),
@@ -214,7 +214,7 @@ class _SearchPageState extends State<SearchPage> {
                         min: 0.0,
                         max: 100.0,
                         divisions: 20,
-                        activeColor: ButterTheme.primaryGolden,
+                        activeColor: ShegabetTheme.ethiopianGold,
                         inactiveColor: Colors.white.withOpacity(0.7),
                         onChanged: (value) {},
                       ),
@@ -245,10 +245,10 @@ class _SearchPageState extends State<SearchPage> {
                     hintText: 'Enter location',
                     prefixIcon: const Icon(
                       Icons.location_on,
-                      color: ButterTheme.textLight,
+                      color: ShegabetTheme.textLight,
                     ),
                     filled: true,
-                    fillColor: ButterTheme.butterCard,
+                    fillColor: Colors.white,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
@@ -264,10 +264,10 @@ class _SearchPageState extends State<SearchPage> {
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(
-                        color: ButterTheme.primaryGolden,
+                        color: ShegabetTheme.ethiopianGold,
                       ),
                     ),
-                    hintStyle: const TextStyle(color: ButterTheme.textLight),
+                    hintStyle: const TextStyle(color: ShegabetTheme.textLight),
                   ),
                   style: const TextStyle(color: Colors.white),
                 ),
@@ -281,7 +281,7 @@ class _SearchPageState extends State<SearchPage> {
             child: ElevatedButton(
               onPressed: () {},
               style: ElevatedButton.styleFrom(
-                backgroundColor: ButterTheme.primaryGolden,
+                backgroundColor: ShegabetTheme.ethiopianGold,
                 elevation: 0,
               ),
               child: const Text(
@@ -319,7 +319,7 @@ class _SearchPageState extends State<SearchPage> {
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color: !_showMap
-                      ? ButterTheme.primaryGolden
+                      ? ShegabetTheme.ethiopianGold
                       : Colors.transparent,
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(12),
@@ -348,7 +348,7 @@ class _SearchPageState extends State<SearchPage> {
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color: _showMap
-                      ? ButterTheme.primaryGolden
+                      ? ShegabetTheme.ethiopianGold
                       : Colors.transparent,
                   borderRadius: const BorderRadius.only(
                     topRight: Radius.circular(12),
@@ -403,7 +403,7 @@ class _SearchPageState extends State<SearchPage> {
               contentPadding: const EdgeInsets.all(16),
               leading: CircleAvatar(
                 radius: 25,
-                backgroundColor: ButterTheme.primaryGolden,
+                backgroundColor: ShegabetTheme.ethiopianGold,
                 child: Text(
                   provider.name[0],
                   style: const TextStyle(
@@ -417,7 +417,7 @@ class _SearchPageState extends State<SearchPage> {
                 provider.name,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: ButterTheme.textPrimary,
+                  color: ShegabetTheme.textPrimary,
                 ),
               ),
               subtitle: Column(
@@ -426,7 +426,7 @@ class _SearchPageState extends State<SearchPage> {
                   Text(
                     provider.category.toUpperCase(),
                     style: TextStyle(
-                      color: ButterTheme.primaryGolden,
+                      color: ShegabetTheme.ethiopianGold,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -439,7 +439,7 @@ class _SearchPageState extends State<SearchPage> {
                       Text(
                         provider.rating.toString(),
                         style: const TextStyle(
-                          color: ButterTheme.textLight,
+                          color: ShegabetTheme.textLight,
                           fontSize: 14,
                         ),
                       ),
@@ -449,7 +449,7 @@ class _SearchPageState extends State<SearchPage> {
               ),
               trailing: const Icon(
                 Icons.arrow_forward_ios,
-                color: ButterTheme.textLight,
+                color: ShegabetTheme.textLight,
                 size: 16,
               ),
             ),

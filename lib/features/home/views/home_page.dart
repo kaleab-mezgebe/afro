@@ -1,7 +1,7 @@
+import 'package:customer_app/core/theme/shegabet_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../core/theme/butter_theme.dart';
 import '../../../routes/app_routes.dart';
 
 class HomePage extends StatelessWidget {
@@ -11,7 +11,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(gradient: ButterTheme.primaryLinearGradient),
+        decoration: BoxDecoration(gradient: ShegabetTheme.primaryGradient),
         child: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
@@ -91,7 +91,7 @@ class HomePage extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        gradient: ButterTheme.secondaryLinearGradient,
+        gradient: ShegabetTheme.goldGradient,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -129,7 +129,7 @@ class HomePage extends StatelessWidget {
               onPressed: () => Get.toNamed(AppRoutes.bookingService),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
-                foregroundColor: ButterTheme.secondaryLatte,
+                foregroundColor: ShegabetTheme.deepRoyalPurple,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(25),
@@ -166,8 +166,8 @@ class HomePage extends StatelessWidget {
                 context,
                 icon: Icons.search,
                 label: 'Search Stylists',
-                onTap: () => Get.toNamed(AppRoutes.search),
-                color: ButterTheme.accentBlush,
+                onTap: () => Get.toNamed(AppRoutes.bookingService),
+                color: ShegabetTheme.softRose,
               ),
             ),
             const SizedBox(width: 16),
@@ -177,7 +177,7 @@ class HomePage extends StatelessWidget {
                 icon: Icons.history,
                 label: 'My Bookings',
                 onTap: () => Get.toNamed(AppRoutes.bookingHistory),
-                color: ButterTheme.primaryGolden,
+                color: ShegabetTheme.ethiopianGold,
               ),
             ),
           ],
@@ -224,7 +224,7 @@ class HomePage extends StatelessWidget {
             Text(
               label,
               style: const TextStyle(
-                color: ButterTheme.textPrimary,
+                color: ShegabetTheme.textPrimary,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),

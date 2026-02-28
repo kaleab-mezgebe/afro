@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../controllers/phone_auth_controller.dart';
-import '../../../core/theme/shegabet_theme.dart';
-import '../../../core/animations/shegabet_animations.dart';
+import '../controllers/sign_up_controller.dart';
+import '../views/sign_up_page.dart';
+import '../widgets/country_picker_widget.dart';
+import '../../../core/theme/app_theme.dart';
 
 class PhoneAuthPage extends GetView<PhoneAuthController> {
   const PhoneAuthPage({super.key});
@@ -11,251 +13,378 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: ShegabetTheme.textPrimary),
-          onPressed: () => Get.back(),
-        ),
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: ShegabetTheme.backgroundGradient,
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Spacer(flex: 1),
+      backgroundColor: AppTheme.white,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            children: [
+              const SizedBox(height: 40),
 
-                // Header
-                _buildHeader(),
+              // Logo
+              _buildLogo(),
 
-                const SizedBox(height: 40),
+              const SizedBox(height: 32),
 
-                // Form
-                _buildForm(),
+              // Header
+              _buildHeader(),
 
-                const SizedBox(height: 32),
+              const SizedBox(height: 24),
 
-                // Sign In/Sign Up Toggle
-                _buildModeToggle(),
+              // Form
+              Expanded(
+                child: Form(
+                  key: controller.formKey,
+                  child: Column(
+                    children: [
+                      // Email Field
+                      TextFormField(
+                        controller: TextEditingController(),
+                        keyboardType: TextInputType.emailAddress,
+                        validator: controller.validateEmail,
+                        onChanged: controller.setEmail,
+                        decoration: InputDecoration(
+                          hintText: 'Email',
+                          filled: true,
+                          fillColor: AppTheme.grey50,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: AppTheme.grey300,
+                              width: 1,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: AppTheme.grey300,
+                              width: 1,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: AppTheme.primaryYellow,
+                              width: 2,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                        ),
+                      ),
 
-                const SizedBox(height: 40),
+                      const SizedBox(height: 16),
 
-                // Proceed Button
-                _buildProceedButton(),
+                      // Password Field
+                      TextFormField(
+                        controller: TextEditingController(),
+                        obscureText: true,
+                        validator: controller.validatePassword,
+                        onChanged: controller.setPassword,
+                        decoration: InputDecoration(
+                          hintText: 'Password',
+                          filled: true,
+                          fillColor: AppTheme.grey50,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: AppTheme.grey300,
+                              width: 1,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: AppTheme.grey300,
+                              width: 1,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: AppTheme.primaryYellow,
+                              width: 2,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
 
-                const Spacer(flex: 2),
-              ],
-            ),
+              const SizedBox(height: 24),
+
+              // Remember Me & Forgot Password
+              _buildRememberAndForgot(),
+
+              const SizedBox(height: 24),
+
+              // Login Button
+              _buildLoginButton(),
+
+              const SizedBox(height: 24),
+
+              // Separator
+              _buildSeparator(),
+
+              const SizedBox(height: 24),
+
+              // Social Login
+              _buildSocialLogin(),
+
+              const SizedBox(height: 24),
+
+              // Sign Up Link
+              _buildSignUpLink(),
+            ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildLogo() {
+    return Container(
+      width: 80,
+      height: 80,
+      decoration: BoxDecoration(
+        color: AppTheme.primaryYellow,
+        shape: BoxShape.circle,
+      ),
+      child: const Icon(Icons.content_cut, color: AppTheme.black, size: 40),
     );
   }
 
   Widget _buildHeader() {
-    return ShegabetAnimations.fadeIn(
-      child: Obx(
-        () => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              controller.isSignUpMode.value ? 'Create Account' : 'Welcome Back',
-              style: ShegabetTheme.heading3,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              controller.isSignUpMode.value
-                  ? 'Enter your phone number to create your account'
-                  : 'Enter your phone number to sign in to your account',
-              style: ShegabetTheme.bodyMedium.copyWith(
-                color: ShegabetTheme.textSecondary,
-              ),
-            ),
-          ],
+    return const Column(
+      children: [
+        Text(
+          'Login',
+          style: TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            color: AppTheme.textPrimary,
+          ),
         ),
-      ),
+        SizedBox(height: 8),
+        Text(
+          'Enter your email and password to log in.',
+          style: TextStyle(fontSize: 16, color: AppTheme.textSecondary),
+        ),
+      ],
     );
   }
 
   Widget _buildForm() {
-    return ShegabetAnimations.slideIn(
-      direction: SlideDirection.up,
-      child: Column(
-        children: [
-          // Phone Number Field
-          TextField(
-            onChanged: controller.setPhoneNumber,
-            keyboardType: TextInputType.phone,
-            decoration: InputDecoration(
-              hintText: '+254 XXX XXX XXX',
-              prefixIcon: const Icon(
-                Icons.phone,
-                color: ShegabetTheme.textMuted,
-              ),
-              filled: true,
-              fillColor: ShegabetTheme.neutral50,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: const BorderSide(
-                  color: ShegabetTheme.neutral300,
-                  width: 1,
-                ),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: const BorderSide(
-                  color: ShegabetTheme.neutral300,
-                  width: 1,
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: const BorderSide(
-                  color: ShegabetTheme.deepRoyalPurple,
-                  width: 2,
-                ),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 16,
-              ),
-              hintStyle: const TextStyle(
-                color: ShegabetTheme.textLight,
-                fontSize: 16,
+    return Column(
+      children: [
+        // Email Field
+        TextField(
+          keyboardType: TextInputType.emailAddress,
+          decoration: InputDecoration(
+            hintText: 'Email',
+            filled: true,
+            fillColor: AppTheme.grey50,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppTheme.grey300, width: 1),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppTheme.grey300, width: 1),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(
+                color: AppTheme.primaryYellow,
+                width: 2,
               ),
             ),
-            style: ShegabetTheme.bodyMedium.copyWith(
-              color: ShegabetTheme.textPrimary,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
             ),
           ),
+        ),
 
-          // Error message
-          Obx(
-            () => controller.error.value.isNotEmpty
-                ? Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Text(
-                      controller.error.value,
-                      style: const TextStyle(
-                        color: ShegabetTheme.error,
-                        fontSize: 14,
-                      ),
-                    ),
-                  )
-                : const SizedBox.shrink(),
+        const SizedBox(height: 16),
+
+        // Password Field
+        TextField(
+          obscureText: true,
+          decoration: InputDecoration(
+            hintText: 'Password',
+            filled: true,
+            fillColor: AppTheme.grey50,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppTheme.grey300, width: 1),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppTheme.grey300, width: 1),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(
+                color: AppTheme.primaryYellow,
+                width: 2,
+              ),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _buildModeToggle() {
-    return ShegabetAnimations.fadeIn(
-      child: Obx(
-        () => Row(
+  Widget _buildRememberAndForgot() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
           children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  if (!controller.isSignUpMode.value) {
-                    controller.toggleMode();
-                  }
-                },
-                child: AnimatedContainer(
-                  duration: ShegabetAnimations.medium,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  decoration: BoxDecoration(
-                    color: controller.isSignUpMode.value
-                        ? ShegabetTheme.deepRoyalPurple
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: controller.isSignUpMode.value
-                          ? ShegabetTheme.deepRoyalPurple
-                          : ShegabetTheme.neutral300,
-                      width: 2,
-                    ),
-                  ),
-                  child: Text(
-                    'Sign Up',
-                    textAlign: TextAlign.center,
-                    style: ShegabetTheme.button.copyWith(
-                      color: controller.isSignUpMode.value
-                          ? Colors.white
-                          : ShegabetTheme.textPrimary,
-                    ),
-                  ),
-                ),
+            SizedBox(
+              width: 20,
+              height: 20,
+              child: Checkbox(
+                value: false,
+                onChanged: (value) {},
+                activeColor: AppTheme.primaryYellow,
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  if (controller.isSignUpMode.value) {
-                    controller.toggleMode();
-                  }
-                },
-                child: AnimatedContainer(
-                  duration: ShegabetAnimations.medium,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  decoration: BoxDecoration(
-                    color: !controller.isSignUpMode.value
-                        ? ShegabetTheme.deepRoyalPurple
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: !controller.isSignUpMode.value
-                          ? ShegabetTheme.deepRoyalPurple
-                          : ShegabetTheme.neutral300,
-                      width: 2,
-                    ),
-                  ),
-                  child: Text(
-                    'Sign In',
-                    textAlign: TextAlign.center,
-                    style: ShegabetTheme.button.copyWith(
-                      color: !controller.isSignUpMode.value
-                          ? Colors.white
-                          : ShegabetTheme.textSecondary,
-                    ),
-                  ),
-                ),
-              ),
+            const SizedBox(width: 8),
+            const Text(
+              'Remember me',
+              style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
             ),
           ],
         ),
-      ),
+        TextButton(
+          onPressed: () {},
+          child: const Text(
+            'Forgot Password?',
+            style: TextStyle(
+              fontSize: 14,
+              color: AppTheme.primaryYellow,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildProceedButton() {
-    return ShegabetAnimations.scaleIn(
-      child: Obx(
-        () => AnimatedButton(
+  Widget _buildLoginButton() {
+    return Obx(
+      () => SizedBox(
+        width: double.infinity,
+        height: 56,
+        child: ElevatedButton(
           onPressed: controller.canProceed ? controller.proceed : null,
-          style: ShegabetTheme.primaryButton,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppTheme.primaryYellow,
+            foregroundColor: AppTheme.black,
+            disabledBackgroundColor: AppTheme.grey300,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
           child: controller.isLoading.value
               ? const SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    valueColor: AlwaysStoppedAnimation<Color>(AppTheme.black),
                   ),
                 )
-              : Text(
-                  controller.isSignUpMode.value ? 'Continue' : 'Sign In',
-                  style: ShegabetTheme.button,
+              : const Text(
+                  'Login',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSeparator() {
+    return Row(
+      children: [
+        const Expanded(child: Divider(color: AppTheme.grey300, thickness: 1)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: const Text(
+            'Or login with',
+            style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
+          ),
+        ),
+        const Expanded(child: Divider(color: AppTheme.grey300, thickness: 1)),
+      ],
+    );
+  }
+
+  Widget _buildSocialLogin() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildSocialButton(Icons.gavel, 'Google'),
+        _buildSocialButton(Icons.facebook, 'Facebook'),
+        _buildSocialButton(Icons.apple, 'Apple'),
+        _buildSocialButton(Icons.person, 'Other'),
+      ],
+    );
+  }
+
+  Widget _buildSocialButton(IconData icon, String label) {
+    return Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        border: Border.all(color: AppTheme.grey300, width: 1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: IconButton(
+        onPressed: () {},
+        icon: Icon(icon, color: AppTheme.textSecondary, size: 24),
+      ),
+    );
+  }
+
+  Widget _buildSignUpLink() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text(
+          "Don't have an account? ",
+          style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
+        ),
+        TextButton(
+          onPressed: () {
+            Get.put(SignUpController());
+            Get.to(() => SignUpPage());
+          },
+          child: const Text(
+            'Sign Up',
+            style: TextStyle(
+              fontSize: 14,
+              color: AppTheme.primaryYellow,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

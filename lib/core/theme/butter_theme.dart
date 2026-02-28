@@ -65,7 +65,7 @@ class ButterTheme {
   );
 
   // Butter Theme Data
-  static ThemeData get butterTheme {
+  static ThemeData get ShegabetTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
