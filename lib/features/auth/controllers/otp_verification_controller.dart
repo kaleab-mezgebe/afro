@@ -5,7 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../routes/app_routes.dart';
 
 class OTPVerificationController extends GetxController {
-  final TextEditingController otpController = TextEditingController();
+  late TextEditingController otpController;
 
   // Form fields
   final RxString otp = ''.obs;
@@ -23,6 +23,7 @@ class OTPVerificationController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    otpController = TextEditingController();
     // Get phone number and mode from arguments
     final args = Get.arguments;
     phoneNumber.value = args['phoneNumber'] as String? ?? '';
@@ -32,7 +33,11 @@ class OTPVerificationController extends GetxController {
 
   @override
   void onClose() {
-    otpController.dispose();
+    try {
+      otpController.dispose();
+    } catch (e) {
+      // Controller already disposed
+    }
     super.onClose();
   }
 

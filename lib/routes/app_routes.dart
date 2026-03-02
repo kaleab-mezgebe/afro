@@ -9,7 +9,9 @@ abstract class AppRoutes {
   static const home = '/';
   static const profile = '/profile';
   static const editProfile = '/profile/edit';
+  static const settings = '/settings';
 
+  static const portfolio = '/portfolio';
   static const bookingService = '/booking/service';
   static const bookingTime = '/booking/time';
   static const bookingSummary = '/booking/summary';

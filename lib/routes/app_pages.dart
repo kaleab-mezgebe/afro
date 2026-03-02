@@ -10,11 +10,15 @@ import '../features/booking/views/booking_history_page.dart';
 import '../features/booking/views/booking_service_page.dart';
 import '../features/booking/views/booking_summary_page.dart';
 import '../features/booking/views/booking_time_page.dart';
+import '../features/home/bindings/portfolio_binding.dart';
 import '../features/home/views/home_page.dart';
+import '../features/home/views/portfolio_page.dart';
 import '../features/onboarding/views/onboarding_page.dart';
 import '../features/profile/bindings/profile_binding.dart';
 import '../features/profile/views/edit_profile_page.dart';
 import '../features/profile/views/profile_page.dart';
+import '../features/profile/views/settings_page.dart';
+import '../features/search/views/search_page.dart' as search;
 import '../features/splash/views/splash_page.dart';
 import 'app_routes.dart';
 
@@ -34,6 +38,15 @@ class AppPages {
     ),
 
     GetPage(name: AppRoutes.home, page: () => const HomePage()),
+    GetPage(
+      name: AppRoutes.portfolio,
+      page: () {
+        final specialist = Get.arguments as Map<String, dynamic>;
+        return PortfolioPage(specialist: specialist);
+      },
+      binding: PortfolioBinding(),
+    ),
+    GetPage(name: AppRoutes.settings, page: () => const SettingsPage()),
     GetPage(
       name: AppRoutes.profile,
       page: () => const ProfilePage(),
@@ -64,5 +77,6 @@ class AppPages {
       page: () => const BookingHistoryPage(),
       binding: BookingBinding(),
     ),
+    GetPage(name: AppRoutes.search, page: () => const search.SearchPage()),
   ];
 }

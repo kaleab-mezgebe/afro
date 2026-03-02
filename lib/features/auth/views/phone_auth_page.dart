@@ -38,41 +38,39 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
                   child: Column(
                     children: [
                       // Email Field
-                      Obx(
-                        () => TextFormField(
-                          controller: controller.emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          validator: controller.validateEmail,
-                          onChanged: controller.setEmail,
-                          decoration: InputDecoration(
-                            hintText: 'Email',
-                            filled: true,
-                            fillColor: AppTheme.grey50,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: AppTheme.grey300,
-                                width: 1,
-                              ),
+                      TextFormField(
+                        controller: controller.emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: controller.validateEmail,
+                        onChanged: controller.setEmail,
+                        decoration: InputDecoration(
+                          hintText: 'Email',
+                          filled: true,
+                          fillColor: AppTheme.grey50,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: AppTheme.grey300,
+                              width: 1,
                             ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: AppTheme.grey300,
-                                width: 1,
-                              ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: AppTheme.grey300,
+                              width: 1,
                             ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: AppTheme.primaryYellow,
-                                width: 2,
-                              ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: AppTheme.primaryYellow,
+                              width: 2,
                             ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 16,
-                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
                           ),
                         ),
                       ),
@@ -80,41 +78,39 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
                       const SizedBox(height: 16),
 
                       // Password Field
-                      Obx(
-                        () => TextFormField(
-                          controller: controller.passwordController,
-                          obscureText: true,
-                          validator: controller.validatePassword,
-                          onChanged: controller.setPassword,
-                          decoration: InputDecoration(
-                            hintText: 'Password',
-                            filled: true,
-                            fillColor: AppTheme.grey50,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: AppTheme.grey300,
-                                width: 1,
-                              ),
+                      TextFormField(
+                        controller: controller.passwordController,
+                        obscureText: true,
+                        validator: controller.validatePassword,
+                        onChanged: controller.setPassword,
+                        decoration: InputDecoration(
+                          hintText: 'Password',
+                          filled: true,
+                          fillColor: AppTheme.grey50,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: AppTheme.grey300,
+                              width: 1,
                             ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: AppTheme.grey300,
-                                width: 1,
-                              ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: AppTheme.grey300,
+                              width: 1,
                             ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: AppTheme.primaryYellow,
-                                width: 2,
-                              ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: AppTheme.primaryYellow,
+                              width: 2,
                             ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 16,
-                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
                           ),
                         ),
                       ),
