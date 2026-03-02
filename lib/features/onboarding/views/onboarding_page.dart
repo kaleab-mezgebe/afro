@@ -26,19 +26,19 @@ class _OnboardingPageState extends State<OnboardingPage>
       title: "Being a Barber is about taking care of the People",
       description:
           "Our skilled barbers are dedicated to providing exceptional grooming experiences that make you look and feel your best.",
-      image: "assets/images/barber1.jpg",
+      image: "https://picsum.photos/seed/barber1/400/600.jpg",
     ),
     OnboardingData(
       title: "Crafting the Perfect Look is an Art Form",
       description:
           "From classic cuts to modern styles, our barbers master the latest techniques to deliver personalized results.",
-      image: "assets/images/barber2.jpg",
+      image: "https://picsum.photos/seed/barber2/400/600.jpg",
     ),
     OnboardingData(
       title: "Every Cut Tells a Unique Story",
       description:
           "Your style is your identity. We help you express it with precision cuts and expert care tailored just for you.",
-      image: "assets/images/barber3.jpg",
+      image: "https://picsum.photos/seed/barber3/400/600.jpg",
     ),
   ];
 
@@ -129,30 +129,36 @@ class _OnboardingPageState extends State<OnboardingPage>
               Container(
                 width: double.infinity,
                 height: double.infinity,
-                child: Image.asset(
-                  data.image,
-                  key: ValueKey(data.image),
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: AppTheme.grey100,
-                      child: const Center(
-                        child: Icon(
-                          Icons.content_cut,
-                          size: 80,
-                          color: AppTheme.primaryYellow,
-                        ),
+                child: data.image.startsWith('http')
+                    ? Image.network(
+                        data.image,
+                        key: ValueKey(data.image),
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        errorBuilder: (context, error, stackTrace) {
+                          return _buildImagePlaceholder();
+                        },
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return _buildImagePlaceholder();
+                        },
+                      )
+                    : Image.asset(
+                        data.image,
+                        key: ValueKey(data.image),
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        errorBuilder: (context, error, stackTrace) {
+                          return _buildImagePlaceholder();
+                        },
                       ),
-                    );
-                  },
-                ),
               ),
 
               /// Skip button with glassmorphism effect
               Positioned(
-                top: MediaQuery.of(Get.context!).padding.top + 20,
+                top: MediaQuery.of(context).padding.top + 20,
                 right: 20,
                 child: AnimatedBuilder(
                   animation: _fadeAnimation,
@@ -161,10 +167,10 @@ class _OnboardingPageState extends State<OnboardingPage>
                       opacity: _fadeAnimation.value,
                       child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
+                          color: Colors.white.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             width: 1,
                           ),
                         ),
@@ -209,7 +215,7 @@ class _OnboardingPageState extends State<OnboardingPage>
             child: Padding(
               padding: EdgeInsets.only(
                 top: 32,
-                bottom: MediaQuery.of(Get.context!).padding.bottom + 24,
+                bottom: MediaQuery.of(context).padding.bottom + 24,
               ),
               child: Column(
                 children: [
@@ -338,6 +344,38 @@ class _OnboardingPageState extends State<OnboardingPage>
     );
   }
 
+  Widget _buildImagePlaceholder() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppTheme.primaryYellow.withValues(alpha: 0.8),
+            AppTheme.primaryYellow.withValues(alpha: 0.6),
+          ],
+        ),
+      ),
+      child: const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.content_cut, size: 80, color: AppTheme.white),
+            SizedBox(height: 16),
+            Text(
+              'Professional Barber Services',
+              style: TextStyle(
+                color: AppTheme.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildCircularButton() {
     return AnimatedBuilder(
       animation: _scaleAnimation,
@@ -364,12 +402,12 @@ class _OnboardingPageState extends State<OnboardingPage>
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.primaryYellow.withOpacity(0.3),
+                    color: AppTheme.primaryYellow.withValues(alpha: 0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
                   BoxShadow(
-                    color: AppTheme.primaryYellow.withOpacity(0.2),
+                    color: AppTheme.primaryYellow.withValues(alpha: 0.2),
                     blurRadius: 40,
                     offset: const Offset(0, 16),
                   ),
@@ -389,11 +427,7 @@ class _OnboardingPageState extends State<OnboardingPage>
 
   void _completeOnboarding() {
     HapticFeedback.mediumImpact();
-
-    // Use delayed navigation to allow animations to complete
-    Future.delayed(const Duration(milliseconds: 100), () {
-      Get.offAllNamed(AppRoutes.phoneAuth);
-    });
+    Get.offAllNamed(AppRoutes.phoneAuth);
   }
 }
 

@@ -72,7 +72,7 @@ class OtpVerificationPage extends GetView<OTPVerificationController> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -88,12 +88,16 @@ class OtpVerificationPage extends GetView<OTPVerificationController> {
                     borderRadius: BorderRadius.circular(12),
                     fieldHeight: 56,
                     fieldWidth: 45,
-                    activeFillColor: AppTheme.primaryYellow.withOpacity(0.1),
+                    activeFillColor: AppTheme.primaryYellow.withValues(
+                      alpha: 0.1,
+                    ),
                     activeColor: AppTheme.primaryYellow,
                     inactiveFillColor: AppTheme.grey50,
                     inactiveColor: AppTheme.grey300,
                     selectedColor: AppTheme.primaryYellow,
-                    selectedFillColor: AppTheme.primaryYellow.withOpacity(0.1),
+                    selectedFillColor: AppTheme.primaryYellow.withValues(
+                      alpha: 0.1,
+                    ),
                   ),
                   animationDuration: const Duration(milliseconds: 300),
                   backgroundColor: Colors.transparent,

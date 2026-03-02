@@ -14,6 +14,10 @@ class PhoneAuthController extends GetxController {
   final RxString error = ''.obs;
   final RxBool isSignUpMode = true.obs; // Toggle between sign-in and sign-up
 
+  // Text controllers
+  late TextEditingController emailController;
+  late TextEditingController passwordController;
+
   // Country picker
   final Rx<Country> selectedCountry = Country(
     phoneCode: '254',
@@ -30,6 +34,20 @@ class PhoneAuthController extends GetxController {
 
   // Form validation
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
+  @override
+  void onInit() {
+    super.onInit();
+    emailController = TextEditingController();
+    passwordController = TextEditingController();
+  }
+
+  @override
+  void onClose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.onClose();
+  }
 
   // Validation
   bool get isPhoneNumberValid {

@@ -189,7 +189,11 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
   }
 
   Widget _buildPatternIcon(IconData icon) {
-    return Icon(icon, size: 24, color: AppTheme.primaryYellow.withOpacity(0.2));
+    return Icon(
+      icon,
+      size: 24,
+      color: AppTheme.primaryYellow.withValues(alpha: 0.2),
+    );
   }
 
   Widget _buildDesignCredit() {
