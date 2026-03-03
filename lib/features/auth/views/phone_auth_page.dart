@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sizer/sizer.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../controllers/phone_auth_controller.dart';
-
 import '../widgets/country_picker_widget.dart';
 import '../../../core/theme/app_theme.dart';
 
@@ -53,13 +53,10 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
 
   Widget _buildLogo() {
     return Container(
-      width: 20.w,
-      height: 20.w,
-      decoration: BoxDecoration(
-        color: AppTheme.primaryYellow,
-        shape: BoxShape.circle,
-      ),
-      child: Icon(Icons.phone, color: AppTheme.black, size: 10.w),
+      width: 40.w,
+      height: 40.w,
+      decoration: BoxDecoration(shape: BoxShape.circle),
+      child: Image.asset('assets/images/logo.png', width: 36.w, height: 32.w),
     );
   }
 
@@ -69,7 +66,7 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
         Text(
           'Login',
           style: TextStyle(
-            fontSize: 24.sp,
+            fontSize: 20.sp,
             fontWeight: FontWeight.bold,
             color: AppTheme.textPrimary,
           ),
@@ -85,63 +82,63 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
 
   Widget _buildPhoneField() {
     return Obx(
-      () => Row(
-        children: [
-          // Country Picker
-          Container(
-            width: 30.w,
-            height: 7.h,
-            decoration: BoxDecoration(
-              color: AppTheme.grey50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppTheme.grey300),
+      () => Container(
+        decoration: BoxDecoration(
+          color: AppTheme.grey50,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.grey300),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
             ),
-            child: CountryPickerWidget(
-              country: controller.selectedCountry.value,
-              onCountryChanged: controller.onCountryChanged,
+          ],
+        ),
+        child: Row(
+          children: [
+            // Country Picker
+            Container(
+              width: 28.w,
+              height: 7.h,
+              child: CountryPickerWidget(
+                country: controller.selectedCountry.value,
+                onCountryChanged: controller.onCountryChanged,
+              ),
             ),
-          ),
 
-          SizedBox(width: 3.w),
-
-          // Phone Number
-          Expanded(
-            child: TextFormField(
-              controller: controller.phoneController,
-              keyboardType: TextInputType.phone,
-              validator: controller.validatePhoneNumber,
-              onChanged: controller.setPhoneNumber,
-              decoration: InputDecoration(
-                hintText: 'Phone Number',
-                filled: true,
-                fillColor: AppTheme.grey50,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppTheme.grey300),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppTheme.grey300),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(
-                    color: AppTheme.primaryYellow,
-                    width: 2,
+            // Phone Number
+            Expanded(
+              child: TextFormField(
+                controller: controller.phoneController,
+                keyboardType: TextInputType.phone,
+                validator: controller.validatePhoneNumber,
+                onChanged: controller.setPhoneNumber,
+                decoration: InputDecoration(
+                  hintText: 'Phone Number',
+                  filled: false,
+                  border: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 5.w,
+                    vertical: 1.5.h,
+                  ),
+                  hintStyle: TextStyle(
+                    fontSize: 13.sp,
+                    color: AppTheme.textMuted,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 4.w,
-                  vertical: 1.5.h,
-                ),
-                hintStyle: TextStyle(
-                  fontSize: 12.sp,
-                  color: AppTheme.textMuted,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: AppTheme.textPrimary,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -203,13 +200,19 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _buildSocialButton(Icons.g_mobiledata, controller.loginWithGoogle),
-        _buildSocialButton(Icons.facebook, controller.loginWithFacebook),
+        _buildSocialButton(
+          'assets/icons/google.svg',
+          controller.loginWithGoogle,
+        ),
+        _buildSocialButton(
+          'assets/icons/facebook.svg',
+          controller.loginWithFacebook,
+        ),
       ],
     );
   }
 
-  Widget _buildSocialButton(IconData icon, VoidCallback onTap) {
+  Widget _buildSocialButton(String svgAssetPath, VoidCallback onTap) {
     return Container(
       width: 16.w,
       height: 16.w,
@@ -219,7 +222,7 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
       ),
       child: IconButton(
         onPressed: onTap,
-        icon: Icon(icon, size: 7.w, color: AppTheme.textSecondary),
+        icon: SvgPicture.asset(svgAssetPath, width: 7.w, height: 7.w),
       ),
     );
   }

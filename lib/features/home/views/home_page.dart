@@ -16,10 +16,13 @@ class _HomePageState extends State<HomePage>
   String _selectedCategory = 'Hairdressing';
   String _searchQuery = '';
   late AnimationController _bannerController;
+  bool _isSearchFocused = false;
+  late FocusNode _searchFocusNode;
 
   @override
   void initState() {
     super.initState();
+    _searchFocusNode = FocusNode();
     _bannerController = AnimationController(
       duration: const Duration(seconds: 8),
       vsync: this,
@@ -29,6 +32,7 @@ class _HomePageState extends State<HomePage>
   @override
   void dispose() {
     _bannerController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
@@ -493,6 +497,19 @@ class _HomePageState extends State<HomePage>
           Expanded(
             child: TextField(
               onChanged: _updateSearch,
+              autofocus: false,
+              focusNode: _searchFocusNode,
+              onTap: () {
+                setState(() {
+                  _isSearchFocused = true;
+                });
+              },
+              onEditingComplete: () {
+                setState(() {
+                  _isSearchFocused = false;
+                });
+                _searchFocusNode.unfocus();
+              },
               decoration: InputDecoration(
                 hintText: 'Search Salon, Specialist',
                 hintStyle: TextStyle(

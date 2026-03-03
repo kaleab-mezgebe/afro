@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:country_picker/country_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../../core/theme/butter_theme.dart';
 import '../../../routes/app_routes.dart';
@@ -8,15 +11,10 @@ import '../../../routes/app_routes.dart';
 class PhoneAuthController extends GetxController {
   // Form fields
   final RxString phoneNumber = ''.obs;
-  final RxString email = ''.obs;
-  final RxString password = ''.obs;
   final RxBool isLoading = false.obs;
   final RxString error = ''.obs;
-  final RxBool isSignUpMode = true.obs; // Toggle between sign-in and sign-up
 
   // Text controllers
-  late TextEditingController emailController;
-  late TextEditingController passwordController;
   late TextEditingController phoneController;
 
   // Country picker
@@ -39,15 +37,11 @@ class PhoneAuthController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    emailController = TextEditingController();
-    passwordController = TextEditingController();
     phoneController = TextEditingController();
   }
 
   @override
   void onClose() {
-    emailController.dispose();
-    passwordController.dispose();
     phoneController.dispose();
     super.onClose();
   }
@@ -58,18 +52,7 @@ class PhoneAuthController extends GetxController {
     return phone.length >= 9 && phone.length <= 15;
   }
 
-  bool get isEmailValid {
-    return email.value.isNotEmpty &&
-        email.value.contains('@') &&
-        email.value.contains('.') &&
-        email.value.length > 5;
-  }
-
-  bool get isPasswordValid {
-    return password.value.length >= 6;
-  }
-
-  bool get canProceed => !isLoading.value;
+  bool get canProceed => !isLoading.value && isPhoneNumberValid;
 
   void setPhoneNumber(String value) {
     // Remove all non-digit characters
@@ -77,36 +60,8 @@ class PhoneAuthController extends GetxController {
     phoneNumber.value = cleanPhone;
   }
 
-  void setEmail(String value) => email.value = value;
-  void setPassword(String value) => password.value = value;
-
   void onCountryChanged(Country country) {
     selectedCountry.value = country;
-  }
-
-  void toggleMode() => isSignUpMode.value = !isSignUpMode.value;
-
-  String? validateEmail(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Email is required';
-    }
-    if (!value.contains('@') || !value.contains('.')) {
-      return 'Please enter a valid email';
-    }
-    if (value.length < 5) {
-      return 'Email is too short';
-    }
-    return null;
-  }
-
-  String? validatePassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Password is required';
-    }
-    if (value.length < 6) {
-      return 'Password must be at least 6 characters';
-    }
-    return null;
   }
 
   String? validatePhoneNumber(String? value) {
@@ -124,6 +79,10 @@ class PhoneAuthController extends GetxController {
   }
 
   Future<void> proceed() async {
+    if (!formKey.currentState!.validate()) {
+      return;
+    }
+
     try {
       isLoading.value = true;
       error.value = '';
@@ -134,33 +93,18 @@ class PhoneAuthController extends GetxController {
       final fullPhoneNumber =
           '+${selectedCountry.value.phoneCode}${phoneNumber.value}';
 
-      if (isSignUpMode.value) {
-        // Navigate to user registration page (sign-up)
-        Get.toNamed(
-          AppRoutes.otpVerification,
-          arguments: {'phoneNumber': fullPhoneNumber, 'isSignUpMode': true},
-        );
+      // Navigate to OTP verification page
+      Get.toNamed(
+        AppRoutes.otpVerification,
+        arguments: {'phoneNumber': fullPhoneNumber, 'isSignUpMode': false},
+      );
 
-        Get.snackbar(
-          'Phone Number Verified!',
-          'Complete your profile to continue',
-          backgroundColor: ButterTheme.successMint,
-          colorText: Colors.white,
-        );
-      } else {
-        // Navigate to OTP verification page (sign-in)
-        Get.toNamed(
-          AppRoutes.otpVerification,
-          arguments: {'phoneNumber': fullPhoneNumber, 'isSignUpMode': false},
-        );
-
-        Get.snackbar(
-          'OTP Sent!',
-          'Verification code sent to $fullPhoneNumber',
-          backgroundColor: ButterTheme.successMint,
-          colorText: Colors.white,
-        );
-      }
+      Get.snackbar(
+        'OTP Sent!',
+        'Verification code sent to $fullPhoneNumber',
+        backgroundColor: ButterTheme.successMint,
+        colorText: Colors.white,
+      );
     } catch (e) {
       error.value = e.toString();
       Get.snackbar(
@@ -184,20 +128,72 @@ class PhoneAuthController extends GetxController {
       isLoading.value = true;
       error.value = '';
 
-      // TODO: Implement actual Google Sign-In logic
-      await Future.delayed(const Duration(seconds: 2));
+      // Trigger Google Sign-In flow
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
+      if (googleUser == null) {
+        // User cancelled the sign-in
+        Get.snackbar(
+          'Google Sign-In Cancelled',
+          'You cancelled the login process',
+          backgroundColor: ButterTheme.errorRose,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      // Obtain authentication details from the Google sign-in
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      // Create a new credential
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Sign in to Firebase with the Google credential
+      final UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithCredential(credential);
+
+      if (userCredential.user != null) {
+        Get.snackbar(
+          'Google Login Successful!',
+          'Welcome ${userCredential.user?.displayName ?? ''}!',
+          backgroundColor: ButterTheme.successMint,
+          colorText: Colors.white,
+        );
+
+        // Navigate to home screen
+        Get.offAllNamed(AppRoutes.home);
+      }
+    } on FirebaseAuthException catch (e) {
+      String errorMessage = 'Google login failed';
+      if (e.code == 'account-exists-with-different-credential') {
+        errorMessage =
+            'An account already exists with the same email but different sign-in method';
+      } else if (e.code == 'invalid-credential') {
+        errorMessage = 'The credential is malformed or has expired';
+      } else if (e.code == 'user-disabled') {
+        errorMessage = 'This user account has been disabled';
+      } else if (e.code == 'user-not-found') {
+        errorMessage = 'No user found for this account';
+      } else if (e.code == 'wrong-password') {
+        errorMessage = 'Incorrect password';
+      }
+
+      error.value = errorMessage;
       Get.snackbar(
-        'Google Sign-In',
-        'Google sign-in functionality coming soon!',
-        backgroundColor: ButterTheme.successMint,
+        'Google Login Failed',
+        errorMessage,
+        backgroundColor: ButterTheme.errorRose,
         colorText: Colors.white,
       );
     } catch (e) {
       error.value = e.toString();
       Get.snackbar(
-        'Google Sign-In Failed',
-        error.value,
+        'Google Login Failed',
+        'An unexpected error occurred: ${e.toString()}',
         backgroundColor: ButterTheme.errorRose,
         colorText: Colors.white,
       );
@@ -211,19 +207,64 @@ class PhoneAuthController extends GetxController {
       isLoading.value = true;
       error.value = '';
 
-      // TODO: Implement actual Facebook Sign-In logic
-      await Future.delayed(const Duration(seconds: 2));
+      // Trigger Facebook sign-in
+      final LoginResult result = await FacebookAuth.instance.login();
 
+      if (result.status == LoginStatus.success) {
+        // Get the user credentials
+        final AccessToken accessToken = result.accessToken!;
+
+        // Create a credential from the access token
+        final OAuthCredential credential = FacebookAuthProvider.credential(
+          accessToken.token,
+        );
+
+        // Sign in to Firebase with the Facebook credential
+        final userCredential = await FirebaseAuth.instance.signInWithCredential(
+          credential,
+        );
+
+        if (userCredential.user != null) {
+          Get.snackbar(
+            'Facebook Login Successful!',
+            'Welcome!',
+            backgroundColor: ButterTheme.successMint,
+            colorText: Colors.white,
+          );
+
+          // Navigate to home
+          Get.offAllNamed(AppRoutes.home);
+        }
+      } else if (result.status == LoginStatus.cancelled) {
+        Get.snackbar(
+          'Facebook Login Cancelled',
+          'You cancelled the login process',
+          backgroundColor: ButterTheme.errorRose,
+          colorText: Colors.white,
+        );
+      } else {
+        throw result.message ?? 'Unknown Facebook login error';
+      }
+    } on FirebaseAuthException catch (e) {
+      String errorMessage = 'Facebook login failed';
+      if (e.code == 'account-exists-with-different-credential') {
+        errorMessage =
+            'An account already exists with the same email but different sign-in method';
+      } else if (e.code == 'invalid-credential') {
+        errorMessage = 'The credential is malformed or has expired';
+      }
+
+      error.value = errorMessage;
       Get.snackbar(
-        'Facebook Sign-In',
-        'Facebook sign-in functionality coming soon!',
-        backgroundColor: ButterTheme.successMint,
+        'Facebook Login Failed',
+        errorMessage,
+        backgroundColor: ButterTheme.errorRose,
         colorText: Colors.white,
       );
     } catch (e) {
       error.value = e.toString();
       Get.snackbar(
-        'Facebook Sign-In Failed',
+        'Facebook Login Failed',
         error.value,
         backgroundColor: ButterTheme.errorRose,
         colorText: Colors.white,
