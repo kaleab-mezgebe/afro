@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:country_picker/country_picker.dart';
+import 'package:sizer/sizer.dart';
 import '../../../core/theme/app_theme.dart';
 
 class CountryPickerWidget extends StatelessWidget {
@@ -41,14 +42,17 @@ class CountryPickerWidget extends StatelessWidget {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppTheme.primaryYellow, width: 2),
+                borderSide: const BorderSide(
+                  color: AppTheme.primaryYellow,
+                  width: 2,
+                ),
               ),
             ),
           ),
         );
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+        padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 1.5.h),
         decoration: BoxDecoration(
           border: Border.all(
             color: errorText != null ? AppTheme.error : AppTheme.grey300,
@@ -60,24 +64,18 @@ class CountryPickerWidget extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              country.flagEmoji,
-              style: const TextStyle(fontSize: 20),
-            ),
-            const SizedBox(width: 8),
+            Text(country.flagEmoji, style: TextStyle(fontSize: 16.sp)),
+            SizedBox(width: 1.w),
             Text(
               '+${country.phoneCode}',
-              style: const TextStyle(
-                fontSize: 16,
+              style: TextStyle(
+                fontSize: 12.sp,
                 color: AppTheme.textPrimary,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(width: 8),
-            const Icon(
-              Icons.arrow_drop_down,
-              color: AppTheme.textMuted,
-            ),
+            SizedBox(width: 1.w),
+            Icon(Icons.arrow_drop_down, color: AppTheme.textMuted, size: 18.sp),
           ],
         ),
       ),

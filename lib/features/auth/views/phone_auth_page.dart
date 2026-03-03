@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:sizer/sizer.dart';
 
 import '../controllers/phone_auth_controller.dart';
-import '../controllers/sign_up_controller.dart';
-import '../views/sign_up_page.dart';
+
 import '../widgets/country_picker_widget.dart';
 import '../../../core/theme/app_theme.dart';
 
@@ -16,134 +16,35 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
       backgroundColor: AppTheme.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              const SizedBox(height: 40),
+          padding: EdgeInsets.all(4.w),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                SizedBox(height: 12.h),
 
-              // Logo
-              _buildLogo(),
+                _buildLogo(),
+                SizedBox(height: 2.h),
 
-              const SizedBox(height: 32),
+                _buildHeader(),
+                SizedBox(height: 3.h),
 
-              // Header
-              _buildHeader(),
+                Form(key: controller.formKey, child: _buildPhoneField()),
 
-              const SizedBox(height: 24),
+                SizedBox(height: 2.h),
 
-              // Form
-              Expanded(
-                child: Form(
-                  key: controller.formKey,
-                  child: Column(
-                    children: [
-                      // Email Field
-                      TextFormField(
-                        controller: controller.emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        validator: controller.validateEmail,
-                        onChanged: controller.setEmail,
-                        decoration: InputDecoration(
-                          hintText: 'Email',
-                          filled: true,
-                          fillColor: AppTheme.grey50,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppTheme.grey300,
-                              width: 1,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppTheme.grey300,
-                              width: 1,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppTheme.primaryYellow,
-                              width: 2,
-                            ),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
-                          ),
-                        ),
-                      ),
+                _buildLoginButton(),
 
-                      const SizedBox(height: 16),
+                SizedBox(height: 2.5.h),
 
-                      // Password Field
-                      TextFormField(
-                        controller: controller.passwordController,
-                        obscureText: true,
-                        validator: controller.validatePassword,
-                        onChanged: controller.setPassword,
-                        decoration: InputDecoration(
-                          hintText: 'Password',
-                          filled: true,
-                          fillColor: AppTheme.grey50,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppTheme.grey300,
-                              width: 1,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppTheme.grey300,
-                              width: 1,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppTheme.primaryYellow,
-                              width: 2,
-                            ),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+                _buildSeparator(),
 
-              const SizedBox(height: 24),
+                SizedBox(height: 2.5.h),
 
-              // Remember Me & Forgot Password
-              _buildRememberAndForgot(),
+                _buildSocialLogin(),
 
-              const SizedBox(height: 24),
-
-              // Login Button
-              _buildLoginButton(),
-
-              const SizedBox(height: 24),
-
-              // Separator
-              _buildSeparator(),
-
-              const SizedBox(height: 24),
-
-              // Social Login
-              _buildSocialLogin(),
-
-              const SizedBox(height: 24),
-
-              // Sign Up Link
-              _buildSignUpLink(),
-            ],
+                SizedBox(height: 2.5.h),
+              ],
+            ),
           ),
         ),
       ),
@@ -152,136 +53,96 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
 
   Widget _buildLogo() {
     return Container(
-      width: 80,
-      height: 80,
+      width: 20.w,
+      height: 20.w,
       decoration: BoxDecoration(
         color: AppTheme.primaryYellow,
         shape: BoxShape.circle,
       ),
-      child: const Icon(Icons.content_cut, color: AppTheme.black, size: 40),
+      child: Icon(Icons.phone, color: AppTheme.black, size: 10.w),
     );
   }
 
   Widget _buildHeader() {
-    return const Column(
+    return Column(
       children: [
         Text(
           'Login',
           style: TextStyle(
-            fontSize: 32,
+            fontSize: 24.sp,
             fontWeight: FontWeight.bold,
             color: AppTheme.textPrimary,
           ),
         ),
-        SizedBox(height: 8),
+        SizedBox(height: 0.8.h),
         Text(
-          'Enter your email and password to log in.',
-          style: TextStyle(fontSize: 16, color: AppTheme.textSecondary),
+          'Enter your phone number to continue',
+          style: TextStyle(fontSize: 12.sp, color: AppTheme.textSecondary),
         ),
       ],
     );
   }
 
-  Widget _buildForm() {
-    return Column(
-      children: [
-        // Email Field
-        TextField(
-          keyboardType: TextInputType.emailAddress,
-          decoration: InputDecoration(
-            hintText: 'Email',
-            filled: true,
-            fillColor: AppTheme.grey50,
-            border: OutlineInputBorder(
+  Widget _buildPhoneField() {
+    return Obx(
+      () => Row(
+        children: [
+          // Country Picker
+          Container(
+            width: 30.w,
+            height: 7.h,
+            decoration: BoxDecoration(
+              color: AppTheme.grey50,
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppTheme.grey300, width: 1),
+              border: Border.all(color: AppTheme.grey300),
             ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppTheme.grey300, width: 1),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: AppTheme.primaryYellow,
-                width: 2,
-              ),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 16,
+            child: CountryPickerWidget(
+              country: controller.selectedCountry.value,
+              onCountryChanged: controller.onCountryChanged,
             ),
           ),
-        ),
 
-        const SizedBox(height: 16),
+          SizedBox(width: 3.w),
 
-        // Password Field
-        TextField(
-          obscureText: true,
-          decoration: InputDecoration(
-            hintText: 'Password',
-            filled: true,
-            fillColor: AppTheme.grey50,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppTheme.grey300, width: 1),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppTheme.grey300, width: 1),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: AppTheme.primaryYellow,
-                width: 2,
+          // Phone Number
+          Expanded(
+            child: TextFormField(
+              controller: controller.phoneController,
+              keyboardType: TextInputType.phone,
+              validator: controller.validatePhoneNumber,
+              onChanged: controller.setPhoneNumber,
+              decoration: InputDecoration(
+                hintText: 'Phone Number',
+                filled: true,
+                fillColor: AppTheme.grey50,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppTheme.grey300),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppTheme.grey300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                    color: AppTheme.primaryYellow,
+                    width: 2,
+                  ),
+                ),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 4.w,
+                  vertical: 1.5.h,
+                ),
+                hintStyle: TextStyle(
+                  fontSize: 12.sp,
+                  color: AppTheme.textMuted,
+                ),
               ),
             ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 16,
-            ),
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRememberAndForgot() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            SizedBox(
-              width: 20,
-              height: 20,
-              child: Checkbox(
-                value: false,
-                onChanged: (value) {},
-                activeColor: AppTheme.primaryYellow,
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Text(
-              'Remember me',
-              style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
-            ),
-          ],
-        ),
-        TextButton(
-          onPressed: () {},
-          child: const Text(
-            'Forgot Password?',
-            style: TextStyle(
-              fontSize: 14,
-              color: AppTheme.primaryYellow,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -289,7 +150,7 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
     return Obx(
       () => SizedBox(
         width: double.infinity,
-        height: 56,
+        height: 7.h,
         child: ElevatedButton(
           onPressed: controller.canProceed ? controller.proceed : null,
           style: ElevatedButton.styleFrom(
@@ -302,17 +163,20 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
             ),
           ),
           child: controller.isLoading.value
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
+              ? SizedBox(
+                  width: 5.w,
+                  height: 5.w,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
                     valueColor: AlwaysStoppedAnimation<Color>(AppTheme.black),
                   ),
                 )
-              : const Text(
-                  'Login',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              : Text(
+                  'Continue',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
         ),
       ),
@@ -322,15 +186,15 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
   Widget _buildSeparator() {
     return Row(
       children: [
-        const Expanded(child: Divider(color: AppTheme.grey300, thickness: 1)),
+        const Expanded(child: Divider(color: AppTheme.grey300)),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: const Text(
+          padding: EdgeInsets.symmetric(horizontal: 4.w),
+          child: Text(
             'Or login with',
-            style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
+            style: TextStyle(fontSize: 11.sp, color: AppTheme.textSecondary),
           ),
         ),
-        const Expanded(child: Divider(color: AppTheme.grey300, thickness: 1)),
+        const Expanded(child: Divider(color: AppTheme.grey300)),
       ],
     );
   }
@@ -339,52 +203,24 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _buildSocialButton(Icons.gavel, 'Google'),
-        _buildSocialButton(Icons.facebook, 'Facebook'),
-        _buildSocialButton(Icons.apple, 'Apple'),
-        _buildSocialButton(Icons.person, 'Other'),
+        _buildSocialButton(Icons.g_mobiledata, controller.loginWithGoogle),
+        _buildSocialButton(Icons.facebook, controller.loginWithFacebook),
       ],
     );
   }
 
-  Widget _buildSocialButton(IconData icon, String label) {
+  Widget _buildSocialButton(IconData icon, VoidCallback onTap) {
     return Container(
-      width: 60,
-      height: 60,
+      width: 16.w,
+      height: 16.w,
       decoration: BoxDecoration(
-        border: Border.all(color: AppTheme.grey300, width: 1),
+        border: Border.all(color: AppTheme.grey300),
         borderRadius: BorderRadius.circular(12),
       ),
       child: IconButton(
-        onPressed: () {},
-        icon: Icon(icon, color: AppTheme.textSecondary, size: 24),
+        onPressed: onTap,
+        icon: Icon(icon, size: 7.w, color: AppTheme.textSecondary),
       ),
-    );
-  }
-
-  Widget _buildSignUpLink() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Text(
-          "Don't have an account? ",
-          style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
-        ),
-        TextButton(
-          onPressed: () {
-            Get.put(SignUpController());
-            Get.to(() => SignUpPage());
-          },
-          child: const Text(
-            'Sign Up',
-            style: TextStyle(
-              fontSize: 14,
-              color: AppTheme.primaryYellow,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

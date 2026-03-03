@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/shegabet_theme.dart';
-import '../../../core/widgets/reusable_search_bar.dart';
-import '../../../core/widgets/reusable_filter_dialog.dart';
-import '../../../domain/entities/provider.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -87,9 +82,30 @@ class _SearchPageState extends State<SearchPage> {
 
   // Mock providers for map view
   final List<Map<String, dynamic>> _mockProviders = [
-    {'id': '1', 'name': 'Afro Cuts Salon', 'location': 'Nairobi CBD'},
-    {'id': '2', 'name': 'Barber Joe', 'location': 'Westlands'},
-    {'id': '3', 'name': 'Style Studio', 'location': 'Kilimani'},
+    {
+      'id': '1',
+      'name': 'Afro Cuts Salon',
+      'location': 'Nairobi CBD',
+      'image': 'https://picsum.photos/seed/afro_cuts/400/300.jpg',
+      'rating': 4.8,
+      'category': 'salon',
+    },
+    {
+      'id': '2',
+      'name': 'Barber Joe',
+      'location': 'Westlands',
+      'image': 'https://picsum.photos/seed/barber_joe/400/300.jpg',
+      'rating': 4.9,
+      'category': 'barber',
+    },
+    {
+      'id': '3',
+      'name': 'Style Studio',
+      'location': 'Kilimani',
+      'image': 'https://picsum.photos/seed/style_studio/400/300.jpg',
+      'rating': 4.7,
+      'category': 'salon',
+    },
   ];
 
   // Comprehensive salon categories for male and female
@@ -245,15 +261,9 @@ class _SearchPageState extends State<SearchPage> {
               child: Column(
                 children: [
                   // Fixed Promotional Banner (never scrolls)
-                  if (!_hasActiveFilters) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: _buildPromotionalBanner(context),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
 
                   // Fixed Filter Summary Bar (never scrolls)
+                  SizedBox(height: 48),
                   if (_hasActiveFilters) ...[
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -277,6 +287,26 @@ class _SearchPageState extends State<SearchPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        Row(
+          children: [
+            GestureDetector(
+              onTap: () => Get.back(),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryYellow.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.arrow_back_ios,
+                  color: AppTheme.primaryYellow,
+                  size: 24,
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+          ],
+        ),
         const Text(
           'Discover',
           style: TextStyle(
@@ -285,27 +315,7 @@ class _SearchPageState extends State<SearchPage> {
             color: AppTheme.black,
           ),
         ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: AppTheme.primaryYellow,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.location_on, color: AppTheme.black, size: 16),
-              const SizedBox(width: 4),
-              Text(
-                'Nairobi',
-                style: const TextStyle(
-                  color: AppTheme.black,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
+        Spacer(),
       ],
     );
   }
@@ -379,67 +389,6 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _buildPromotionalBanner(BuildContext context) {
-    return Container(
-      height: 120,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppTheme.primaryYellow.withValues(alpha: 0.1),
-            AppTheme.primaryYellow.withValues(alpha: 0.05),
-            Colors.white,
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            top: 16,
-            left: 20,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryYellow,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Text(
-                '✨ Trending Now',
-                style: TextStyle(
-                  color: AppTheme.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
-              ),
-            ),
-          ),
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  'Find Your Perfect Style',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.black,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Connect with top-rated salons and barbers near you',
-                  style: TextStyle(fontSize: 16, color: AppTheme.textSecondary),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildFilterSummaryBar(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -485,252 +434,258 @@ class _SearchPageState extends State<SearchPage> {
         return Container(
           height: MediaQuery.of(context).size.height * 0.7,
           padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Filters',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.black,
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => _clearFilters(),
-                    child: const Text(
-                      'Clear All',
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Filters',
                       style: TextStyle(
-                        color: AppTheme.primaryYellow,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.black,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => _clearFilters(),
+                      child: const Text(
+                        'Clear All',
+                        style: TextStyle(
+                          color: AppTheme.primaryYellow,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                // Gender Filter
+                const Text(
+                  'Gender',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.black,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    _buildGenderChip('All', 'all', tempGender, (value) {
+                      setModalState(() {
+                        tempGender = value;
+                      });
+                    }),
+                    const SizedBox(width: 12),
+                    _buildGenderChip('Male', 'male', tempGender, (value) {
+                      setModalState(() {
+                        tempGender = value;
+                      });
+                    }),
+                    const SizedBox(width: 12),
+                    _buildGenderChip('Female', 'female', tempGender, (value) {
+                      setModalState(() {
+                        tempGender = value;
+                      });
+                    }),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                // Price Range Filter
+                const Text(
+                  'Price Range',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.black,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '\$${tempMinPrice.toInt()}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: AppTheme.black,
+                          ),
+                        ),
+                        Text(
+                          '\$${tempMaxPrice.toInt()}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: AppTheme.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: AppTheme.primaryYellow,
+                        inactiveTrackColor: AppTheme.grey100,
+                        thumbColor: AppTheme.primaryYellow,
+                      ),
+                      child: Slider(
+                        value: tempMinPrice,
+                        min: 0,
+                        max: 100,
+                        divisions: 20,
+                        onChanged: (value) {
+                          setModalState(() {
+                            tempMinPrice = value;
+                          });
+                        },
+                      ),
+                    ),
+                    SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: AppTheme.primaryYellow,
+                        inactiveTrackColor: AppTheme.grey100,
+                        thumbColor: AppTheme.primaryYellow,
+                      ),
+                      child: Slider(
+                        value: tempMaxPrice,
+                        min: 0,
+                        max: 100,
+                        divisions: 20,
+                        onChanged: (value) {
+                          setModalState(() {
+                            tempMaxPrice = value;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                // Rating Filter
+                const Text(
+                  'Minimum Rating',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.black,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SliderTheme(
+                  data: SliderTheme.of(context).copyWith(
+                    activeTrackColor: AppTheme.primaryYellow,
+                    inactiveTrackColor: AppTheme.grey100,
+                    thumbColor: AppTheme.primaryYellow,
+                  ),
+                  child: Slider(
+                    value: tempMinRating,
+                    min: 0,
+                    max: 5,
+                    divisions: 10,
+                    onChanged: (value) {
+                      setModalState(() {
+                        tempMinRating = value;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  '${tempMinRating.toStringAsFixed(1)}+ stars',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: AppTheme.black,
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Distance Filter
+                const Text(
+                  'Maximum Distance',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.black,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SliderTheme(
+                  data: SliderTheme.of(context).copyWith(
+                    activeTrackColor: AppTheme.primaryYellow,
+                    inactiveTrackColor: AppTheme.grey100,
+                    thumbColor: AppTheme.primaryYellow,
+                  ),
+                  child: Slider(
+                    value: tempMaxDistance,
+                    min: 1,
+                    max: 20,
+                    divisions: 19,
+                    onChanged: (value) {
+                      setModalState(() {
+                        tempMaxDistance = value;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  '≤${tempMaxDistance.toInt()} km',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: AppTheme.black,
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+
+                // Apply Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _applyFilters(
+                        gender: tempGender,
+                        minPrice: tempMinPrice,
+                        maxPrice: tempMaxPrice,
+                        minRating: tempMinRating,
+                        maxDistance: tempMaxDistance,
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryYellow,
+                      foregroundColor: AppTheme.black,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Apply Filters',
+                      style: TextStyle(
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              // Gender Filter
-              const Text(
-                'Gender',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.black,
                 ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  _buildGenderChip('All', 'all', tempGender, (value) {
-                    setModalState(() {
-                      tempGender = value;
-                    });
-                  }),
-                  const SizedBox(width: 12),
-                  _buildGenderChip('Male', 'male', tempGender, (value) {
-                    setModalState(() {
-                      tempGender = value;
-                    });
-                  }),
-                  const SizedBox(width: 12),
-                  _buildGenderChip('Female', 'female', tempGender, (value) {
-                    setModalState(() {
-                      tempGender = value;
-                    });
-                  }),
-                ],
-              ),
-
-              const SizedBox(height: 24),
-
-              // Price Range Filter
-              const Text(
-                'Price Range',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.black,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '\$${tempMinPrice.toInt()}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: AppTheme.black,
-                        ),
-                      ),
-                      Text(
-                        '\$${tempMaxPrice.toInt()}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: AppTheme.black,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  SliderTheme(
-                    data: SliderTheme.of(context).copyWith(
-                      activeTrackColor: AppTheme.primaryYellow,
-                      inactiveTrackColor: AppTheme.grey100,
-                      thumbColor: AppTheme.primaryYellow,
-                    ),
-                    child: Slider(
-                      value: tempMinPrice,
-                      min: 0,
-                      max: 100,
-                      divisions: 20,
-                      onChanged: (value) {
-                        setModalState(() {
-                          tempMinPrice = value;
-                        });
-                      },
-                    ),
-                  ),
-                  SliderTheme(
-                    data: SliderTheme.of(context).copyWith(
-                      activeTrackColor: AppTheme.primaryYellow,
-                      inactiveTrackColor: AppTheme.grey100,
-                      thumbColor: AppTheme.primaryYellow,
-                    ),
-                    child: Slider(
-                      value: tempMaxPrice,
-                      min: 0,
-                      max: 100,
-                      divisions: 20,
-                      onChanged: (value) {
-                        setModalState(() {
-                          tempMaxPrice = value;
-                        });
-                      },
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 24),
-
-              // Rating Filter
-              const Text(
-                'Minimum Rating',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.black,
-                ),
-              ),
-              const SizedBox(height: 12),
-              SliderTheme(
-                data: SliderTheme.of(context).copyWith(
-                  activeTrackColor: AppTheme.primaryYellow,
-                  inactiveTrackColor: AppTheme.grey100,
-                  thumbColor: AppTheme.primaryYellow,
-                ),
-                child: Slider(
-                  value: tempMinRating,
-                  min: 0,
-                  max: 5,
-                  divisions: 10,
-                  onChanged: (value) {
-                    setModalState(() {
-                      tempMinRating = value;
-                    });
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                '${tempMinRating.toStringAsFixed(1)}+ stars',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: AppTheme.black,
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Distance Filter
-              const Text(
-                'Maximum Distance',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.black,
-                ),
-              ),
-              const SizedBox(height: 12),
-              SliderTheme(
-                data: SliderTheme.of(context).copyWith(
-                  activeTrackColor: AppTheme.primaryYellow,
-                  inactiveTrackColor: AppTheme.grey100,
-                  thumbColor: AppTheme.primaryYellow,
-                ),
-                child: Slider(
-                  value: tempMaxDistance,
-                  min: 1,
-                  max: 20,
-                  divisions: 19,
-                  onChanged: (value) {
-                    setModalState(() {
-                      tempMaxDistance = value;
-                    });
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                '≤${tempMaxDistance.toInt()} km',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: AppTheme.black,
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              // Apply Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    _applyFilters(
-                      gender: tempGender,
-                      minPrice: tempMinPrice,
-                      maxPrice: tempMaxPrice,
-                      minRating: tempMinRating,
-                      maxDistance: tempMaxDistance,
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryYellow,
-                    foregroundColor: AppTheme.black,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Apply Filters',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -1954,7 +1909,61 @@ class _SearchPageState extends State<SearchPage> {
               ),
               onTap: () {
                 // Navigate to provider details
-                Get.toNamed('/portfolio', arguments: provider['id']);
+                final providerData = {
+                  'id': provider['id'],
+                  'name': provider['name'],
+                  'image': provider['image'],
+                  'rating': provider['rating'],
+                  'categories': [
+                    provider['category'] == 'salon'
+                        ? 'Hairdressing'
+                        : 'Beard & Mustache',
+                  ],
+                  'gender': provider['category'] == 'salon' ? 'female' : 'male',
+                  'services': [
+                    {
+                      'id': 'basic_service',
+                      'name': 'Basic Service',
+                      'price': '\$25.00',
+                      'duration': '30 min',
+                    },
+                    {
+                      'id': 'premium_service',
+                      'name': 'Premium Service',
+                      'price': '\$45.00',
+                      'duration': '60 min',
+                    },
+                  ],
+                  'portfolio': [
+                    'https://picsum.photos/seed/${provider['name']}/300/200.jpg',
+                    'https://picsum.photos/seed/${provider['name']}2/300/200.jpg',
+                    'https://picsum.photos/seed/${provider['name']}3/300/200.jpg',
+                  ],
+                  'reviews': [
+                    {
+                      'name': 'John D.',
+                      'rating': 5.0,
+                      'comment': 'Amazing service! Very professional.',
+                      'date': '2 days ago',
+                    },
+                    {
+                      'name': 'Sarah M.',
+                      'rating': 4.5,
+                      'comment': 'Great experience, will come back!',
+                      'date': '1 week ago',
+                    },
+                  ],
+                  'contact': {
+                    'phone': '+251 712 345 678',
+                    'email':
+                        '${provider['name'].toString().toLowerCase().replaceAll(' ', '')}@email.com',
+                    'address': '123 Main St, City, Country',
+                  },
+                };
+                Get.toNamed(
+                  '/portfolio',
+                  arguments: {'specialist': providerData},
+                );
               },
             ),
           );
@@ -2596,6 +2605,60 @@ class _SearchPageState extends State<SearchPage> {
       },
     };
 
+    Get.toNamed('/portfolio', arguments: {'specialist': salonData});
+  }
+
+  void _navigateToSalonPortfolio(Map<String, dynamic> salon) {
+    // Navigate to portfolio page with salon details
+    final salonData = {
+      'id': salon['id'],
+      'name': salon['name'],
+      'image': salon['image'],
+      'rating': salon['rating'],
+      'categories': [
+        salon['category'] == 'salon' ? 'Hairdressing' : 'Beard & Mustache',
+      ],
+      'gender': salon['category'] == 'salon' ? 'female' : 'male',
+      'services': [
+        {
+          'id': 'basic_service',
+          'name': 'Basic Service',
+          'price': '\$25.00',
+          'duration': '30 min',
+        },
+        {
+          'id': 'premium_service',
+          'name': 'Premium Service',
+          'price': '\$45.00',
+          'duration': '60 min',
+        },
+      ],
+      'portfolio': [
+        'https://picsum.photos/seed/${salon['name']}/300/200.jpg',
+        'https://picsum.photos/seed/${salon['name']}2/300/200.jpg',
+        'https://picsum.photos/seed/${salon['name']}3/300/200.jpg',
+      ],
+      'reviews': [
+        {
+          'name': 'John D.',
+          'rating': 5.0,
+          'comment': 'Amazing service! Very professional.',
+          'date': '2 days ago',
+        },
+        {
+          'name': 'Sarah M.',
+          'rating': 4.5,
+          'comment': 'Great experience, will come back!',
+          'date': '1 week ago',
+        },
+      ],
+      'contact': {
+        'phone': '+251 712 345 678',
+        'email':
+            '${salon['name'].toString().toLowerCase().replaceAll(' ', '')}@email.com',
+        'address': '123 Main St, City, Country',
+      },
+    };
     Get.toNamed('/portfolio', arguments: {'specialist': salonData});
   }
 

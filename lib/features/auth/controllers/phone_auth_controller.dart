@@ -17,19 +17,20 @@ class PhoneAuthController extends GetxController {
   // Text controllers
   late TextEditingController emailController;
   late TextEditingController passwordController;
+  late TextEditingController phoneController;
 
   // Country picker
   final Rx<Country> selectedCountry = Country(
-    phoneCode: '254',
-    countryCode: 'KE',
-    name: 'Kenya',
-    e164Sc: 254,
+    phoneCode: '251',
+    countryCode: 'ET',
+    name: 'Ethiopia',
+    e164Sc: 251,
     geographic: true,
     level: 1,
-    example: 'Kenya',
-    displayName: 'Kenya (+254)',
-    displayNameNoCountryCode: 'Kenya',
-    e164Key: 'KE-254',
+    example: 'Ethiopia',
+    displayName: 'Ethiopia (+251)',
+    displayNameNoCountryCode: 'Ethiopia',
+    e164Key: 'ET-251',
   ).obs;
 
   // Form validation
@@ -40,12 +41,14 @@ class PhoneAuthController extends GetxController {
     super.onInit();
     emailController = TextEditingController();
     passwordController = TextEditingController();
+    phoneController = TextEditingController();
   }
 
   @override
   void onClose() {
     emailController.dispose();
     passwordController.dispose();
+    phoneController.dispose();
     super.onClose();
   }
 
@@ -173,5 +176,60 @@ class PhoneAuthController extends GetxController {
 
   void clearError() {
     error.value = '';
+  }
+
+  // Social login methods
+  Future<void> loginWithGoogle() async {
+    try {
+      isLoading.value = true;
+      error.value = '';
+
+      // TODO: Implement actual Google Sign-In logic
+      await Future.delayed(const Duration(seconds: 2));
+
+      Get.snackbar(
+        'Google Sign-In',
+        'Google sign-in functionality coming soon!',
+        backgroundColor: ButterTheme.successMint,
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      error.value = e.toString();
+      Get.snackbar(
+        'Google Sign-In Failed',
+        error.value,
+        backgroundColor: ButterTheme.errorRose,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> loginWithFacebook() async {
+    try {
+      isLoading.value = true;
+      error.value = '';
+
+      // TODO: Implement actual Facebook Sign-In logic
+      await Future.delayed(const Duration(seconds: 2));
+
+      Get.snackbar(
+        'Facebook Sign-In',
+        'Facebook sign-in functionality coming soon!',
+        backgroundColor: ButterTheme.successMint,
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      error.value = e.toString();
+      Get.snackbar(
+        'Facebook Sign-In Failed',
+        error.value,
+        backgroundColor: ButterTheme.errorRose,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 }

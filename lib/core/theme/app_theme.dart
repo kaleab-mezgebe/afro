@@ -5,7 +5,7 @@ class AppTheme {
 
   // Primary Colors
   static const Color primaryYellow = Color(
-    0xFFFFD700,
+    0xFFFFB900,
   ); // Main Yellow from logo/buttons
   static const Color black = Color(0xFF000000); // Black for text and accents
   static const Color white = Color(0xFFFFFFFF); // Primary white background
@@ -377,14 +377,14 @@ class AppTheme {
 
       // Switch Theme - Yellow when active
       switchTheme: SwitchThemeData(
-        thumbColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return primaryYellow;
           }
           return grey400;
         }),
-        trackColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return yellowLight.withOpacity(0.3);
           }
           return grey300;
@@ -393,20 +393,20 @@ class AppTheme {
 
       // Checkbox Theme - Yellow when checked
       checkboxTheme: CheckboxThemeData(
-        fillColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        fillColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return primaryYellow;
           }
           return white;
         }),
-        checkColor: MaterialStateProperty.all(textOnYellow),
+        checkColor: WidgetStateProperty.all(textOnYellow),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
       ),
 
       // Radio Theme - Yellow when selected
       radioTheme: RadioThemeData(
-        fillColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        fillColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return primaryYellow;
           }
           return grey400;

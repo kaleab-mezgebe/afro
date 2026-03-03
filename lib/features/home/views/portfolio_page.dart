@@ -5,7 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../routes/app_routes.dart';
 
 class PortfolioPage extends StatefulWidget {
-  final Map<String, dynamic> specialist;
+  final Map<String, dynamic>? specialist;
 
   const PortfolioPage({super.key, required this.specialist});
 
@@ -19,7 +19,8 @@ class _PortfolioPageState extends State<PortfolioPage> {
 
   // Sample services data
   List<Map<String, dynamic>> get _services {
-    final category = widget.specialist['categories'] as List;
+    final category =
+        widget.specialist?['categories'] as List? ?? ['Hairdressing'];
     List<Map<String, dynamic>> services = [];
 
     // Add services based on specialist categories
@@ -190,12 +191,12 @@ class _PortfolioPageState extends State<PortfolioPage> {
 
   // Sample portfolio images
   List<String> get _portfolioImages => [
-    'https://picsum.photos/seed/${widget.specialist['name']}/400/300.jpg',
-    'https://picsum.photos/seed/${widget.specialist['name']}2/400/300.jpg',
-    'https://picsum.photos/seed/${widget.specialist['name']}3/400/300.jpg',
-    'https://picsum.photos/seed/${widget.specialist['name']}4/400/300.jpg',
-    'https://picsum.photos/seed/${widget.specialist['name']}5/400/300.jpg',
-    'https://picsum.photos/seed/${widget.specialist['name']}6/400/300.jpg',
+    'https://picsum.photos/seed/${widget.specialist?['name'] ?? 'specialist'}/400/300.jpg',
+    'https://picsum.photos/seed/${widget.specialist?['name'] ?? 'specialist'}2/400/300.jpg',
+    'https://picsum.photos/seed/${widget.specialist?['name'] ?? 'specialist'}3/400/300.jpg',
+    'https://picsum.photos/seed/${widget.specialist?['name'] ?? 'specialist'}4/400/300.jpg',
+    'https://picsum.photos/seed/${widget.specialist?['name'] ?? 'specialist'}5/400/300.jpg',
+    'https://picsum.photos/seed/${widget.specialist?['name'] ?? 'specialist'}6/400/300.jpg',
   ];
 
   @override
@@ -214,7 +215,8 @@ class _PortfolioPageState extends State<PortfolioPage> {
                 fit: StackFit.expand,
                 children: [
                   Image.network(
-                    widget.specialist['image'] as String,
+                    widget.specialist?['image'] as String? ??
+                        'https://picsum.photos/seed/${widget.specialist?['name'] ?? 'specialist'}/400/300.jpg',
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
@@ -323,7 +325,7 @@ class _PortfolioPageState extends State<PortfolioPage> {
           children: [
             Expanded(
               child: Text(
-                widget.specialist['name'] as String,
+                widget.specialist?['name'] as String? ?? 'Default Specialist',
                 style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
@@ -334,12 +336,12 @@ class _PortfolioPageState extends State<PortfolioPage> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: widget.specialist['gender'] == 'male'
+                color: widget.specialist?['gender'] == 'male'
                     ? Colors.blue.withValues(alpha: 0.1)
                     : Colors.pink.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: widget.specialist['gender'] == 'male'
+                  color: widget.specialist?['gender']?.toString() == 'male'
                       ? Colors.blue
                       : Colors.pink,
                   width: 1,
@@ -349,21 +351,23 @@ class _PortfolioPageState extends State<PortfolioPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    widget.specialist['gender'] == 'male'
+                    widget.specialist?['gender'] == 'male'
                         ? Icons.male
                         : Icons.female,
                     size: 16,
-                    color: widget.specialist['gender'] == 'male'
+                    color: widget.specialist?['gender']?.toString() == 'male'
                         ? Colors.blue
                         : Colors.pink,
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    widget.specialist['gender'] == 'male' ? 'Male' : 'Female',
+                    widget.specialist?['gender']?.toString() == 'male'
+                        ? 'Male'
+                        : 'Female',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: widget.specialist['gender'] == 'male'
+                      color: widget.specialist?['gender']?.toString() == 'male'
                           ? Colors.blue
                           : Colors.pink,
                     ),
@@ -382,7 +386,8 @@ class _PortfolioPageState extends State<PortfolioPage> {
                 const Icon(Icons.star, color: AppTheme.primaryYellow, size: 20),
                 const SizedBox(width: 4),
                 Text(
-                  (widget.specialist['rating'] as double).toStringAsFixed(1),
+                  (widget.specialist?['rating'] as double? ?? 4.5)
+                      .toStringAsFixed(1),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -402,7 +407,7 @@ class _PortfolioPageState extends State<PortfolioPage> {
               child: Wrap(
                 spacing: 8,
                 runSpacing: 4,
-                children: (widget.specialist['categories'] as List)
+                children: (widget.specialist?['categories'] as List? ?? [])
                     .map<Widget>(
                       (category) => Container(
                         padding: const EdgeInsets.symmetric(
@@ -430,7 +435,7 @@ class _PortfolioPageState extends State<PortfolioPage> {
         ),
         const SizedBox(height: 16),
         Text(
-          'Professional ${widget.specialist['categories'].join(' & ')} specialist with over 8 years of experience. Passionate about creating the perfect look for every client using the latest techniques and premium products.',
+          'Professional ${(widget.specialist?['categories'] as List? ?? ['Hairdressing']).join(' & ')} specialist with over 8 years of experience. Passionate about creating the perfect look for every client using the latest techniques and premium products.',
           style: TextStyle(
             fontSize: 16,
             color: AppTheme.textSecondary,
@@ -956,8 +961,8 @@ class _PortfolioPageState extends State<PortfolioPage> {
       SnackBar(
         content: Text(
           _isFavorite
-              ? '${widget.specialist['name']} added to favorites'
-              : '${widget.specialist['name']} removed from favorites',
+              ? '${widget.specialist?['name'] ?? 'Specialist'} added to favorites'
+              : '${widget.specialist?['name'] ?? 'Specialist'} removed from favorites',
           style: const TextStyle(color: Colors.white),
         ),
         backgroundColor: _isFavorite ? Colors.green : Colors.grey,
@@ -972,9 +977,8 @@ class _PortfolioPageState extends State<PortfolioPage> {
     // Create share content
     final String shareContent =
         '''
-Check out ${widget.specialist['name']} - Professional ${widget.specialist['categories'].join(' & ')} Specialist
-
-⭐ Rating: ${widget.specialist['rating']}/5.0
+Check out ${widget.specialist?['name'] ?? 'Specialist'} - Professional ${(widget.specialist?['categories'] as List? ?? ['Hairdressing']).join(' & ')} Specialist
+⭐ Rating: ${(widget.specialist?['rating'] as double? ?? 4.5)}/5.0
 📍 Available for appointments
 
 Download the app and book your appointment today!

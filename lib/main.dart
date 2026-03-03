@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:sizer/sizer.dart';
 
 import 'core/bindings/initial_binding.dart';
 import 'core/theme/app_theme.dart';
@@ -16,15 +17,19 @@ class CustomerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      title: 'Customer App - Premium Barber Booking',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      initialBinding: InitialBinding(),
-      initialRoute: AppRoutes.splash,
-      getPages: AppPages.pages,
-      defaultTransition: Transition.rightToLeft,
-      transitionDuration: const Duration(milliseconds: 300),
+    return Sizer(
+      builder: (context, orientation, deviceType) {
+        return GetMaterialApp(
+          title: 'Customer App - Premium Barber Booking',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light,
+          initialBinding: InitialBinding(),
+          initialRoute: AppRoutes.splash,
+          getPages: AppPages.pages,
+          defaultTransition: Transition.rightToLeft,
+          transitionDuration: const Duration(milliseconds: 300),
+        );
+      },
     );
   }
 }

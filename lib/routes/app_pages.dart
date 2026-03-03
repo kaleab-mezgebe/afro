@@ -41,7 +41,44 @@ class AppPages {
     GetPage(
       name: AppRoutes.portfolio,
       page: () {
-        final specialist = Get.arguments as Map<String, dynamic>;
+        final arguments = Get.arguments;
+        if (arguments == null) {
+          // Return a default specialist if no arguments provided
+          return PortfolioPage(
+            specialist: {
+              'id': 'default',
+              'name': 'Default Specialist',
+              'image': null,
+              'rating': 4.5,
+              'categories': ['Hairdressing'],
+              'gender': 'female',
+              'services': [],
+              'portfolio': [],
+              'reviews': [],
+              'contact': {'phone': '', 'email': '', 'address': ''},
+            },
+          );
+        }
+
+        final specialist = arguments as Map<String, dynamic>?;
+        if (specialist == null) {
+          // Return a default specialist if arguments are not a Map
+          return PortfolioPage(
+            specialist: {
+              'id': 'default',
+              'name': 'Default Specialist',
+              'image': null,
+              'rating': 4.5,
+              'categories': ['Hairdressing'],
+              'gender': 'female',
+              'services': [],
+              'portfolio': [],
+              'reviews': [],
+              'contact': {'phone': '', 'email': '', 'address': ''},
+            },
+          );
+        }
+
         return PortfolioPage(specialist: specialist);
       },
       binding: PortfolioBinding(),
