@@ -64,6 +64,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '766685133984',
     projectId: 'afro-ce148',
     storageBucket: 'afro-ce148.firebasestorage.app',
+    androidClientId: '766685133984-d6j33i9ce881v5c192o20la912gtb55p.apps.googleusercontent.com',
     iosClientId: '766685133984-2ari3vqr766pc97n1sn41gq7lf09tunu.apps.googleusercontent.com',
     iosBundleId: 'com.example.customerApp',
   );
@@ -74,6 +75,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '766685133984',
     projectId: 'afro-ce148',
     storageBucket: 'afro-ce148.firebasestorage.app',
+    androidClientId: '766685133984-d6j33i9ce881v5c192o20la912gtb55p.apps.googleusercontent.com',
     iosClientId: '766685133984-2ari3vqr766pc97n1sn41gq7lf09tunu.apps.googleusercontent.com',
     iosBundleId: 'com.example.customerApp',
   );
@@ -87,4 +89,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'afro-ce148.firebasestorage.app',
     measurementId: 'G-RV9ZQCLXQH',
   );
+
 }

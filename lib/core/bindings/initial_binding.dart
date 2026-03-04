@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 
+import '../../core/controllers/auth_controller.dart';
 import '../../data/datasources/local/local_storage.dart';
 import '../../data/datasources/remote/api_client.dart';
 import '../../data/repositories/booking_repository_impl.dart';
@@ -18,6 +19,9 @@ import '../constants/app_constants.dart';
 class InitialBinding extends Bindings {
   @override
   void dependencies() {
+    // Core Controllers - Initialize immediately
+    Get.put<AuthController>(AuthController());
+
     // Core
     Get.lazyPut<LocalStorage>(() => LocalStorageImpl());
     Get.lazyPut<ApiClient>(

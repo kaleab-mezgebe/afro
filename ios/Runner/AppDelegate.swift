@@ -1,6 +1,7 @@
 import Flutter
 import UIKit
 import FirebaseCore
+import GoogleSignIn
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
@@ -13,7 +14,9 @@ import FirebaseCore
   }
 
   override func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
-    return ApplicationDelegate.shared.application(app, open: url, options: options)
+    let handledByFacebook = ApplicationDelegate.shared.application(app, open: url, options: options)
+    let handledByGoogle = GIDSignIn.sharedInstance.handle(url)
+    return handledByFacebook || handledByGoogle || super.application(app, open: url, options: options)
   }
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {

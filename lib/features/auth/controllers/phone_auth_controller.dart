@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -83,38 +84,94 @@ class PhoneAuthController extends GetxController {
       return;
     }
 
+    isLoading.value = true;
+    error.value = '';
+
+    final fullPhoneNumber =
+        '+${selectedCountry.value.phoneCode}${phoneNumber.value}';
+
     try {
-      isLoading.value = true;
-      error.value = '';
+      await FirebaseAuth.instance.verifyPhoneNumber(
+        phoneNumber: fullPhoneNumber,
+        timeout: const Duration(seconds: 60),
 
-      // Mock OTP sending - replace with actual implementation
-      await Future.delayed(const Duration(seconds: 2));
+        // Auto-retrieved on Android (no user action needed)
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          try {
+            final userCredential =
+                await FirebaseAuth.instance.signInWithCredential(credential);
+            if (userCredential.user != null) {
+              Get.snackbar(
+                'Verified!',
+                'Phone number verified automatically',
+                backgroundColor: ButterTheme.successMint,
+                colorText: Colors.white,
+              );
+              Get.offAllNamed(AppRoutes.home);
+            }
+          } catch (e) {
+            error.value = e.toString();
+          } finally {
+            isLoading.value = false;
+          }
+        },
 
-      final fullPhoneNumber =
-          '+${selectedCountry.value.phoneCode}${phoneNumber.value}';
+        // Called when Firebase rejects the request
+        verificationFailed: (FirebaseAuthException e) {
+          isLoading.value = false;
+          String msg = 'Failed to send OTP';
+          if (e.code == 'invalid-phone-number') {
+            msg = 'Invalid phone number. Please check and try again.';
+          } else if (e.code == 'too-many-requests') {
+            msg = 'Too many attempts. Please try again later.';
+          } else if (e.code == 'quota-exceeded') {
+            msg = 'SMS quota exceeded. Please try again later.';
+          } else if (e.message != null) {
+            msg = e.message!;
+          }
+          error.value = msg;
+          Get.snackbar(
+            'Failed to Send OTP',
+            msg,
+            backgroundColor: ButterTheme.errorRose,
+            colorText: Colors.white,
+          );
+        },
 
-      // Navigate to OTP verification page
-      Get.toNamed(
-        AppRoutes.otpVerification,
-        arguments: {'phoneNumber': fullPhoneNumber, 'isSignUpMode': false},
-      );
+        // SMS sent — navigate to OTP screen
+        codeSent: (String verificationId, int? resendToken) {
+          isLoading.value = false;
+          Get.snackbar(
+            'OTP Sent!',
+            'Verification code sent to $fullPhoneNumber',
+            backgroundColor: ButterTheme.successMint,
+            colorText: Colors.white,
+          );
+          Get.toNamed(
+            AppRoutes.otpVerification,
+            arguments: {
+              'phoneNumber': fullPhoneNumber,
+              'verificationId': verificationId,
+              'resendToken': resendToken,
+              'isSignUpMode': false,
+            },
+          );
+        },
 
-      Get.snackbar(
-        'OTP Sent!',
-        'Verification code sent to $fullPhoneNumber',
-        backgroundColor: ButterTheme.successMint,
-        colorText: Colors.white,
+        codeAutoRetrievalTimeout: (String verificationId) {
+          // verificationId is still usable on the OTP screen
+        },
       );
     } catch (e) {
-      error.value = e.toString();
+      isLoading.value = false;
+      final msg = 'Unable to send OTP: ${e.toString()}';
+      error.value = msg;
       Get.snackbar(
         'Failed to Send OTP',
-        error.value,
+        msg,
         backgroundColor: ButterTheme.errorRose,
         colorText: Colors.white,
       );
-    } finally {
-      isLoading.value = false;
     }
   }
 
@@ -128,8 +185,13 @@ class PhoneAuthController extends GetxController {
       isLoading.value = true;
       error.value = '';
 
+      // Initialize Google Sign-In with proper configuration
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        scopes: ['email', 'profile'],
+      );
+
       // Trigger Google Sign-In flow
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
       if (googleUser == null) {
         // User cancelled the sign-in
@@ -180,6 +242,8 @@ class PhoneAuthController extends GetxController {
         errorMessage = 'No user found for this account';
       } else if (e.code == 'wrong-password') {
         errorMessage = 'Incorrect password';
+      } else {
+        errorMessage = 'Firebase error: ${e.message}';
       }
 
       error.value = errorMessage;
@@ -207,13 +271,14 @@ class PhoneAuthController extends GetxController {
       isLoading.value = true;
       error.value = '';
 
-      // Trigger Facebook sign-in
-      final LoginResult result = await FacebookAuth.instance.login();
+      final LoginResult result = await FacebookAuth.instance.login(
+        permissions: ['email', 'public_profile'],
+      );
 
       if (result.status == LoginStatus.success) {
         // Get the user credentials
         final AccessToken accessToken = result.accessToken!;
-
+        
         // Create a credential from the access token
         final OAuthCredential credential = FacebookAuthProvider.credential(
           accessToken.token,
@@ -227,21 +292,14 @@ class PhoneAuthController extends GetxController {
         if (userCredential.user != null) {
           Get.snackbar(
             'Facebook Login Successful!',
-            'Welcome!',
+            'Welcome ${userCredential.user?.displayName ?? ''}!',
             backgroundColor: ButterTheme.successMint,
             colorText: Colors.white,
           );
 
-          // Navigate to home
+          // Navigate to home screen
           Get.offAllNamed(AppRoutes.home);
         }
-      } else if (result.status == LoginStatus.cancelled) {
-        Get.snackbar(
-          'Facebook Login Cancelled',
-          'You cancelled the login process',
-          backgroundColor: ButterTheme.errorRose,
-          colorText: Colors.white,
-        );
       } else {
         throw result.message ?? 'Unknown Facebook login error';
       }
@@ -252,6 +310,14 @@ class PhoneAuthController extends GetxController {
             'An account already exists with the same email but different sign-in method';
       } else if (e.code == 'invalid-credential') {
         errorMessage = 'The credential is malformed or has expired';
+      } else if (e.code == 'user-disabled') {
+        errorMessage = 'This user account has been disabled';
+      } else if (e.code == 'user-not-found') {
+        errorMessage = 'No user found for this account';
+      } else if (e.code == 'wrong-password') {
+        errorMessage = 'Incorrect password';
+      } else {
+        errorMessage = 'Firebase error: ${e.message}';
       }
 
       error.value = errorMessage;
@@ -265,7 +331,7 @@ class PhoneAuthController extends GetxController {
       error.value = e.toString();
       Get.snackbar(
         'Facebook Login Failed',
-        error.value,
+        'An unexpected error occurred: ${e.toString()}',
         backgroundColor: ButterTheme.errorRose,
         colorText: Colors.white,
       );

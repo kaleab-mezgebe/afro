@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../controllers/otp_verification_controller.dart';
 import '../../../core/theme/app_theme.dart';
@@ -10,6 +11,11 @@ class OtpVerificationPage extends GetView<OTPVerificationController> {
 
   @override
   Widget build(BuildContext context) {
+    // Get phone number from controller
+    final String phoneNumber = controller.phoneNumber.value.isNotEmpty 
+        ? controller.phoneNumber.value 
+        : '+25194141459'; 
+
     return Scaffold(
       backgroundColor: const Color(
         0xFFFFF5F5,
@@ -39,7 +45,7 @@ class OtpVerificationPage extends GetView<OTPVerificationController> {
 
               const SizedBox(height: 40),
 
-              // Header
+              // Header - Updated to show phone number
               Column(
                 children: [
                   const Text(
@@ -50,14 +56,18 @@ class OtpVerificationPage extends GetView<OTPVerificationController> {
                       color: AppTheme.black,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Text(
-                    'Enter the 6-digit code sent to ${controller.phoneNumber.value}',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: AppTheme.textSecondary,
+                    'We sent a verification code to:',
+                    style: const TextStyle(fontSize: 16, color: AppTheme.black),
+                  ),
+                  Text(
+                    phoneNumber, // Show your phone number
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.primaryYellow,
                     ),
-                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
@@ -110,11 +120,6 @@ class OtpVerificationPage extends GetView<OTPVerificationController> {
                   onChanged: (value) {
                     controller.setOTP(value);
                     controller.clearError();
-
-                    // Auto-navigate if OTP is "123456" and length is 6
-                    if (value.length == 6 && value == '123456') {
-                      controller.verifyOTP();
-                    }
                   },
                 ),
               ),

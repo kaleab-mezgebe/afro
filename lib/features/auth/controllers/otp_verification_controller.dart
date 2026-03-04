@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/butter_theme.dart';
 import '../../../routes/app_routes.dart';
 
 class OTPVerificationController extends GetxController {
@@ -10,11 +12,13 @@ class OTPVerificationController extends GetxController {
   // Form fields
   final RxString otp = ''.obs;
   final RxString phoneNumber = ''.obs;
+  final RxString verificationId = ''.obs;
+  int? resendToken;
   final RxBool isLoading = false.obs;
   final RxString error = ''.obs;
   final RxInt countdown = 60.obs;
   final RxBool canResend = false.obs;
-  final RxBool isSignUpMode = false.obs; // Track if this is sign-up flow
+  final RxBool isSignUpMode = false.obs;
 
   // Validation
   bool get isOTPValid => otp.value.length == 6;
@@ -24,9 +28,10 @@ class OTPVerificationController extends GetxController {
   void onInit() {
     super.onInit();
     otpController = TextEditingController();
-    // Get phone number and mode from arguments
-    final args = Get.arguments;
+    final args = Get.arguments as Map<String, dynamic>? ?? {};
     phoneNumber.value = args['phoneNumber'] as String? ?? '';
+    verificationId.value = args['verificationId'] as String? ?? '';
+    resendToken = args['resendToken'] as int?;
     isSignUpMode.value = args['isSignUpMode'] as bool? ?? false;
     _startCountdown();
   }
@@ -35,92 +40,131 @@ class OTPVerificationController extends GetxController {
   void onClose() {
     try {
       otpController.dispose();
-    } catch (e) {
-      // Controller already disposed
-    }
+    } catch (_) {}
     super.onClose();
   }
 
-  void setOTP(String value) => otp.value = value;
+  void setOTP(String value) {
+    otp.value = value;
+  }
 
   Future<void> verifyOTP() async {
+    if (otp.value.length != 6) return;
+
     try {
       isLoading.value = true;
       error.value = '';
 
-      // Mock OTP verification - replace with actual implementation
-      await Future.delayed(const Duration(seconds: 2));
-
-      // For demo, accept "123456" as valid OTP
-      if (otp.value != '123456') {
-        throw Exception('Invalid OTP. Please try again.');
-      }
-
-      // Handle successful verification
-      Get.snackbar(
-        'Welcome!',
-        'Successfully verified your phone number',
-        backgroundColor: AppTheme.primaryYellow,
-        colorText: AppTheme.black,
+      final credential = PhoneAuthProvider.credential(
+        verificationId: verificationId.value,
+        smsCode: otp.value,
       );
 
-      // Navigate based on sign-in vs sign-up mode
-      if (isSignUpMode.value) {
-        // Navigate to registration page for sign-up
-        Get.offNamed(
-          AppRoutes.userRegistration,
-          arguments: {'phoneNumber': phoneNumber.value},
+      final userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+
+      if (userCredential.user != null) {
+        Get.snackbar(
+          'Welcome!',
+          'Successfully verified your phone number',
+          backgroundColor: AppTheme.primaryYellow,
+          colorText: AppTheme.black,
         );
-      } else {
-        // Navigate to home page for sign-in
-        Get.offAllNamed(AppRoutes.home);
+
+        if (isSignUpMode.value) {
+          Get.offNamed(
+            AppRoutes.userRegistration,
+            arguments: {'phoneNumber': phoneNumber.value},
+          );
+        } else {
+          Get.offAllNamed(AppRoutes.home);
+        }
       }
+    } on FirebaseAuthException catch (e) {
+      String msg = 'Verification failed';
+      if (e.code == 'invalid-verification-code') {
+        msg = 'Invalid OTP. Please check and try again.';
+      } else if (e.code == 'session-expired') {
+        msg = 'OTP has expired. Please request a new one.';
+      } else if (e.code == 'invalid-verification-id') {
+        msg = 'Session expired. Please go back and try again.';
+      } else if (e.message != null) {
+        msg = e.message!;
+      }
+      error.value = msg;
+      Get.snackbar(
+        'Verification Failed',
+        msg,
+        backgroundColor: Colors.red.shade400,
+        colorText: Colors.white,
+      );
     } catch (e) {
       error.value = e.toString();
       Get.snackbar(
         'Verification Failed',
-        error.value,
-        backgroundColor: AppTheme.grey300,
-        colorText: AppTheme.black,
+        e.toString(),
+        backgroundColor: Colors.red.shade400,
+        colorText: Colors.white,
       );
     } finally {
       isLoading.value = false;
     }
   }
 
-  void resendOTP() async {
-    try {
-      // Mock resend OTP - replace with actual implementation
-      await Future.delayed(const Duration(seconds: 1));
+  Future<void> resendOTP() async {
+    if (!canResend.value) return;
 
-      Get.snackbar(
-        'OTP Resent!',
-        'New verification code sent to ${phoneNumber.value}',
-        backgroundColor: AppTheme.primaryYellow,
-        colorText: AppTheme.black,
-      );
+    canResend.value = false;
+    countdown.value = 60;
 
-      // Reset countdown
-      canResend.value = false;
-      countdown.value = 60;
-      _startCountdown();
-    } catch (e) {
-      Get.snackbar(
-        'Failed to Resend OTP',
-        e.toString(),
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    }
+    await FirebaseAuth.instance.verifyPhoneNumber(
+      phoneNumber: phoneNumber.value,
+      timeout: const Duration(seconds: 60),
+      forceResendingToken: resendToken,
+
+      verificationCompleted: (PhoneAuthCredential credential) async {
+        final userCredential =
+            await FirebaseAuth.instance.signInWithCredential(credential);
+        if (userCredential.user != null) {
+          Get.offAllNamed(AppRoutes.home);
+        }
+      },
+
+      verificationFailed: (FirebaseAuthException e) {
+        canResend.value = true;
+        Get.snackbar(
+          'Failed to Resend OTP',
+          e.message ?? 'An error occurred',
+          backgroundColor: ButterTheme.errorRose,
+          colorText: Colors.white,
+        );
+      },
+
+      codeSent: (String newVerificationId, int? newResendToken) {
+        verificationId.value = newVerificationId;
+        resendToken = newResendToken;
+        _startCountdown();
+        Get.snackbar(
+          'OTP Resent!',
+          'New verification code sent to ${phoneNumber.value}',
+          backgroundColor: AppTheme.primaryYellow,
+          colorText: AppTheme.black,
+        );
+      },
+
+      codeAutoRetrievalTimeout: (_) {},
+    );
   }
 
   void _startCountdown() {
     Future.delayed(const Duration(seconds: 1), () {
-      if (countdown.value > 0) {
-        countdown.value--;
-        _startCountdown();
-      } else {
-        canResend.value = true;
+      if (!isClosed) {
+        if (countdown.value > 0) {
+          countdown.value--;
+          _startCountdown();
+        } else {
+          canResend.value = true;
+        }
       }
     });
   }

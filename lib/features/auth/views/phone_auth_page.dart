@@ -198,12 +198,13 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
 
   Widget _buildSocialLogin() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _buildSocialButton(
           'assets/icons/google.svg',
           controller.loginWithGoogle,
         ),
+        SizedBox(width: 4.w),
         _buildSocialButton(
           'assets/icons/facebook.svg',
           controller.loginWithFacebook,

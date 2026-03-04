@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../core/controllers/auth_controller.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../routes/app_routes.dart';
 
@@ -30,10 +31,7 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         title: const Text(
           'Settings',
-          style: TextStyle(
-            color: AppTheme.black,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: AppTheme.black, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
@@ -45,19 +43,19 @@ class _SettingsPageState extends State<SettingsPage> {
             // Profile Section
             _buildProfileSection(),
             const SizedBox(height: 32),
-            
+
             // Preferences Section
             _buildPreferencesSection(),
             const SizedBox(height: 32),
-            
+
             // App Settings Section
             _buildAppSettingsSection(),
             const SizedBox(height: 32),
-            
+
             // Support Section
             _buildSupportSection(),
             const SizedBox(height: 32),
-            
+
             // Account Actions
             _buildAccountActionsSection(),
             const SizedBox(height: 100), // Bottom padding
@@ -154,10 +152,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               child: const Text(
                 'Edit Profile',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -186,7 +181,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
           const SizedBox(height: 20),
-          
+
           // Notifications Toggle
           _buildSettingTile(
             icon: Icons.notifications,
@@ -200,7 +195,7 @@ class _SettingsPageState extends State<SettingsPage> {
               });
             },
           ),
-          
+
           // Location Toggle
           _buildSettingTile(
             icon: Icons.location_on,
@@ -214,7 +209,7 @@ class _SettingsPageState extends State<SettingsPage> {
               });
             },
           ),
-          
+
           // Dark Mode Toggle
           _buildSettingTile(
             icon: Icons.dark_mode,
@@ -228,7 +223,7 @@ class _SettingsPageState extends State<SettingsPage> {
               });
             },
           ),
-          
+
           // Language Selection
           _buildSettingTile(
             icon: Icons.language,
@@ -267,7 +262,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
           const SizedBox(height: 20),
-          
+
           // Payment Methods
           _buildSettingTile(
             icon: Icons.payment,
@@ -277,7 +272,7 @@ class _SettingsPageState extends State<SettingsPage> {
             value: '2 cards',
             onChanged: (value) {},
           ),
-          
+
           // Booking Preferences
           _buildSettingTile(
             icon: Icons.calendar_today,
@@ -287,7 +282,7 @@ class _SettingsPageState extends State<SettingsPage> {
             value: 'Manage',
             onChanged: (value) {},
           ),
-          
+
           // Privacy Settings
           _buildSettingTile(
             icon: Icons.privacy_tip,
@@ -322,7 +317,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
           const SizedBox(height: 20),
-          
+
           // Help Center
           _buildSettingTile(
             icon: Icons.help,
@@ -332,7 +327,7 @@ class _SettingsPageState extends State<SettingsPage> {
             value: 'FAQs & Guides',
             onChanged: (value) {},
           ),
-          
+
           // Contact Us
           _buildSettingTile(
             icon: Icons.contact_support,
@@ -342,7 +337,7 @@ class _SettingsPageState extends State<SettingsPage> {
             value: 'Send Message',
             onChanged: (value) {},
           ),
-          
+
           // About
           _buildSettingTile(
             icon: Icons.info,
@@ -377,14 +372,16 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
           const SizedBox(height: 20),
-          
+
           // Logout Button
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
               color: const Color(0xFFFF6B35).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFFF6B35).withValues(alpha: 0.3)),
+              border: Border.all(
+                color: const Color(0xFFFF6B35).withValues(alpha: 0.3),
+              ),
             ),
             child: Material(
               color: Colors.transparent,
@@ -454,11 +451,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     color: AppTheme.primaryYellow.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(
-                    icon,
-                    color: AppTheme.primaryYellow,
-                    size: 20,
-                  ),
+                  child: Icon(icon, color: AppTheme.primaryYellow, size: 20),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -564,18 +557,17 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _performLogout() {
-    // Clear user session and navigate to login
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Logging out...'),
-        backgroundColor: Colors.green,
-        duration: Duration(seconds: 2),
-      ),
-    );
-
-    // Simulate logout delay
-    Future.delayed(const Duration(seconds: 2), () {
-      Get.offAllNamed('/auth/landing');
-    });
+    // Use the AuthController for proper logout with safe access
+    if (AuthController.isInitialized) {
+      AuthController.to.logout();
+    } else {
+      // Fallback: Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Authentication system not available'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }
