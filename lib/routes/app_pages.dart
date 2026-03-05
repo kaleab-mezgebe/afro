@@ -10,21 +10,24 @@ import '../features/booking/views/booking_history_page.dart';
 import '../features/booking/views/booking_service_page.dart';
 import '../features/booking/views/booking_summary_page.dart';
 import '../features/booking/views/booking_time_page.dart';
+import '../features/home/bindings/home_binding.dart';
 import '../features/home/bindings/portfolio_binding.dart';
 import '../features/home/views/home_page.dart';
 import '../features/home/views/portfolio_page.dart';
+import '../features/main/bindings/main_binding.dart';
+import '../features/main/views/main_layout_page.dart';
 import '../features/onboarding/views/onboarding_page.dart';
+import '../features/preferences/views/preference_selection_page.dart';
 import '../features/profile/bindings/profile_binding.dart';
 import '../features/profile/views/edit_profile_page.dart';
 import '../features/profile/views/profile_page.dart';
 import '../features/profile/views/settings_page.dart';
 import '../features/search/views/search_page.dart' as search;
-import '../features/splash/views/splash_page.dart';
+
 import 'app_routes.dart';
 
 class AppPages {
   static final pages = <GetPage>[
-    GetPage(name: AppRoutes.splash, page: () => const SplashPage()),
     GetPage(name: AppRoutes.onboarding, page: () => const OnboardingPage()),
     GetPage(
       name: AppRoutes.phoneAuth,
@@ -36,8 +39,16 @@ class AppPages {
       page: () => const OtpVerificationPage(),
       binding: OTPVerificationBinding(),
     ),
+    GetPage(
+      name: AppRoutes.preferenceSelection,
+      page: () => const PreferenceSelectionPage(),
+    ),
 
-    GetPage(name: AppRoutes.home, page: () => const HomePage()),
+    GetPage(
+      name: AppRoutes.home,
+      page: () => const MainLayoutPage(),
+      binding: MainBinding(),
+    ),
     GetPage(
       name: AppRoutes.portfolio,
       page: () {

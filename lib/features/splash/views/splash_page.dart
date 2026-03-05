@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../routes/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
@@ -56,10 +57,32 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     _patternController.forward();
   }
 
-  void _navigateToOnboarding() {
-    Future.delayed(const Duration(seconds: 3), () {
+  void _navigateToOnboarding() async {
+    // Start a 3-second timer and the SharedPreferences initialization in parallel
+    final stopwatch = Stopwatch()..start();
+    
+    bool showOnboarding = true;
+    try {
+      final prefs = await SharedPreferences.getInstance().timeout(
+        const Duration(seconds: 2),
+        onTimeout: () => throw Exception('Timeout'),
+      );
+      showOnboarding = prefs.getBool('show_onboarding') ?? true;
+    } catch (e) {
+      debugPrint('Error loading preferences: $e');
+    }
+
+    // Ensure we wait at least 3 seconds total
+    final remainingTime = 3000 - stopwatch.elapsedMilliseconds;
+    if (remainingTime > 0) {
+      await Future.delayed(Duration(milliseconds: remainingTime));
+    }
+
+    if (showOnboarding) {
       Get.offAllNamed(AppRoutes.onboarding);
-    });
+    } else {
+      Get.offAllNamed(AppRoutes.phoneAuth);
+    }
   }
 
   @override
@@ -74,9 +97,9 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     // Set system UI overlay style for black status bar
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
-        statusBarColor: AppTheme.black,
-        statusBarIconBrightness: Brightness.light,
-        statusBarBrightness: Brightness.dark,
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
       ),
     );
 
@@ -156,11 +179,10 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     return Container(
       width: 200,
       height: 200,
-      decoration: const BoxDecoration(
-        color: AppTheme.primaryYellow,
-        shape: BoxShape.circle,
+      child: Image.asset(
+        'assets/images/logo.png',
+        fit: BoxFit.contain,
       ),
-      child: Icon(Icons.content_cut, size: 80, color: AppTheme.white),
     );
   }
 
@@ -187,21 +209,20 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
       ),
     );
   }
-
   Widget _buildPatternIcon(IconData icon) {
     return Icon(
       icon,
       size: 24,
-      color: AppTheme.primaryYellow.withValues(alpha: 0.2),
+      color: AppTheme.primaryYellow.withOpacity(0.15),
     );
   }
 
   Widget _buildDesignCredit() {
     return Text(
-      'Design by Addbrain',
+      'Design by Kaleab M.',
       style: AppTheme.caption.copyWith(
-        color: AppTheme.textMuted,
-        fontWeight: FontWeight.w300,
+        color: AppTheme.textSecondary,
+        fontWeight: FontWeight.w400,
       ),
     );
   }

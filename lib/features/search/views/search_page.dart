@@ -151,7 +151,75 @@ class _SearchPageState extends State<SearchPage> {
   void _updateSearch(String query) {
     setState(() {
       _searchQuery = query;
-      _applyFilters();
+      _filterSalons();
+    });
+  }
+
+  void _filterSalons() {
+    List<Map<String, dynamic>> results = List.from(_allSalons);
+
+    // Apply search query
+    if (_searchQuery.isNotEmpty) {
+      results = results.where((salon) {
+        final name = salon['name'].toString().toLowerCase();
+        final category = salon['category'].toString().toLowerCase();
+        final services = salon['services'].join(' ').toString().toLowerCase();
+        final query = _searchQuery.toLowerCase();
+
+        return name.contains(query) ||
+            category.contains(query) ||
+            services.contains(query);
+      }).toList();
+    }
+
+    // Apply gender filter
+    if (_selectedGender != 'all') {
+      results = results.where((salon) {
+        final category = salon['category'].toString().toLowerCase();
+        if (_selectedGender == 'male') {
+          return category.contains('beard') ||
+              category.contains('shaving') ||
+              category.contains('men\'s') ||
+              category.contains('barber');
+        }
+        if (_selectedGender == 'female') {
+          return category.contains('makeup') ||
+              category.contains('hair color') ||
+              category.contains('styling');
+        }
+        return true;
+      }).toList();
+    }
+
+    // Apply price filter
+    if (_minPrice > 0 || _maxPrice < 100) {
+      results = results.where((salon) {
+        final priceRange = salon['priceRange'].toString();
+        final priceMatch = RegExp(r'\$(\d+)').firstMatch(priceRange);
+        if (priceMatch != null) {
+          final minPrice = double.tryParse(priceMatch.group(1) ?? '0') ?? 0;
+          return minPrice >= _minPrice && minPrice <= _maxPrice;
+        }
+        return false;
+      }).toList();
+    }
+
+    // Apply rating filter
+    if (_minRating > 0) {
+      results = results
+          .where((salon) => salon['rating'] >= _minRating)
+          .toList();
+    }
+
+    // Apply distance filter
+    if (_maxDistance < 10) {
+      results = results
+          .where((salon) => salon['distance'] <= _maxDistance)
+          .toList();
+    }
+
+    setState(() {
+      _filteredSalons = results;
     });
   }
 
@@ -173,9 +241,6 @@ class _SearchPageState extends State<SearchPage> {
     double? minRating,
     double? maxDistance,
   }) {
-    print(
-      'Applying filters: gender=$gender, minPrice=$minPrice, maxPrice=$maxPrice, minRating=$minRating, maxDistance=$maxDistance',
-    );
     setState(() {
       if (gender != null) _selectedGender = gender;
       if (minPrice != null) _minPrice = minPrice;
@@ -183,10 +248,8 @@ class _SearchPageState extends State<SearchPage> {
       if (minRating != null) _minRating = minRating;
       if (maxDistance != null) _maxDistance = maxDistance;
       _filtersApplied = true;
+      _filterSalons();
     });
-    print(
-      'Filters applied: _selectedGender=$_selectedGender, _minPrice=$_minPrice, _maxPrice=$_maxPrice, _minRating=$_minRating, _maxDistance=$_maxDistance',
-    );
     Navigator.pop(context);
   }
 
@@ -198,8 +261,11 @@ class _SearchPageState extends State<SearchPage> {
       _minRating = 0;
       _maxDistance = 10;
       _filtersApplied = false;
+      _filterSalons();
     });
-    Navigator.pop(context);
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    }
   }
 
   String get _filterSummary {
@@ -225,11 +291,6 @@ class _SearchPageState extends State<SearchPage> {
       filters.add('"$_searchQuery"');
     }
 
-    // Debug info
-    print(
-      'Filter summary: $filters (gender: $_selectedGender, price: $_minPrice-$_maxPrice, rating: $_minRating, distance: $_maxDistance)',
-    );
-
     return filters.isNotEmpty ? filters.join(' • ') : '';
   }
 
@@ -244,147 +305,68 @@ class _SearchPageState extends State<SearchPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header and Search
+            // Search Bar
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Column(
-                children: [
-                  _buildHeader(context),
-                  const SizedBox(height: 16),
-                  _buildSearchBar(context),
-                ],
-              ),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+              child: _buildSearchBar(context),
             ),
 
             // Content Area
             Expanded(
               child: Column(
                 children: [
-                  // Fixed Promotional Banner (never scrolls)
-
-                  // Fixed Filter Summary Bar (never scrolls)
-                  SizedBox(height: 48),
+                  // Show filter summary when searching or filtering
                   if (_hasActiveFilters) ...[
+                    const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: _buildFilterSummaryBar(context),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                   ],
 
-                  // Scrollable Content
-                  Expanded(child: _buildFilterResultsSection(context)),
+                  // Scrollable Content - Results or Default
+                  Expanded(
+                    child: _hasActiveFilters
+                        ? _buildSearchResults(context)
+                        : _buildDefaultContent(context),
+                  ),
                 ],
               ),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            GestureDetector(
-              onTap: () => Get.back(),
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryYellow.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.arrow_back_ios,
-                  color: AppTheme.primaryYellow,
-                  size: 24,
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-          ],
-        ),
-        const Text(
-          'Discover',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: AppTheme.black,
-          ),
-        ),
-        Spacer(),
-      ],
     );
   }
 
   Widget _buildSearchBar(BuildContext context) {
     return Container(
-      height: 50,
-      margin: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
         color: AppTheme.grey100,
-        borderRadius: BorderRadius.circular(25),
+        borderRadius: BorderRadius.circular(16),
       ),
-      child: Row(
-        children: [
-          const SizedBox(width: 20),
-          Expanded(
-            child: TextField(
-              onChanged: _updateSearch,
-              decoration: InputDecoration(
-                hintText: 'Search Salon, Specialist',
-                hintStyle: TextStyle(
-                  color: AppTheme.textSecondary,
-                  fontSize: 16,
-                ),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-              ),
-              style: TextStyle(color: AppTheme.black, fontSize: 16),
-            ),
+      child: TextField(
+        onChanged: _updateSearch,
+        decoration: InputDecoration(
+          hintText: 'Search for a barber or salon...',
+          hintStyle: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+          border: InputBorder.none,
+          prefixIcon: const Icon(
+            Icons.search_rounded,
+            color: AppTheme.black,
+            size: 22,
           ),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: _showFilterModal,
-            child: Container(
-              width: 40,
-              height: 40,
-              margin: const EdgeInsets.only(right: 6),
-              decoration: BoxDecoration(
-                color: _filtersApplied
-                    ? const Color(0xFFFF6B35)
-                    : AppTheme.primaryYellow,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Stack(
-                children: [
-                  Center(
-                    child: Icon(Icons.tune, color: AppTheme.black, size: 20),
-                  ),
-                  if (_filtersApplied)
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFFF6B35),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
+          suffixIcon: IconButton(
+            icon: Icon(
+              Icons.tune_rounded,
+              color: _filtersApplied ? AppTheme.primaryYellow : AppTheme.black,
+              size: 22,
             ),
+            onPressed: _showFilterModal,
           ),
-        ],
+        ),
       ),
     );
   }
@@ -719,6 +701,21 @@ class _SearchPageState extends State<SearchPage> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSearchResults(BuildContext context) {
+    if (_filteredSalons.isEmpty) {
+      return _buildEmptyResults(context);
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      itemCount: _filteredSalons.length,
+      itemBuilder: (context, index) {
+        final salon = _filteredSalons[index];
+        return _buildSpecialistCard(salon);
+      },
     );
   }
 
@@ -2012,7 +2009,7 @@ class _SearchPageState extends State<SearchPage> {
                 ),
                 SizedBox(height: 8),
                 Text(
-                  'Tap "Nearby" in bottom navigation to see interactive map',
+                  'Use search or tap the map icon to see nearby locations',
                   style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                   textAlign: TextAlign.center,
                 ),
@@ -2020,91 +2017,6 @@ class _SearchPageState extends State<SearchPage> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildSalonBottomNavigationBar() {
-    return Container(
-      height: 80,
-      decoration: BoxDecoration(
-        color: ShegabetTheme.deepRoyalPurple,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildSalonNavItem(
-              icon: Icons.home,
-              label: 'Home',
-              isSelected: false,
-              onTap: () => Get.toNamed('/'),
-            ),
-            _buildSalonNavItem(
-              icon: Icons.map,
-              label: 'Nearby',
-              isSelected: true,
-              onTap: () {
-                _showNearbySalonsMap();
-              },
-            ),
-            _buildSalonNavItem(
-              icon: Icons.content_cut,
-              label: 'Services',
-              isSelected: false,
-              onTap: () {
-                _showServicesDialog();
-              },
-            ),
-            _buildSalonNavItem(
-              icon: Icons.calendar_today,
-              label: 'Bookings',
-              isSelected: false,
-              onTap: () {
-                _showBookingsDialog();
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSalonNavItem({
-    required IconData icon,
-    required String label,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: isSelected
-                ? ShegabetTheme.ethiopianGold
-                : Colors.white.withOpacity(0.7),
-            size: 24,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: isSelected
-                  ? ShegabetTheme.ethiopianGold
-                  : Colors.white.withOpacity(0.7),
-              fontSize: 12,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-            ),
-          ),
-        ],
       ),
     );
   }

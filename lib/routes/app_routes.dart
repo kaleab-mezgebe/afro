@@ -5,6 +5,7 @@ abstract class AppRoutes {
   static const otpVerification = '/auth/otp';
   static const userRegistration = '/auth/registration';
   static const onboarding = '/onboarding';
+  static const preferenceSelection = '/preference-selection';
   static const search = '/search';
   static const home = '/';
   static const profile = '/profile';

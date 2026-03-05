@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../domain/entities/user.dart';
 import '../../../core/theme/butter_theme.dart';
+import '../../../core/utils/preference_helper.dart';
 import '../../../routes/app_routes.dart';
 
 class UserRegistrationController extends GetxController {
@@ -133,8 +134,8 @@ class UserRegistrationController extends GetxController {
         duration: const Duration(seconds: 3),
       );
 
-      // Navigate to home
-      Get.offAllNamed(AppRoutes.home);
+      // Navigate to preference selection
+      await PreferenceHelper.navigateAfterAuth();
     } catch (e) {
       error.value = e.toString();
       Get.snackbar(

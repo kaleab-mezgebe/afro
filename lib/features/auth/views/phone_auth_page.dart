@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:sizer/sizer.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -28,7 +29,28 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
                 _buildHeader(),
                 SizedBox(height: 3.h),
 
-                Form(key: controller.formKey, child: _buildPhoneField()),
+                Form(
+                  key: controller.formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildPhoneField(),
+                      Obx(() => controller.error.value.isNotEmpty
+                          ? Padding(
+                              padding: EdgeInsets.only(top: 1.h, left: 2.w),
+                              child: Text(
+                                controller.error.value,
+                                style: TextStyle(
+                                  color: AppTheme.error,
+                                  fontSize: 11.sp,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            )
+                          : const SizedBox.shrink()),
+                    ],
+                  ),
+                ),
 
                 SizedBox(height: 2.h),
 
@@ -53,10 +75,26 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
 
   Widget _buildLogo() {
     return Container(
-      width: 40.w,
-      height: 40.w,
-      decoration: BoxDecoration(shape: BoxShape.circle),
-      child: Image.asset('assets/images/logo.png', width: 36.w, height: 32.w),
+      width: 120,
+      height: 120,
+      decoration: BoxDecoration(
+        color: AppTheme.primaryYellow,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryYellow.withOpacity(0.5),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Center(
+        child:Image.asset(
+          'assets/images/logo.png',
+          width: 120,
+          height: 120,
+        )
+      ),
     );
   }
 
@@ -112,14 +150,18 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
               child: TextFormField(
                 controller: controller.phoneController,
                 keyboardType: TextInputType.phone,
-                validator: controller.validatePhoneNumber,
                 onChanged: controller.setPhoneNumber,
+                maxLength: controller.maxPhoneLength.value,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
                 decoration: InputDecoration(
                   hintText: 'Phone Number',
                   filled: false,
                   border: InputBorder.none,
                   focusedBorder: InputBorder.none,
                   enabledBorder: InputBorder.none,
+                  counterText: '',
                   contentPadding: EdgeInsets.symmetric(
                     horizontal: 5.w,
                     vertical: 1.5.h,
@@ -129,6 +171,7 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
                     color: AppTheme.textMuted,
                     fontWeight: FontWeight.w400,
                   ),
+                  errorStyle: const TextStyle(height: 0, fontSize: 0),
                 ),
                 style: TextStyle(
                   fontSize: 14.sp,

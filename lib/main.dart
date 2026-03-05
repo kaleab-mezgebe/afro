@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer/sizer.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -12,11 +13,25 @@ import 'routes/app_routes.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const CustomerApp());
+  
+  // Determine initial route based on onboarding preference
+  String initialRoute = AppRoutes.onboarding;
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final showOnboarding = prefs.getBool('show_onboarding') ?? true;
+    if (!showOnboarding) {
+      initialRoute = AppRoutes.phoneAuth;
+    }
+  } catch (e) {
+    debugPrint('Error loading preferences: $e');
+  }
+
+  runApp(CustomerApp(initialRoute: initialRoute));
 }
 
 class CustomerApp extends StatelessWidget {
-  const CustomerApp({super.key});
+  final String initialRoute;
+  const CustomerApp({super.key, required this.initialRoute});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +42,7 @@ class CustomerApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: AppTheme.light,
           initialBinding: InitialBinding(),
-          initialRoute: AppRoutes.splash,
+          initialRoute: initialRoute,
           getPages: AppPages.pages,
           defaultTransition: Transition.rightToLeft,
           transitionDuration: const Duration(milliseconds: 300),

@@ -7,11 +7,13 @@ import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../../core/theme/butter_theme.dart';
+import '../../../core/utils/preference_helper.dart';
 import '../../../routes/app_routes.dart';
 
 class PhoneAuthController extends GetxController {
   // Form fields
   final RxString phoneNumber = ''.obs;
+  final RxInt maxPhoneLength = 9.obs;
   final RxBool isLoading = false.obs;
   final RxString error = ''.obs;
 
@@ -49,16 +51,43 @@ class PhoneAuthController extends GetxController {
 
   // Validation
   bool get isPhoneNumberValid {
-    final phone = phoneNumber.value.replaceAll(RegExp(r'[^\d]'), '');
-    return phone.length >= 9 && phone.length <= 15;
+    final phone = phoneNumber.value;
+    if (phone.startsWith('0')) {
+      return phone.length == 10;
+    }
+    return phone.length == 9;
   }
 
-  bool get canProceed => !isLoading.value && isPhoneNumberValid;
+  bool get canProceed => !isLoading.value;
 
   void setPhoneNumber(String value) {
     // Remove all non-digit characters
-    final cleanPhone = value.replaceAll(RegExp(r'[^\d]'), '');
+    String cleanPhone = value.replaceAll(RegExp(r'[^\d]'), '');
+
+    // Determine max length based on first digit
+    if (cleanPhone.startsWith('0')) {
+      maxPhoneLength.value = 10;
+    } else {
+      maxPhoneLength.value = 9;
+      // If user had 10 digits (starting with 0) and changed the first digit to non-zero, truncate
+      if (cleanPhone.length > 9) {
+        cleanPhone = cleanPhone.substring(0, 9);
+      }
+    }
+
     phoneNumber.value = cleanPhone;
+
+    // Update controller text if we truncated
+    if (phoneController.text != cleanPhone) {
+      phoneController.text = cleanPhone;
+      phoneController.selection = TextSelection.fromPosition(
+        TextPosition(offset: cleanPhone.length),
+      );
+    }
+
+    if (error.value == 'Please enter a valid phone number') {
+      error.value = '';
+    }
   }
 
   void onCountryChanged(Country country) {
@@ -73,22 +102,25 @@ class PhoneAuthController extends GetxController {
     if (cleanPhone.length < 9) {
       return 'Phone number is too short';
     }
-    if (cleanPhone.length > 15) {
-      return 'Phone number is too long';
-    }
     return null;
   }
 
   Future<void> proceed() async {
-    if (!formKey.currentState!.validate()) {
+    if (!isPhoneNumberValid) {
+      error.value = 'Please enter a valid phone number';
       return;
     }
 
     isLoading.value = true;
     error.value = '';
 
-    final fullPhoneNumber =
-        '+${selectedCountry.value.phoneCode}${phoneNumber.value}';
+    // Remove leading zero if it exists (e.g., 0914... -> 914...)
+    String cleanInput = phoneNumber.value;
+    if (cleanInput.startsWith('0')) {
+      cleanInput = cleanInput.substring(1);
+    }
+
+    final fullPhoneNumber = '+${selectedCountry.value.phoneCode}$cleanInput';
 
     try {
       await FirebaseAuth.instance.verifyPhoneNumber(
@@ -98,8 +130,8 @@ class PhoneAuthController extends GetxController {
         // Auto-retrieved on Android (no user action needed)
         verificationCompleted: (PhoneAuthCredential credential) async {
           try {
-            final userCredential =
-                await FirebaseAuth.instance.signInWithCredential(credential);
+            final userCredential = await FirebaseAuth.instance
+                .signInWithCredential(credential);
             if (userCredential.user != null) {
               Get.snackbar(
                 'Verified!',
@@ -107,7 +139,7 @@ class PhoneAuthController extends GetxController {
                 backgroundColor: ButterTheme.successMint,
                 colorText: Colors.white,
               );
-              Get.offAllNamed(AppRoutes.home);
+              await PreferenceHelper.navigateAfterAuth();
             }
           } catch (e) {
             error.value = e.toString();
@@ -226,14 +258,21 @@ class PhoneAuthController extends GetxController {
           colorText: Colors.white,
         );
 
-        // Navigate to home screen
-        Get.offAllNamed(AppRoutes.home);
+        // Navigate to preference or home screen
+        await PreferenceHelper.navigateAfterAuth();
       }
     } on FirebaseAuthException catch (e) {
       String errorMessage = 'Google login failed';
       if (e.code == 'account-exists-with-different-credential') {
+        final email = e.email ?? '';
+        final methods = email.isNotEmpty
+            ? await FirebaseAuth.instance.fetchSignInMethodsForEmail(email)
+            : <String>[];
+        final methodString = methods.isNotEmpty
+            ? methods.join(', ')
+            : 'another method';
         errorMessage =
-            'An account already exists with the same email but different sign-in method';
+            'An account already exists with this email ($email) via $methodString. Please use that method to sign in.';
       } else if (e.code == 'invalid-credential') {
         errorMessage = 'The credential is malformed or has expired';
       } else if (e.code == 'user-disabled') {
@@ -252,6 +291,7 @@ class PhoneAuthController extends GetxController {
         errorMessage,
         backgroundColor: ButterTheme.errorRose,
         colorText: Colors.white,
+        duration: const Duration(seconds: 5),
       );
     } catch (e) {
       error.value = e.toString();
@@ -278,7 +318,7 @@ class PhoneAuthController extends GetxController {
       if (result.status == LoginStatus.success) {
         // Get the user credentials
         final AccessToken accessToken = result.accessToken!;
-        
+
         // Create a credential from the access token
         final OAuthCredential credential = FacebookAuthProvider.credential(
           accessToken.token,
@@ -297,8 +337,8 @@ class PhoneAuthController extends GetxController {
             colorText: Colors.white,
           );
 
-          // Navigate to home screen
-          Get.offAllNamed(AppRoutes.home);
+          // Navigate to preference or home screen
+          await PreferenceHelper.navigateAfterAuth();
         }
       } else {
         throw result.message ?? 'Unknown Facebook login error';
@@ -306,8 +346,21 @@ class PhoneAuthController extends GetxController {
     } on FirebaseAuthException catch (e) {
       String errorMessage = 'Facebook login failed';
       if (e.code == 'account-exists-with-different-credential') {
-        errorMessage =
-            'An account already exists with the same email but different sign-in method';
+        // Facebook user data might not be directly available if sign in fails
+        // but often the email is provided in the exception or can be fetched
+        final email = e.email ?? '';
+        if (email.isNotEmpty) {
+          final methods = await FirebaseAuth.instance
+              .fetchSignInMethodsForEmail(email);
+          final methodString = methods.isNotEmpty
+              ? methods.join(', ')
+              : 'another method';
+          errorMessage =
+              'An account already exists with this email ($email) via $methodString. Please use that method to sign in.';
+        } else {
+          errorMessage =
+              'An account already exists with the same email but different sign-in method.';
+        }
       } else if (e.code == 'invalid-credential') {
         errorMessage = 'The credential is malformed or has expired';
       } else if (e.code == 'user-disabled') {
@@ -326,6 +379,7 @@ class PhoneAuthController extends GetxController {
         errorMessage,
         backgroundColor: ButterTheme.errorRose,
         colorText: Colors.white,
+        duration: const Duration(seconds: 5),
       );
     } catch (e) {
       error.value = e.toString();

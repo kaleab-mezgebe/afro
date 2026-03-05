@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../routes/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 
@@ -23,22 +24,22 @@ class _OnboardingPageState extends State<OnboardingPage>
 
   final List<OnboardingData> _pages = [
     OnboardingData(
-      title: "Being a Barber is about taking care of the People",
+      title: "Being a Barber is about taking care of People",
       description:
-          "Our skilled barbers are dedicated to providing exceptional grooming experiences that make you look and feel your best.",
-      image: "https://picsum.photos/seed/barber1/400/600.jpg",
+          "Experience the art of grooming in a premium salon environment designed for your comfort and style.",
+      image: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=800&auto=format&fit=crop",
     ),
     OnboardingData(
       title: "Crafting the Perfect Look is an Art Form",
       description:
-          "From classic cuts to modern styles, our barbers master the latest techniques to deliver personalized results.",
-      image: "https://picsum.photos/seed/barber2/400/600.jpg",
+          "Our master barbers use precision techniques to deliver personalized results that define your unique identity.",
+      image: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=800&auto=format&fit=crop",
     ),
     OnboardingData(
       title: "Every Cut Tells a Unique Story",
       description:
-          "Your style is your identity. We help you express it with precision cuts and expert care tailored just for you.",
-      image: "https://picsum.photos/seed/barber3/400/600.jpg",
+          "Your journey to a better look starts here. Book your next appointment with just a few taps.",
+      image: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=800&auto=format&fit=crop",
     ),
   ];
 
@@ -83,36 +84,33 @@ class _OnboardingPageState extends State<OnboardingPage>
 
     return Scaffold(
       backgroundColor: AppTheme.white,
-      body: Stack(
-        children: [
-          // Background gradient
-          Container(
-            decoration: const BoxDecoration(
-              // gradient: LinearGradient(
-              //   begin: Alignment.topCenter,
-              //   end: Alignment.bottomCenter,
-              //   colors: [AppTheme.white, AppTheme.grey100, AppTheme.white],
-              //   stops: [0.0, 0.1, 1.0],
-              // ),
-            ),
-          ),
-
-          // Main content
-          PageView.builder(
-            controller: _controller,
-            itemCount: _pages.length,
-            onPageChanged: (index) {
-              setState(() => _currentPage = index);
-              _fadeController.reset();
-              _scaleController.reset();
-              _fadeController.forward();
-              _scaleController.forward();
-            },
-            itemBuilder: (_, index) {
-              return _buildPage(_pages[index]);
-            },
-          ),
-        ],
+      body: GestureDetector(
+        onHorizontalDragEnd: (details) {
+          if (details.primaryVelocity == null) return;
+          
+          // Swipe Left (Go Next)
+          if (details.primaryVelocity! < -500) {
+            HapticFeedback.lightImpact();
+            if (_currentPage == _pages.length - 1) {
+              _completeOnboarding();
+            } else {
+              setState(() {
+                _currentPage++;
+              });
+            }
+          }
+          
+          // Swipe Right (Go Previous)
+          if (details.primaryVelocity! > 500) {
+            HapticFeedback.lightImpact();
+            if (_currentPage > 0) {
+              setState(() {
+                _currentPage--;
+              });
+            }
+          }
+        },
+        child: _buildPage(_pages[_currentPage]),
       ),
     );
   }
@@ -120,81 +118,79 @@ class _OnboardingPageState extends State<OnboardingPage>
   Widget _buildPage(OnboardingData data) {
     return Column(
       children: [
-        /// Top Half - Enhanced Image
+        /// Top Half - Enhanced Image with Transition
         Expanded(
           flex: 1,
           child: Stack(
             children: [
-              // Hero image without overlay
-              Container(
-                width: double.infinity,
-                height: double.infinity,
-                child: data.image.startsWith('http')
-                    ? Image.network(
-                        data.image,
-                        key: ValueKey(data.image),
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: double.infinity,
-                        errorBuilder: (context, error, stackTrace) {
-                          return _buildImagePlaceholder();
-                        },
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return _buildImagePlaceholder();
-                        },
-                      )
-                    : Image.asset(
-                        data.image,
-                        key: ValueKey(data.image),
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: double.infinity,
-                        errorBuilder: (context, error, stackTrace) {
-                          return _buildImagePlaceholder();
-                        },
-                      ),
+              // Hero image with CrossFade/Switcher + Scale Effect
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 1200),
+                transitionBuilder: (child, animation) {
+                  final scaleAnimation = Tween<double>(begin: 1.1, end: 1.0).animate(
+                    CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+                  );
+                  return FadeTransition(
+                    opacity: animation,
+                    child: ScaleTransition(
+                      scale: scaleAnimation,
+                      child: child,
+                    ),
+                  );
+                },
+                child: Container(
+                  key: ValueKey(data.image),
+                  width: double.infinity,
+                  height: double.infinity,
+                  child: data.image.startsWith('http')
+                      ? Image.network(
+                          data.image,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                          errorBuilder: (context, error, stackTrace) => _buildImagePlaceholder(),
+                        )
+                      : Image.asset(
+                          data.image,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                          errorBuilder: (context, error, stackTrace) => _buildImagePlaceholder(),
+                        ),
+                ),
               ),
 
-              /// Skip button with glassmorphism effect
+              /// Skip button
               Positioned(
                 top: MediaQuery.of(context).padding.top + 20,
                 right: 20,
-                child: AnimatedBuilder(
-                  animation: _fadeAnimation,
-                  builder: (context, child) {
-                    return Opacity(
-                      opacity: _fadeAnimation.value,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            width: 1,
-                          ),
-                        ),
-                        child: TextButton(
-                          onPressed: _completeOnboarding,
-                          style: TextButton.styleFrom(
-                            foregroundColor: AppTheme.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 10,
-                            ),
-                          ),
-                          child: Text(
-                            "Skip",
-                            style: TextStyle(
-                              color: AppTheme.textPrimary,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: TextButton(
+                    onPressed: _completeOnboarding,
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppTheme.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
                       ),
-                    );
-                  },
+                    ),
+                    child: const Text(
+                      "Skip",
+                      style: TextStyle(
+                        color: AppTheme.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -219,59 +215,85 @@ class _OnboardingPageState extends State<OnboardingPage>
               ),
               child: Column(
                 children: [
-                  /// Title with enhanced highlighting
+                  /// Title with premium transition
                   Expanded(
-                    flex: 2,
+                    flex: 3,
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 32),
-                      child: AnimatedBuilder(
-                        animation: _scaleAnimation,
-                        builder: (context, child) {
-                          return Transform.scale(
-                            scale: _scaleAnimation.value,
-                            child: _buildHighlightedTitle(data.title),
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 800),
+                        transitionBuilder: (child, animation) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: SlideTransition(
+                              position: Tween<Offset>(
+                                begin: const Offset(0, 0.1),
+                                end: Offset.zero,
+                              ).animate(CurvedAnimation(
+                                parent: animation,
+                                curve: Curves.easeOutBack,
+                              )),
+                              child: ScaleTransition(
+                                scale: Tween<double>(begin: 0.95, end: 1.0).animate(
+                                  CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
+                                ),
+                                child: child,
+                              ),
+                            ),
                           );
                         },
+                        child: _buildHighlightedTitle(data.title, key: ValueKey(data.title)),
                       ),
                     ),
                   ),
 
                   const SizedBox(height: 16),
 
-                  /// Description with fade-in
+                  /// Description with premium transition
                   Expanded(
-                    flex: 1,
-                    child: AnimatedBuilder(
-                      animation: _fadeAnimation,
-                      builder: (context, child) {
-                        return Opacity(
-                          opacity: _fadeAnimation.value,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 32),
-                            child: Text(
-                              data.description,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: AppTheme.textSecondary,
-                                height: 1.5,
-                                letterSpacing: 0.2,
-                              ),
+                    flex: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 800),
+                        transitionBuilder: (child, animation) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: SlideTransition(
+                              position: Tween<Offset>(
+                                begin: const Offset(0, 0.1),
+                                end: Offset.zero,
+                              ).animate(CurvedAnimation(
+                                parent: animation,
+                                curve: const Interval(0.2, 1.0, curve: Curves.easeOut),
+                              )),
+                              child: child,
                             ),
+                          );
+                        },
+                        child: Text(
+                          data.description,
+                          key: ValueKey(data.description),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: AppTheme.textSecondary,
+                            height: 1.5,
+                            letterSpacing: 0.2,
                           ),
-                        );
-                      },
+                        ),
+                      ),
                     ),
                   ),
 
                   const SizedBox(height: 32),
 
-                  /// Enhanced Pagination Indicator
+                  /// Pagination Indicator
                   _buildPaginationIndicator(),
 
                   const SizedBox(height: 40),
 
-                  /// Enhanced Circular Next Button
+                  /// Circular Next Button
                   _buildCircularButton(),
 
                   const SizedBox(height: 16),
@@ -284,7 +306,7 @@ class _OnboardingPageState extends State<OnboardingPage>
     );
   }
 
-  Widget _buildHighlightedTitle(String title) {
+  Widget _buildHighlightedTitle(String title, {Key? key}) {
     final List<String> words = title.split(' ');
     final List<String> highlightWords = [
       'Being',
@@ -296,10 +318,11 @@ class _OnboardingPageState extends State<OnboardingPage>
     ];
 
     return RichText(
+      key: key,
       textAlign: TextAlign.center,
       text: TextSpan(
         style: const TextStyle(
-          fontSize: 32,
+          fontSize: 28,
           fontWeight: FontWeight.bold,
           color: AppTheme.textPrimary,
           height: 1.3,
@@ -315,7 +338,7 @@ class _OnboardingPageState extends State<OnboardingPage>
               color: isHighlighted
                   ? AppTheme.primaryYellow
                   : AppTheme.textPrimary,
-              fontSize: isHighlighted ? 36 : 32,
+              fontSize: isHighlighted ? 30 : 28,
               fontWeight: isHighlighted ? FontWeight.w900 : FontWeight.bold,
             ),
           );
@@ -377,56 +400,44 @@ class _OnboardingPageState extends State<OnboardingPage>
   }
 
   Widget _buildCircularButton() {
-    return AnimatedBuilder(
-      animation: _scaleAnimation,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: GestureDetector(
-            onTap: () {
-              HapticFeedback.lightImpact();
-              if (_currentPage == _pages.length - 1) {
-                _completeOnboarding();
-              } else {
-                _controller.nextPage(
-                  duration: const Duration(milliseconds: 500),
-                  curve: Curves.easeInOutCubic,
-                );
-              }
-            },
-            child: Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                gradient: AppTheme.yellowGradient,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.primaryYellow.withValues(alpha: 0.3),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                  BoxShadow(
-                    color: AppTheme.primaryYellow.withValues(alpha: 0.2),
-                    blurRadius: 40,
-                    offset: const Offset(0, 16),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.arrow_forward_rounded,
-                color: AppTheme.black,
-                size: 28,
-              ),
-            ),
-          ),
-        );
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        if (_currentPage == _pages.length - 1) {
+          _completeOnboarding();
+        } else {
+          setState(() {
+            _currentPage++;
+          });
+        }
       },
+      child: Container(
+        width: 72,
+        height: 72,
+        decoration: BoxDecoration(
+          gradient: AppTheme.yellowGradient,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.primaryYellow.withValues(alpha: 0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: const Icon(
+          Icons.arrow_forward_rounded,
+          color: AppTheme.black,
+          size: 28,
+        ),
+      ),
     );
   }
 
-  void _completeOnboarding() {
+  void _completeOnboarding() async {
     HapticFeedback.mediumImpact();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('show_onboarding', false);
     Get.offAllNamed(AppRoutes.phoneAuth);
   }
 }

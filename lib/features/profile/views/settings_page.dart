@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/controllers/auth_controller.dart';
 import '../../../core/theme/app_theme.dart';
@@ -17,6 +18,20 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _locationEnabled = true;
   bool _darkModeEnabled = false;
   String _selectedLanguage = 'English';
+  String _servicePreference = 'all';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadServicePreference();
+  }
+
+  Future<void> _loadServicePreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _servicePreference = prefs.getString('user_preference') ?? 'all';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -181,6 +196,9 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
           const SizedBox(height: 20),
+
+          // Service Preference
+          _buildServicePreferenceTile(),
 
           // Notifications Toggle
           _buildSettingTile(
@@ -414,6 +432,160 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildServicePreferenceTile() {
+    String preferenceLabel = _servicePreference == 'barber'
+        ? 'Barber'
+        : _servicePreference == 'salon'
+        ? 'Salon'
+        : 'Both';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: _showServicePreferenceDialog,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryYellow.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.store,
+                    color: AppTheme.primaryYellow,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Service Preference',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.black,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Currently showing: $preferenceLabel',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_ios,
+                  color: AppTheme.textSecondary,
+                  size: 16,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showServicePreferenceDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          'Service Preference',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildPreferenceOption('Barber', 'barber', Icons.content_cut),
+            const SizedBox(height: 12),
+            _buildPreferenceOption('Salon', 'salon', Icons.spa),
+            const SizedBox(height: 12),
+            _buildPreferenceOption('Both', 'all', Icons.apps),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPreferenceOption(String label, String value, IconData icon) {
+    final isSelected = _servicePreference == value;
+
+    return InkWell(
+      onTap: () async {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('user_preference', value);
+        setState(() {
+          _servicePreference = value;
+        });
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Service preference updated to $label'),
+            backgroundColor: AppTheme.primaryYellow,
+          ),
+        );
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppTheme.primaryYellow.withValues(alpha: 0.2)
+              : AppTheme.grey100,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppTheme.primaryYellow : Colors.transparent,
+            width: 2,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: isSelected
+                  ? AppTheme.primaryYellow
+                  : AppTheme.textSecondary,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? AppTheme.black : AppTheme.textSecondary,
+                ),
+              ),
+            ),
+            if (isSelected)
+              const Icon(Icons.check_circle, color: AppTheme.primaryYellow),
+          ],
+        ),
       ),
     );
   }

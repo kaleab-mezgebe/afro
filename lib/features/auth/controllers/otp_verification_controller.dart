@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/butter_theme.dart';
+import '../../../core/utils/preference_helper.dart';
 import '../../../routes/app_routes.dart';
 
 class OTPVerificationController extends GetxController {
@@ -60,8 +61,9 @@ class OTPVerificationController extends GetxController {
         smsCode: otp.value,
       );
 
-      final userCredential =
-          await FirebaseAuth.instance.signInWithCredential(credential);
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(
+        credential,
+      );
 
       if (userCredential.user != null) {
         Get.snackbar(
@@ -77,7 +79,7 @@ class OTPVerificationController extends GetxController {
             arguments: {'phoneNumber': phoneNumber.value},
           );
         } else {
-          Get.offAllNamed(AppRoutes.home);
+          await PreferenceHelper.navigateAfterAuth();
         }
       }
     } on FirebaseAuthException catch (e) {
@@ -123,10 +125,11 @@ class OTPVerificationController extends GetxController {
       forceResendingToken: resendToken,
 
       verificationCompleted: (PhoneAuthCredential credential) async {
-        final userCredential =
-            await FirebaseAuth.instance.signInWithCredential(credential);
+        final userCredential = await FirebaseAuth.instance.signInWithCredential(
+          credential,
+        );
         if (userCredential.user != null) {
-          Get.offAllNamed(AppRoutes.home);
+          await PreferenceHelper.navigateAfterAuth();
         }
       },
 

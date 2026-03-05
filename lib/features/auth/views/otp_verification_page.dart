@@ -17,9 +17,7 @@ class OtpVerificationPage extends GetView<OTPVerificationController> {
         : '+25194141459'; 
 
     return Scaffold(
-      backgroundColor: const Color(
-        0xFFFFF5F5,
-      ), // Light orange to purple gradient
+      backgroundColor: AppTheme.white,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),

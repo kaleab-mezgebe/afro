@@ -313,7 +313,6 @@ class _PortfolioPageState extends State<PortfolioPage> {
           ),
         ],
       ),
-      bottomNavigationBar: _buildBookButton(),
     );
   }
 
