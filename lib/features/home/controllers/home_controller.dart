@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../models/specialist_model.dart';
 import '../models/category_model.dart';
 import '../../../routes/app_routes.dart';
+import '../../notifications/controllers/notifications_list_controller.dart';
 
 class HomeController extends GetxController {
   final RxString selectedCategory = 'Hairdressing'.obs;
@@ -12,10 +13,24 @@ class HomeController extends GetxController {
   final RxDouble maxPrice = 100.0.obs;
   final RxDouble minRating = 0.0.obs;
   final RxBool filtersApplied = false.obs;
-  final RxInt notificationCount = 3.obs;
+
+  // Get notification count from NotificationsListController
+  int get notificationCount {
+    try {
+      final notifController = Get.find<NotificationsListController>();
+      return notifController.unreadCount;
+    } catch (e) {
+      return 0;
+    }
+  }
 
   final RxList<HomeCategory> categories = <HomeCategory>[
-    HomeCategory(name: 'All', icon: Icons.grid_view_rounded, gender: 'all', isSelected: true),
+    HomeCategory(
+      name: 'All',
+      icon: Icons.grid_view_rounded,
+      gender: 'all',
+      isSelected: true,
+    ),
     HomeCategory(name: 'Hairdressing', icon: Icons.content_cut, gender: 'all'),
     HomeCategory(name: 'Hair Color', icon: Icons.color_lens, gender: 'all'),
     HomeCategory(name: 'Beard & Mustache', icon: Icons.face, gender: 'male'),
@@ -103,31 +118,46 @@ class HomeController extends GetxController {
 
   List<Specialist> get filteredSpecialists {
     return allSpecialists.where((specialist) {
-      bool categoryMatch = selectedCategory.value == 'All' || 
+      bool categoryMatch =
+          selectedCategory.value == 'All' ||
           specialist.categories.contains(selectedCategory.value);
-      bool searchMatch = searchQuery.value.isEmpty ||
-          specialist.name.toLowerCase().contains(searchQuery.value.toLowerCase());
-      bool genderMatch = selectedGender.value == 'all' || specialist.gender == selectedGender.value;
-      
+      bool searchMatch =
+          searchQuery.value.isEmpty ||
+          specialist.name.toLowerCase().contains(
+            searchQuery.value.toLowerCase(),
+          );
+      bool genderMatch =
+          selectedGender.value == 'all' ||
+          specialist.gender == selectedGender.value;
+
       // Safe price parsing
       double priceValue = 0.0;
       try {
-        priceValue = double.parse(specialist.price.replaceAll('\$', '').replaceAll(',', ''));
+        priceValue = double.parse(
+          specialist.price.replaceAll('\$', '').replaceAll(',', ''),
+        );
       } catch (e) {
         priceValue = 0.0;
       }
-      
-      bool priceMatch = priceValue >= minPrice.value && priceValue <= maxPrice.value;
+
+      bool priceMatch =
+          priceValue >= minPrice.value && priceValue <= maxPrice.value;
       bool ratingMatch = specialist.rating >= minRating.value;
 
-      return categoryMatch && searchMatch && genderMatch && priceMatch && ratingMatch;
+      return categoryMatch &&
+          searchMatch &&
+          genderMatch &&
+          priceMatch &&
+          ratingMatch;
     }).toList();
   }
 
   void selectCategory(String categoryName) {
     selectedCategory.value = categoryName;
     for (int i = 0; i < categories.length; i++) {
-      categories[i] = categories[i].copyWith(isSelected: categories[i].name == categoryName);
+      categories[i] = categories[i].copyWith(
+        isSelected: categories[i].name == categoryName,
+      );
     }
   }
 
@@ -145,15 +175,18 @@ class HomeController extends GetxController {
   }
 
   void navigateToSpecialistDetail(Specialist specialist) {
-    Get.toNamed(AppRoutes.portfolio, arguments: {
-      'id': specialist.id,
-      'name': specialist.name,
-      'image': specialist.image,
-      'rating': specialist.rating,
-      'categories': specialist.categories,
-      'gender': specialist.gender,
-      'price': specialist.price,
-    });
+    Get.toNamed(
+      AppRoutes.portfolio,
+      arguments: {
+        'id': specialist.id,
+        'name': specialist.name,
+        'image': specialist.image,
+        'rating': specialist.rating,
+        'categories': specialist.categories,
+        'gender': specialist.gender,
+        'price': specialist.price,
+      },
+    );
   }
 
   void bookSpecialist(Specialist specialist) {

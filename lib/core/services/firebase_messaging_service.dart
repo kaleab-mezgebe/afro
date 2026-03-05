@@ -2,6 +2,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
+import '../../features/notifications/controllers/notifications_list_controller.dart';
+import '../../routes/app_routes.dart';
 
 // Top-level function for background message handling
 @pragma('vm:entry-point')
@@ -178,8 +180,52 @@ class FirebaseMessagingService {
     RemoteNotification? notification = message.notification;
     AndroidNotification? android = message.notification?.android;
 
+    // Add to notifications list
+    _addToNotificationsList(message);
+
     if (notification != null && android != null) {
       _showLocalNotification(notification, message.data);
+    }
+  }
+
+  /// Add notification to the in-app notifications list
+  void _addToNotificationsList(RemoteMessage message) {
+    try {
+      if (Get.isRegistered<NotificationsListController>()) {
+        final controller = Get.find<NotificationsListController>();
+
+        final title = message.notification?.title ?? 'New Notification';
+        final body = message.notification?.body ?? '';
+
+        // Determine notification type from data
+        NotificationType type = NotificationType.update;
+        if (message.data.containsKey('type')) {
+          switch (message.data['type']) {
+            case 'booking':
+              type = NotificationType.booking;
+              break;
+            case 'promotion':
+              type = NotificationType.promotion;
+              break;
+            case 'reminder':
+              type = NotificationType.reminder;
+              break;
+            default:
+              type = NotificationType.update;
+          }
+        }
+
+        controller.addNotification(
+          title: title,
+          message: body,
+          type: type,
+          data: message.data,
+        );
+
+        _logger.i('Notification added to list');
+      }
+    } catch (e) {
+      _logger.w('Could not add notification to list: $e');
     }
   }
 
@@ -221,22 +267,20 @@ class FirebaseMessagingService {
   void _handleNotificationTap(RemoteMessage message) {
     _logger.i('Notification tapped: ${message.messageId}');
 
-    // Navigate to home screen
+    // Add to notifications list first (in case it wasn't added yet)
+    _addToNotificationsList(message);
+
+    // Navigate to notifications list page
     try {
       Get.offAllNamed('/');
-      _logger.i('Navigated to home screen');
+      // Small delay to ensure home is loaded, then navigate to notifications
+      Future.delayed(const Duration(milliseconds: 300), () {
+        Get.toNamed(AppRoutes.notifications);
+      });
+      _logger.i('Navigated to notifications list');
     } catch (e) {
-      _logger.e('Error navigating to home: $e');
+      _logger.e('Error navigating to notifications: $e');
     }
-
-    // You can add custom navigation based on notification data
-    // Example:
-    // final data = message.data;
-    // if (data['type'] == 'booking') {
-    //   Get.toNamed(AppRoutes.bookingHistory);
-    // } else if (data['type'] == 'offer') {
-    //   Get.toNamed(AppRoutes.home);
-    // }
   }
 
   /// Subscribe to topic

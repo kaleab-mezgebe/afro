@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/home_controller.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../routes/app_routes.dart';
 
 class HomeHeader extends GetView<HomeController> {
   const HomeHeader({super.key});
@@ -14,7 +15,7 @@ class HomeHeader extends GetView<HomeController> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-             Text(
+            Text(
               'Good Morning!',
               style: TextStyle(
                 color: AppTheme.textSecondary,
@@ -45,37 +46,41 @@ class HomeHeader extends GetView<HomeController> {
   }
 
   Widget _buildNotificationBell() {
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: AppTheme.grey100,
-        borderRadius: BorderRadius.circular(22),
-      ),
-      child: Stack(
-        children: [
-          const Center(
-            child: Icon(
-              Icons.notifications_none_rounded,
-              color: AppTheme.black,
-              size: 24,
-            ),
-          ),
-          if (controller.notificationCount.value > 0)
-            Positioned(
-              top: 10,
-              right: 10,
-              child: Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  color: Colors.redAccent,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
-                ),
+    return InkWell(
+      onTap: () => Get.toNamed(AppRoutes.notifications),
+      borderRadius: BorderRadius.circular(22),
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: AppTheme.grey100,
+          borderRadius: BorderRadius.circular(22),
+        ),
+        child: Stack(
+          children: [
+            const Center(
+              child: Icon(
+                Icons.notifications_none_rounded,
+                color: AppTheme.black,
+                size: 24,
               ),
             ),
-        ],
+            if (controller.notificationCount > 0)
+              Positioned(
+                top: 10,
+                right: 10,
+                child: Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: Colors.redAccent,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

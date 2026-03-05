@@ -16,6 +16,8 @@ import '../features/home/views/home_page.dart';
 import '../features/home/views/portfolio_page.dart';
 import '../features/main/bindings/main_binding.dart';
 import '../features/main/views/main_layout_page.dart';
+import '../features/notifications/controllers/notifications_list_controller.dart';
+import '../features/notifications/views/notifications_list_page.dart';
 import '../features/onboarding/views/onboarding_page.dart';
 import '../features/preferences/views/preference_selection_page.dart';
 import '../features/profile/bindings/profile_binding.dart';
@@ -48,6 +50,15 @@ class AppPages {
       name: AppRoutes.home,
       page: () => const MainLayoutPage(),
       binding: MainBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.notifications,
+      page: () => const NotificationsListPage(),
+      binding: BindingsBuilder(() {
+        Get.lazyPut<NotificationsListController>(
+          () => NotificationsListController(),
+        );
+      }),
     ),
     GetPage(
       name: AppRoutes.portfolio,
