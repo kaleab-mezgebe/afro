@@ -3,24 +3,36 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer/sizer.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'firebase_options.dart';
 
 import 'core/bindings/initial_binding.dart';
 import 'core/theme/app_theme.dart';
+import 'core/services/firebase_messaging_service.dart';
 import 'routes/app_pages.dart';
 import 'routes/app_routes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  
+
+  // Initialize Firebase Messaging
+  await FirebaseMessagingService().initialize();
+
+  // Check if app was opened from a notification
+  RemoteMessage? initialMessage = await FirebaseMessaging.instance
+      .getInitialMessage();
+
   // Determine initial route based on onboarding preference
   String initialRoute = AppRoutes.onboarding;
   try {
     final prefs = await SharedPreferences.getInstance();
     final showOnboarding = prefs.getBool('show_onboarding') ?? true;
     if (!showOnboarding) {
-      initialRoute = AppRoutes.phoneAuth;
+      // If opened from notification, go to home, otherwise phone auth
+      initialRoute = initialMessage != null
+          ? AppRoutes.home
+          : AppRoutes.phoneAuth;
     }
   } catch (e) {
     debugPrint('Error loading preferences: $e');
