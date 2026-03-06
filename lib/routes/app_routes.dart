@@ -17,6 +17,7 @@ abstract class AppRoutes {
   static const bookingTime = '/booking/time';
   static const bookingSummary = '/booking/summary';
   static const bookingHistory = '/booking/history';
+  static const bookingSuccess = '/booking/success';
   static const favorites = '/favorites';
   static const nearby = '/nearby';
 }

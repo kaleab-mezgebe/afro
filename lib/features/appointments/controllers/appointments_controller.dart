@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 
+import '../../../routes/app_routes.dart';
 import '../../../domain/entities/booking.dart';
 import '../../../domain/entities/provider.dart';
 import '../../../domain/entities/service.dart';
@@ -122,7 +123,7 @@ class AppointmentsController extends GetxController {
       timeSlots.clear();
 
       Get.snackbar('Success', 'Booking confirmed successfully!');
-      Get.back(); // Go back to home
+      Get.offAllNamed(AppRoutes.bookingSuccess); 
     } catch (e) {
       error.value = e.toString();
     } finally {
@@ -152,6 +153,64 @@ class AppointmentsController extends GetxController {
     services.clear();
     timeSlots.clear();
     loadServices(provider.id);
+  }
+
+  void startBookingFromPortfolio(Map<String, dynamic> specialist, [Map<String, dynamic>? service]) {
+    // Clear previous state
+    selectedProvider.value = null;
+    selectedService.value = null;
+    selectedTimeSlot.value = null;
+    services.clear();
+    timeSlots.clear();
+
+    // Map specialist data to Provider entity
+    final provider = Provider(
+      id: specialist['id'] ?? 'unknown',
+      name: specialist['name'] ?? 'Specialist',
+      category: (specialist['categories'] as List?)?.first ?? 'Barber',
+      rating: (specialist['rating'] as num?)?.toDouble() ?? 4.5,
+      imageUrl: specialist['image'] ?? '',
+      isFavorite: false,
+    );
+
+    selectedProvider.value = provider;
+
+    if (service != null) {
+      // Map service data to Service entity
+      final serviceEntity = Service(
+        id: service['id'] ?? service['name']?.toLowerCase()?.replaceAll(' ', '_') ?? 'service',
+        name: service['name'] ?? 'Service',
+        description: service['description'] ?? '',
+        priceCents: _parsePrice(service['price']),
+        durationMinutes: _parseDuration(service['duration']),
+        category: service['category'] ?? 'General',
+      );
+      selectedService.value = serviceEntity;
+    }
+
+    // Load full services list for this provider in background
+    loadServices(provider.id);
+    
+    // Navigate to appropriate page
+    if (selectedService.value != null) {
+      Get.toNamed(AppRoutes.bookingTime);
+    } else {
+      Get.toNamed(AppRoutes.bookingService);
+    }
+  }
+
+  int _parsePrice(dynamic price) {
+    if (price == null) return 0;
+    if (price is int) return price;
+    final String s = price.toString().replaceAll(RegExp(r'[^0-9.]'), '');
+    return (double.tryParse(s) ?? 0 * 100).toInt();
+  }
+
+  int _parseDuration(dynamic duration) {
+    if (duration == null) return 30;
+    if (duration is int) return duration;
+    final String s = duration.toString().replaceAll(RegExp(r'[^0-9]'), '');
+    return int.tryParse(s) ?? 30;
   }
 
   void selectService(Service service) {

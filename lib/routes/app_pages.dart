@@ -10,6 +10,7 @@ import '../features/appointments/views/booking_history_page.dart';
 import '../features/appointments/views/booking_service_page.dart';
 import '../features/appointments/views/booking_summary_page.dart';
 import '../features/appointments/views/booking_time_page.dart';
+import '../features/appointments/views/booking_success_page.dart';
 import '../features/favorites/bindings/favorites_binding.dart';
 import '../features/favorites/views/favorites_page.dart';
 import '../features/home/bindings/home_binding.dart';
@@ -149,6 +150,10 @@ class AppPages {
       name: AppRoutes.bookingHistory,
       page: () => const BookingHistoryPage(),
       binding: AppointmentsBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.bookingSuccess,
+      page: () => const BookingSuccessPage(),
     ),
     GetPage(
       name: AppRoutes.search,
