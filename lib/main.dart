@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer/sizer.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'firebase_options.dart';
 
 import 'core/bindings/initial_binding.dart';
@@ -14,36 +12,28 @@ import 'routes/app_routes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // Initialize Firebase Messaging
-  await FirebaseMessagingService().initialize();
-
-  // Check if app was opened from a notification
-  RemoteMessage? initialMessage = await FirebaseMessaging.instance
-      .getInitialMessage();
-
-  // Determine initial route based on onboarding preference
-  String initialRoute = AppRoutes.onboarding;
   try {
-    final prefs = await SharedPreferences.getInstance();
-    final showOnboarding = prefs.getBool('show_onboarding') ?? true;
-    if (!showOnboarding) {
-      // If opened from notification, go to home, otherwise phone auth
-      initialRoute = initialMessage != null
-          ? AppRoutes.home
-          : AppRoutes.phoneAuth;
-    }
+    // Initialize Firebase with timeout to prevent hanging
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    ).timeout(const Duration(seconds: 10));
   } catch (e) {
-    debugPrint('Error loading preferences: $e');
+    debugPrint('Firebase initialization error: $e');
+    // Continue without Firebase if initialization fails
   }
 
-  runApp(CustomerApp(initialRoute: initialRoute));
+  // Initialize Firebase Messaging in background (don't wait for it)
+  FirebaseMessagingService().initialize().catchError((e) {
+    debugPrint('Firebase Messaging initialization error: $e');
+  });
+
+  // Always start with splash page, let splash handle navigation
+  runApp(CustomerApp());
 }
 
 class CustomerApp extends StatelessWidget {
-  final String initialRoute;
-  const CustomerApp({super.key, required this.initialRoute});
+  const CustomerApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +44,7 @@ class CustomerApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: AppTheme.light,
           initialBinding: InitialBinding(),
-          initialRoute: initialRoute,
+          initialRoute: AppRoutes.splash,
           getPages: AppPages.pages,
           defaultTransition: Transition.rightToLeft,
           transitionDuration: const Duration(milliseconds: 300),

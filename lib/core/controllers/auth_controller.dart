@@ -49,16 +49,6 @@ class AuthController extends GetxController {
       isLoading.value = true;
       error.value = '';
 
-      // Show loading indicator
-      Get.dialog(
-        const Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-          ),
-        ),
-        barrierDismissible: false,
-      );
-
       // Sign out from Firebase
       await _auth.signOut();
 
@@ -85,7 +75,7 @@ class AuthController extends GetxController {
       );
 
       // Navigate to login screen
-      Get.offAllNamed(AppRoutes.splash);
+      Get.offAllNamed(AppRoutes.phoneAuth);
     } catch (e) {
       error.value = e.toString();
 
@@ -100,11 +90,6 @@ class AuthController extends GetxController {
       );
     } finally {
       isLoading.value = false;
-
-      // Close loading dialog if still open
-      if (Get.isDialogOpen ?? false) {
-        Get.back();
-      }
     }
   }
 

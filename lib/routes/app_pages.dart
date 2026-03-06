@@ -25,11 +25,13 @@ import '../features/profile/views/edit_profile_page.dart';
 import '../features/profile/views/profile_page.dart';
 import '../features/profile/views/settings_page.dart';
 import '../features/search/views/search_page.dart' as search;
+import '../features/splash/views/splash_page_simple.dart';
 
 import 'app_routes.dart';
 
 class AppPages {
   static final pages = <GetPage>[
+    GetPage(name: AppRoutes.splash, page: () => const SplashPage()),
     GetPage(name: AppRoutes.onboarding, page: () => const OnboardingPage()),
     GetPage(
       name: AppRoutes.phoneAuth,

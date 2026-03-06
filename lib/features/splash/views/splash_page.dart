@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../routes/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/afro_theme.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -60,7 +61,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
   void _navigateToOnboarding() async {
     // Start a 3-second timer and the SharedPreferences initialization in parallel
     final stopwatch = Stopwatch()..start();
-    
+
     bool showOnboarding = true;
     try {
       final prefs = await SharedPreferences.getInstance().timeout(
@@ -104,7 +105,9 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     );
 
     return Scaffold(
-      backgroundColor: AppTheme.white,
+      backgroundColor: const Color(
+        0xFFFFF5F5,
+      ), // Light pink instead of pure white
       body: Stack(
         children: [
           // Background pattern - positioned directly in Stack
@@ -182,6 +185,28 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
       child: Image.asset(
         'assets/images/logo.png',
         fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) {
+          debugPrint('Logo asset error: $error');
+          // Fallback to text logo if image fails
+          return Container(
+            width: 200,
+            height: 200,
+            decoration: BoxDecoration(
+              color: AfroTheme.primaryColor,
+              borderRadius: BorderRadius.circular(100),
+            ),
+            child: const Center(
+              child: Text(
+                'AFRO',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -209,6 +234,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
       ),
     );
   }
+
   Widget _buildPatternIcon(IconData icon) {
     return Icon(
       icon,

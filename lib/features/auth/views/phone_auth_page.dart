@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:sizer/sizer.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../controllers/phone_auth_controller.dart';
 import '../widgets/country_picker_widget.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/brand_loading_button.dart';
 
 class PhoneAuthPage extends GetView<PhoneAuthController> {
   const PhoneAuthPage({super.key});
@@ -15,60 +15,120 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.white,
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(4.w),
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                SizedBox(height: 12.h),
+      body: Stack(
+        children: [
+          // Main content
+          SafeArea(
+            child: Padding(
+              padding: EdgeInsets.all(4.w),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    SizedBox(height: 16.h),
 
-                _buildLogo(),
-                SizedBox(height: 2.h),
+                    _buildLogo(),
+                    SizedBox(height: 2.h),
 
-                _buildHeader(),
-                SizedBox(height: 3.h),
+                    _buildHeader(),
+                    SizedBox(height: 3.h),
 
-                Form(
-                  key: controller.formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildPhoneField(),
-                      Obx(() => controller.error.value.isNotEmpty
-                          ? Padding(
-                              padding: EdgeInsets.only(top: 1.h, left: 2.w),
-                              child: Text(
-                                controller.error.value,
-                                style: TextStyle(
-                                  color: AppTheme.error,
-                                  fontSize: 11.sp,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            )
-                          : const SizedBox.shrink()),
-                    ],
-                  ),
+                    Form(
+                      key: controller.formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildPhoneField(),
+                          Obx(
+                            () => controller.error.value.isNotEmpty
+                                ? Padding(
+                                    padding: EdgeInsets.only(
+                                      top: 1.h,
+                                      left: 2.w,
+                                    ),
+                                    child: Text(
+                                      controller.error.value,
+                                      style: TextStyle(
+                                        color: AppTheme.error,
+                                        fontSize: 11.sp,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  )
+                                : const SizedBox.shrink(),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    SizedBox(height: 2.h),
+
+                    _buildLoginButton(),
+
+                    SizedBox(height: 2.5.h),
+
+                    _buildSeparator(),
+
+                    SizedBox(height: 2.5.h),
+
+                    _buildSocialLogin(),
+
+                    SizedBox(height: 2.5.h),
+                  ],
                 ),
-
-                SizedBox(height: 2.h),
-
-                _buildLoginButton(),
-
-                SizedBox(height: 2.5.h),
-
-                _buildSeparator(),
-
-                SizedBox(height: 2.5.h),
-
-                _buildSocialLogin(),
-
-                SizedBox(height: 2.5.h),
-              ],
+              ),
             ),
           ),
-        ),
+
+          // Full-screen loading overlay
+          Obx(
+            () => controller.isLoading.value
+                ? SafeArea(
+                    top: false,
+                    bottom: false,
+                    child: Positioned.fill(
+                      child: Container(
+                        color: Colors.black.withOpacity(0.3),
+                        child: Align(
+                          alignment: Alignment
+                              .center, // Center horizontally, slightly lower vertically
+                          child: Transform.translate(
+                            offset: Offset(0, 50), // Move 50 pixels down
+                            child: Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(30),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 5),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 3,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      AppTheme.primaryYellow,
+                                    ),
+                                    backgroundColor: Colors.transparent,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
       ),
     );
   }
@@ -77,23 +137,8 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
     return Container(
       width: 120,
       height: 120,
-      decoration: BoxDecoration(
-        color: AppTheme.primaryYellow,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primaryYellow.withOpacity(0.5),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
       child: Center(
-        child:Image.asset(
-          'assets/images/logo.png',
-          width: 120,
-          height: 120,
-        )
+        child: Image.asset('assets/images/logo.png', width: 120, height: 120),
       ),
     );
   }
@@ -152,9 +197,7 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
                 keyboardType: TextInputType.phone,
                 onChanged: controller.setPhoneNumber,
                 maxLength: controller.maxPhoneLength.value,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 decoration: InputDecoration(
                   hintText: 'Phone Number',
                   filled: false,
@@ -194,30 +237,19 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
         child: ElevatedButton(
           onPressed: controller.canProceed ? controller.proceed : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.primaryYellow,
+            backgroundColor: AppTheme.primaryYellow, // Always yellow
             foregroundColor: AppTheme.black,
-            disabledBackgroundColor: AppTheme.grey300,
+            disabledBackgroundColor:
+                AppTheme.primaryYellow, // Keep yellow when disabled
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
           ),
-          child: controller.isLoading.value
-              ? SizedBox(
-                  width: 5.w,
-                  height: 5.w,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppTheme.black),
-                  ),
-                )
-              : Text(
-                  'Continue',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+          child: Text(
+            'Continue',
+            style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+          ),
         ),
       ),
     );
@@ -230,7 +262,7 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 4.w),
           child: Text(
-            'Or login with',
+            'Or ',
             style: TextStyle(fontSize: 11.sp, color: AppTheme.textSecondary),
           ),
         ),
@@ -240,34 +272,36 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
   }
 
   Widget _buildSocialLogin() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Column(
       children: [
-        _buildSocialButton(
-          'assets/icons/google.svg',
-          controller.loginWithGoogle,
+        // Social login buttons
+        SocialLoginButton(
+          text: 'Continue with Google    ',
+          iconAssetPath: 'assets/icons/google.svg',
+          onTap: controller.loginWithGoogle,
+          isLoading: false, // Never show internal loading
+          backgroundColor: Colors.white,
+          textColor: Colors.black87,
+          borderColor: AppTheme.grey100,
+          height: 7.h,
+          fontSize: 12.sp,
+          fontWeight: FontWeight.w400,
         ),
-        SizedBox(width: 4.w),
-        _buildSocialButton(
-          'assets/icons/facebook.svg',
-          controller.loginWithFacebook,
+        SizedBox(height: 2.5.h),
+        SocialLoginButton(
+          text: 'Continue with Facebook',
+          iconAssetPath: 'assets/icons/facebook.svg',
+          onTap: controller.loginWithFacebook,
+          isLoading:
+              false, // Never show internal loading - this prevents second loading
+          backgroundColor: Colors.white,
+          textColor: Colors.black,
+          borderColor: AppTheme.grey100,
+          height: 7.h,
+          fontSize: 12.sp,
+          fontWeight: FontWeight.w400,
         ),
       ],
-    );
-  }
-
-  Widget _buildSocialButton(String svgAssetPath, VoidCallback onTap) {
-    return Container(
-      width: 16.w,
-      height: 16.w,
-      decoration: BoxDecoration(
-        border: Border.all(color: AppTheme.grey300),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: IconButton(
-        onPressed: onTap,
-        icon: SvgPicture.asset(svgAssetPath, width: 7.w, height: 7.w),
-      ),
     );
   }
 }
