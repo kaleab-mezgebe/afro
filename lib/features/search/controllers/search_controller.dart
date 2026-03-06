@@ -1,8 +1,5 @@
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'dart:ui' as ui;
-import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
 import '../../../domain/entities/provider.dart';
@@ -204,6 +201,26 @@ class SearchController extends GetxController {
     searchHistory.clear();
   }
 
+  void clearFilters() {
+    query.value = '';
+    selectedCategory.value = 'All';
+    minRating.value = 0.0;
+    maxPrice.value = 500.0;
+    minPrice.value = 0.0;
+    location.value = '';
+    sortBy.value = 'rating';
+    sortOrder.value = false;
+    availability.value = 'any';
+    gender.value = 'any';
+    onlyOpenNow.value = false;
+    onlyFeatured.value = false;
+    onlyVerified.value = false;
+    maxDistance.value = 50.0;
+    selectedServices.clear();
+    filteredProviders.assignAll(providers);
+    generateMarkers();
+  }
+
   void updateQuery(String value) {
     query.value = value;
     if (value.isEmpty) {
@@ -298,7 +315,7 @@ class SearchController extends GetxController {
       final marker = await _createMarker(provider);
       newMarkers.add(marker);
     }
-    markers.value = newMarkers;
+    markers.assignAll(newMarkers);
   }
 
   Future<Marker> _createMarker(Provider provider) async {

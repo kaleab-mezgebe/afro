@@ -26,7 +26,6 @@ import '../../../domain/usecases/profile/update_profile.dart';
 import '../../../domain/usecases/search/search_providers.dart';
 
 import '../../../data/datasources/local/local_storage.dart';
-import '../../../data/datasources/remote/api_client.dart';
 
 class MainBinding extends Bindings {
   @override

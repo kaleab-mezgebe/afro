@@ -337,7 +337,7 @@ class BookingTimePage extends GetView<AppointmentsController> {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.black.withOpacity(0.05),
+            color: AppTheme.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),

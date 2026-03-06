@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -138,7 +137,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                     ),
                   );
                 },
-                child: Container(
+                child: SizedBox(
                   key: ValueKey(data.image),
                   width: double.infinity,
                   height: double.infinity,
@@ -333,7 +332,7 @@ class _OnboardingPageState extends State<OnboardingPage>
             (highlight) => word.toLowerCase().contains(highlight.toLowerCase()),
           );
           return TextSpan(
-            text: word + ' ',
+            text: '$word ',
             style: TextStyle(
               color: isHighlighted
                   ? AppTheme.primaryYellow

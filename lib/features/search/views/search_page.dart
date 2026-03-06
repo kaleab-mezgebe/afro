@@ -4,7 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../core/theme/app_theme.dart';
 import '../controllers/search_controller.dart' as search_ctrl;
 import '../../../domain/entities/provider.dart';
-import '../../home/widgets/specialist_card.dart'; // Assuming this exists or using local
+// Assuming this exists or using local
 
 class SearchPage extends GetView<search_ctrl.SearchController> {
   const SearchPage({super.key});
@@ -281,8 +281,9 @@ class SearchPage extends GetView<search_ctrl.SearchController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildSearchHistory(),
-          _buildQuickActions(),
+          _buildServiceCategories(),
           _buildNearbyPreview(),
+          const SizedBox(height: 20),
         ],
       ),
     );
@@ -357,14 +358,23 @@ class SearchPage extends GetView<search_ctrl.SearchController> {
     });
   }
 
-  Widget _buildQuickActions() {
+  /// Replaces Quick Actions — shows service category tiles that search properly
+  Widget _buildServiceCategories() {
+    final categories = [
+      {'label': 'Haircut', 'icon': Icons.content_cut_rounded, 'color': const Color(0xFFFFB900)},
+      {'label': 'Beard', 'icon': Icons.face_retouching_natural, 'color': const Color(0xFF4CAF50)},
+      {'label': 'Color', 'icon': Icons.palette_rounded, 'color': const Color(0xFF9C27B0)},
+      {'label': 'Makeup', 'icon': Icons.brush_rounded, 'color': const Color(0xFFE91E63)},
+      {'label': 'Facial', 'icon': Icons.spa_rounded, 'color': const Color(0xFF00BCD4)},
+      {'label': 'Nails', 'icon': Icons.front_hand_rounded, 'color': const Color(0xFFFF5722)},
+    ];
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Quick Actions',
+            'Browse by Service',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -372,29 +382,65 @@ class SearchPage extends GetView<search_ctrl.SearchController> {
             ),
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              _buildActionItem(
-                'Top Rated',
-                Icons.star_rounded,
-                AppTheme.primaryYellow,
-                () => controller.updateMinRating(4.5),
-              ),
-              const SizedBox(width: 12),
-              _buildActionItem(
-                'Nearby',
-                Icons.location_on_rounded,
-                AppTheme.info,
-                () {},
-              ),
-              const SizedBox(width: 12),
-              _buildActionItem(
-                'Deals',
-                Icons.local_offer_rounded,
-                AppTheme.success,
-                () {},
-              ),
-            ],
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 1.1,
+            ),
+            itemCount: categories.length,
+            itemBuilder: (context, i) {
+              final cat = categories[i];
+              return GestureDetector(
+                onTap: () {
+                  controller.updateQuery(cat['label'] as String);
+                  controller.performSearch();
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppTheme.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppTheme.grey200),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (cat['color'] as Color).withValues(alpha: 0.08),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: (cat['color'] as Color).withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          cat['icon'] as IconData,
+                          color: cat['color'] as Color,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        cat['label'] as String,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.black,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -567,12 +613,68 @@ class SearchPage extends GetView<search_ctrl.SearchController> {
   }
 
   Widget _buildResultsList() {
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      itemCount: controller.filteredProviders.length,
-      itemBuilder: (context, index) {
-        return _buildSpecialistCard(controller.filteredProviders[index]);
-      },
+    return Column(
+      children: [
+        // Active filter / search banner with back option
+        Obx(() {
+          final q = controller.query.value;
+          final hasFilter = controller.hasActiveFilters;
+          if (q.isEmpty && !hasFilter) return const SizedBox.shrink();
+          return Container(
+            margin: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryYellow.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppTheme.primaryYellow.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.filter_list_rounded, size: 18, color: AppTheme.primaryYellow),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    q.isNotEmpty ? 'Results for "$q"' : 'Filtered results',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.black,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => controller.clearFilters(),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryYellow,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.close_rounded, size: 14, color: AppTheme.black),
+                        SizedBox(width: 4),
+                        Text('Clear', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.black)),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+            itemCount: controller.filteredProviders.length,
+            itemBuilder: (context, index) {
+              return _buildSpecialistCard(controller.filteredProviders[index]);
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -714,7 +816,7 @@ class SearchPage extends GetView<search_ctrl.SearchController> {
             target: LatLng(9.03, 38.74),
             zoom: 13,
           ),
-          markers: controller.markers.value,
+          markers: controller.markers,
           zoomControlsEnabled: false,
           myLocationButtonEnabled: false,
           mapType: MapType.normal,
@@ -1141,7 +1243,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: AppTheme.primaryYellow,
+            activeThumbColor: AppTheme.primaryYellow,
           ),
         ],
       ),

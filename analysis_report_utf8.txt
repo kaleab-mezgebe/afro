@@ -1,0 +1,68 @@
+﻿Analyzing customer_app...                                       
+
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:10:5 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:11:5 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:15:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:16:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:39:7 - avoid_print
+warning - The value of the local variable 'certBytes' isn't used - generate_key_hash.dart:42:13 - unused_local_variable
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:47:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:48:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:62:9 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:65:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:66:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:67:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:68:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:69:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:70:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:73:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:80:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:81:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:84:5 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:85:5 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:86:5 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:89:5 - avoid_print
+  error - 4 positional arguments expected by 'scaleByDouble', but 1 found - lib\core\animations\shegabet_animations.dart:97:61 - not_enough_positional_arguments
+   info - 'fromBytes' is deprecated and shouldn't be used. Use BitmapDescriptor.bytes method instead - lib\core\utils\map_helper.dart:49:29 - deprecated_member_use
+  error - Undefined class 'TimeSlot' - lib\features\appointments\views\booking_summary_page.dart:225:60 - undefined_class
+  error - Undefined name 'color' - lib\features\appointments\views\booking_time_page.dart:339:13 - undefined_identifier
+  error - Expected to find ')' - lib\features\appointments\views\booking_time_page.dart:339:18 - expected_token
+  error - Expected to find ']' - lib\features\appointments\views\booking_time_page.dart:339:18 - expected_token
+  error - Expected an identifier - lib\features\appointments\views\booking_time_page.dart:342:9 - missing_identifier
+  error - Expected to find ')' - lib\features\appointments\views\booking_time_page.dart:342:9 - expected_token
+  error - Expected to find ';' - lib\features\appointments\views\booking_time_page.dart:343:7 - expected_token
+warning - Dead code - lib\features\appointments\views\booking_time_page.dart:343:8 - dead_code
+  error - Expected an identifier - lib\features\appointments\views\booking_time_page.dart:343:8 - missing_identifier
+  error - Unexpected text ';' - lib\features\appointments\views\booking_time_page.dart:343:8 - unexpected_token
+warning - The label 'child' isn't used - lib\features\appointments\views\booking_time_page.dart:344:7 - unused_label
+  error - Expected to find ';' - lib\features\appointments\views\booking_time_page.dart:384:7 - expected_token
+  error - Expected an identifier - lib\features\appointments\views\booking_time_page.dart:384:8 - missing_identifier
+  error - Expected to find ';' - lib\features\appointments\views\booking_time_page.dart:384:8 - expected_token
+  error - Unexpected text ';' - lib\features\appointments\views\booking_time_page.dart:384:8 - unexpected_token
+  error - Expected an identifier - lib\features\appointments\views\booking_time_page.dart:385:5 - missing_identifier
+  error - Unexpected text ';' - lib\features\appointments\views\booking_time_page.dart:385:5 - unexpected_token
+   info - 'fetchSignInMethodsForEmail' is deprecated and shouldn't be used. fetchSignInMethodsForEmail() has been deprecated. Migrating off of this method is recommended as a security best-practice. Learn more in the Identity Platform documentation:  https://cloud.google.com/identity-platform/docs/admin/email-enumeration-protection - lib\features\auth\controllers\phone_auth_controller.dart:268:43 - deprecated_member_use
+   info - 'fetchSignInMethodsForEmail' is deprecated and shouldn't be used. fetchSignInMethodsForEmail() has been deprecated. Migrating off of this method is recommended as a security best-practice. Learn more in the Identity Platform documentation:  https://cloud.google.com/identity-platform/docs/admin/email-enumeration-protection - lib\features\auth\controllers\phone_auth_controller.dart:353:16 - deprecated_member_use
+warning - Unused import: '../../../routes/app_routes.dart' - lib\features\home\views\portfolio_page.dart:5:8 - unused_import
+  error - The method 'debugPrint' isn't defined for the type 'NotificationsListController' - lib\features\notifications\controllers\notifications_list_controller.dart:107:7 - undefined_method
+  error - The method 'debugPrint' isn't defined for the type 'NotificationsListController' - lib\features\notifications\controllers\notifications_list_controller.dart:135:7 - undefined_method
+warning - The value of the field '_fadeAnimation' isn't used - lib\features\onboarding\views\onboarding_page.dart:21:26 - unused_field
+warning - The value of the field '_scaleAnimation' isn't used - lib\features\onboarding\views\onboarding_page.dart:22:26 - unused_field
+warning - This class (or a class that this class inherits from) is marked as '@immutable', but one or more of its instance fields aren't final: EditProfilePage._selectedGender, EditProfilePage._selectedPreferences - lib\features\profile\views\edit_profile_page.dart:7:7 - must_be_immutable
+   info - Missing type annotation - lib\features\profile\views\profile_page.dart:135:30 - strict_top_level_inference
+   info - Missing type annotation - lib\features\profile\views\settings_page.dart:89:31 - strict_top_level_inference
+warning - The declaration '_buildSmallTag' isn't referenced - lib\features\profile\views\settings_page.dart:339:10 - unused_element
+   info - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor or activeTrackColor instead. This feature was deprecated after v3.31.0-2.0.pre - lib\features\profile\views\settings_page.dart:930:19 - deprecated_member_use
+  error - The getter 'isSignUpMode' isn't defined for the type 'PhoneAuthController' - test\otp_flow_test.dart:28:18 - undefined_getter
+  error - The getter 'isSignUpMode' isn't defined for the type 'PhoneAuthController' - test\otp_flow_test.dart:29:25 - undefined_getter
+  error - The getter 'isSignUpMode' isn't defined for the type 'PhoneAuthController' - test\otp_flow_test.dart:32:18 - undefined_getter
+  error - The getter 'isSignUpMode' isn't defined for the type 'PhoneAuthController' - test\otp_flow_test.dart:33:25 - undefined_getter
+  error - The getter 'isSignUpMode' isn't defined for the type 'PhoneAuthController' - test\phone_only_auth_test.dart:21:25 - undefined_getter
+  error - The method 'toggleMode' isn't defined for the type 'PhoneAuthController' - test\phone_only_auth_test.dart:29:18 - undefined_method
+  error - The getter 'isSignUpMode' isn't defined for the type 'PhoneAuthController' - test\phone_only_auth_test.dart:30:25 - undefined_getter
+  error - The method 'toggleMode' isn't defined for the type 'PhoneAuthController' - test\phone_only_auth_test.dart:32:18 - undefined_method
+  error - The getter 'isSignUpMode' isn't defined for the type 'PhoneAuthController' - test\phone_only_auth_test.dart:33:25 - undefined_getter
+  error - The getter 'isSignUpMode' isn't defined for the type 'PhoneAuthController' - test\registration_flow_test.dart:12:20 - undefined_getter
+  error - The getter 'isSignUpMode' isn't defined for the type 'PhoneAuthController' - test\registration_flow_test.dart:16:27 - undefined_getter
+
+

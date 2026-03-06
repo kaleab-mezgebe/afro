@@ -1,4 +1,3 @@
-import 'package:logger/logger.dart';
 
 class AppLogger {
   static void d(String message) {

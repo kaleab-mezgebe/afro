@@ -120,7 +120,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
               builder: (context, child) {
                 return Opacity(
                   opacity: _patternFade.value,
-                  child: Container(
+                  child: SizedBox(
                     height: 150,
                     child: Wrap(
                       alignment: WrapAlignment.center,
@@ -179,7 +179,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
   }
 
   Widget _buildBarberLogo() {
-    return Container(
+    return SizedBox(
       width: 200,
       height: 200,
       child: Image.asset(
@@ -211,35 +211,11 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildBackgroundPattern() {
-    return Positioned(
-      bottom: 100,
-      left: 0,
-      right: 0,
-      child: Container(
-        height: 150,
-        child: Wrap(
-          alignment: WrapAlignment.center,
-          spacing: 20,
-          runSpacing: 15,
-          children: [
-            _buildPatternIcon(Icons.content_cut),
-            _buildPatternIcon(Icons.brush),
-            _buildPatternIcon(Icons.face),
-            _buildPatternIcon(Icons.spa),
-            _buildPatternIcon(Icons.auto_fix_high),
-            _buildPatternIcon(Icons.style),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildPatternIcon(IconData icon) {
     return Icon(
       icon,
       size: 24,
-      color: AppTheme.primaryYellow.withOpacity(0.15),
+      color: AppTheme.primaryYellow.withValues(alpha: 0.15),
     );
   }
 

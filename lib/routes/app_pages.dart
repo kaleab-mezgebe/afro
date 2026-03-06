@@ -2,7 +2,6 @@ import 'package:get/get.dart';
 
 import '../features/auth/bindings/phone_auth_binding.dart';
 import '../features/auth/bindings/otp_verification_binding.dart';
-import '../features/auth/bindings/user_registration_binding.dart';
 import '../features/auth/views/phone_auth_page.dart';
 import '../features/auth/views/otp_verification_page.dart';
 import '../features/appointments/bindings/appointments_binding.dart';
@@ -13,9 +12,7 @@ import '../features/appointments/views/booking_time_page.dart';
 import '../features/appointments/views/booking_success_page.dart';
 import '../features/favorites/bindings/favorites_binding.dart';
 import '../features/favorites/views/favorites_page.dart';
-import '../features/home/bindings/home_binding.dart';
 import '../features/home/bindings/portfolio_binding.dart';
-import '../features/home/views/home_page.dart';
 import '../features/home/views/portfolio_page.dart';
 import '../features/main/bindings/main_binding.dart';
 import '../features/main/views/main_layout_page.dart';

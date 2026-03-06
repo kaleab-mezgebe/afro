@@ -94,7 +94,7 @@ class ShegabetAnimations {
       builder: (context, scale, child) {
         return AnimatedContainer(
           duration: duration,
-          transform: Matrix4.identity()..scale(scale),
+          transform: Matrix4.identity()..scale(scale, scale, 1.0),
           child: child,
         );
       },
@@ -357,13 +357,13 @@ class AnimatedButton extends StatefulWidget {
   final double? scaleDown;
   
   const AnimatedButton({
-    Key? key,
+    super.key,
     required this.child,
     this.onPressed,
     this.style,
     this.duration,
     this.scaleDown,
-  }) : super(key: key);
+  });
   
   @override
   State<AnimatedButton> createState() => _AnimatedButtonState();
@@ -430,13 +430,13 @@ class AnimatedCard extends StatefulWidget {
   final double? elevationIncrease;
   
   const AnimatedCard({
-    Key? key,
+    super.key,
     required this.child,
     this.onTap,
     this.decoration,
     this.duration,
     this.elevationIncrease,
-  }) : super(key: key);
+  });
   
   @override
   State<AnimatedCard> createState() => _AnimatedCardState();
@@ -483,7 +483,7 @@ class _AnimatedCardState extends State<AnimatedCard>
             decoration: BoxDecoration(
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 20 + _elevationAnimation.value,
                   offset: Offset(0, 8 + _elevationAnimation.value / 2),
                 ),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -104,7 +105,7 @@ class NotificationsListController extends GetxController {
         _loadSampleNotifications();
       }
     } catch (e) {
-      print('Error loading notifications: $e');
+      debugPrint('Error loading notifications: $e');
       _loadSampleNotifications();
     }
   }
@@ -132,7 +133,7 @@ class NotificationsListController extends GetxController {
           .toList();
       await prefs.setString(_storageKey, json.encode(notificationsJson));
     } catch (e) {
-      print('Error saving notifications: $e');
+      debugPrint('Error saving notifications: $e');
     }
   }
 

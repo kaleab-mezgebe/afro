@@ -5,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 import '../../../domain/entities/user.dart';
 import '../../../core/theme/butter_theme.dart';
 import '../../../core/utils/preference_helper.dart';
-import '../../../routes/app_routes.dart';
 
 class UserRegistrationController extends GetxController {
   final ImagePicker _imagePicker = ImagePicker();

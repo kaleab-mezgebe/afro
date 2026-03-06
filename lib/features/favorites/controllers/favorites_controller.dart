@@ -3,8 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 
-import '../../../core/services/favorites_service.dart';
-import '../../../routes/app_routes.dart';
 
 class FavoritesController extends GetxController {
   final RxList<Map<String, dynamic>> favorites = <Map<String, dynamic>>[].obs;

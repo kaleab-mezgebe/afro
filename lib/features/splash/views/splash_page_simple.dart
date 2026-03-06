@@ -67,7 +67,7 @@ class _SplashPageState extends State<SplashPage> {
                   borderRadius: BorderRadius.circular(60),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 10,
                       offset: const Offset(0, 5),
                     ),
@@ -103,7 +103,7 @@ class _SplashPageState extends State<SplashPage> {
               const SizedBox(height: 50),
 
               // Loading indicator
-              Container(
+              SizedBox(
                 width: 40,
                 height: 40,
                 child: CircularProgressIndicator(

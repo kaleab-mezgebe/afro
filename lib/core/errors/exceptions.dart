@@ -10,46 +10,37 @@ abstract class AppException implements Exception {
 }
 
 class ServerException extends AppException {
-  const ServerException(String message, {String? code, dynamic details})
-      : super(message, code: code, details: details);
+  const ServerException(super.message, {super.code, super.details});
 }
 
 class NetworkException extends AppException {
-  const NetworkException(String message, {String? code, dynamic details})
-      : super(message, code: code, details: details);
+  const NetworkException(super.message, {super.code, super.details});
 }
 
 class CacheException extends AppException {
-  const CacheException(String message, {String? code, dynamic details})
-      : super(message, code: code, details: details);
+  const CacheException(super.message, {super.code, super.details});
 }
 
 class ValidationException extends AppException {
-  const ValidationException(String message, {String? code, dynamic details})
-      : super(message, code: code, details: details);
+  const ValidationException(super.message, {super.code, super.details});
 }
 
 class AuthenticationException extends AppException {
-  const AuthenticationException(String message, {String? code, dynamic details})
-      : super(message, code: code, details: details);
+  const AuthenticationException(super.message, {super.code, super.details});
 }
 
 class AuthorizationException extends AppException {
-  const AuthorizationException(String message, {String? code, dynamic details})
-      : super(message, code: code, details: details);
+  const AuthorizationException(super.message, {super.code, super.details});
 }
 
 class NotFoundException extends AppException {
-  const NotFoundException(String message, {String? code, dynamic details})
-      : super(message, code: code, details: details);
+  const NotFoundException(super.message, {super.code, super.details});
 }
 
 class TimeoutException extends AppException {
-  const TimeoutException(String message, {String? code, dynamic details})
-      : super(message, code: code, details: details);
+  const TimeoutException(super.message, {super.code, super.details});
 }
 
 class UnknownException extends AppException {
-  const UnknownException(String message, {String? code, dynamic details})
-      : super(message, code: code, details: details);
+  const UnknownException(super.message, {super.code, super.details});
 }

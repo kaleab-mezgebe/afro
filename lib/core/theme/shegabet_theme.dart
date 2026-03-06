@@ -236,12 +236,10 @@ class ShegabetTheme {
         primary: deepRoyalPurple,
         secondary: softRose,
         surface: Colors.white,
-        background: warmCream,
         error: error,
         onPrimary: Colors.white,
         onSecondary: textPrimary,
         onSurface: textPrimary,
-        onBackground: textPrimary,
         onError: Colors.white,
       ),
 
@@ -280,7 +278,7 @@ class ShegabetTheme {
       cardTheme: CardThemeData(
         color: Colors.white,
         elevation: 0,
-        shadowColor: Colors.black.withOpacity(0.1),
+        shadowColor: Colors.black.withValues(alpha: 0.1),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
@@ -367,15 +365,15 @@ class ShegabetTheme {
 
       // Switch Theme
       switchTheme: SwitchThemeData(
-        thumbColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return deepRoyalPurple;
           }
           return neutral400;
         }),
-        trackColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
-            return purpleLight.withOpacity(0.3);
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return purpleLight.withValues(alpha: 0.3);
           }
           return neutral300;
         }),
@@ -383,20 +381,20 @@ class ShegabetTheme {
 
       // Checkbox Theme
       checkboxTheme: CheckboxThemeData(
-        fillColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        fillColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return deepRoyalPurple;
           }
           return Colors.white;
         }),
-        checkColor: MaterialStateProperty.all(Colors.white),
+        checkColor: WidgetStateProperty.all(Colors.white),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
       ),
 
       // Radio Theme
       radioTheme: RadioThemeData(
-        fillColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        fillColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return deepRoyalPurple;
           }
           return neutral400;
@@ -427,7 +425,7 @@ class ShegabetTheme {
       dialogTheme: DialogThemeData(
         backgroundColor: Colors.white,
         elevation: 8,
-        shadowColor: Colors.black.withOpacity(0.2),
+        shadowColor: Colors.black.withValues(alpha: 0.2),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         titleTextStyle: heading4,
         contentTextStyle: bodyMedium,

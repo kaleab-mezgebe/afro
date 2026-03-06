@@ -6,7 +6,6 @@ import '../../profile/views/settings_page.dart';
 import '../../appointments/views/booking_history_page.dart';
 import '../../appointments/views/booking_service_page.dart';
 import '../../favorites/views/favorites_page.dart';
-import '../../home/views/nearby_page.dart';
 import '../controllers/main_controller.dart';
 import '../../../core/theme/app_theme.dart';
 
@@ -62,7 +61,7 @@ class MainLayoutPage extends GetView<MainController> {
             color: Colors.white,
             boxShadow: [
               BoxShadow(
-                color: AppTheme.grey300.withOpacity(0.5),
+                color: AppTheme.grey300.withValues(alpha: 0.5),
                 blurRadius: 8,
                 offset: const Offset(0, -2),
               ),

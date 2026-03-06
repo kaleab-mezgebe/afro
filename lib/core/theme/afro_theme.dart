@@ -100,7 +100,7 @@ class AfroTheme {
     foregroundColor: surfaceColor,
     minimumSize: const Size(double.infinity, 56),
     elevation: 8,
-    shadowColor: primaryColor.withOpacity(0.3),
+    shadowColor: primaryColor.withValues(alpha: 0.3),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     textStyle: button,
   );
@@ -119,8 +119,8 @@ class AfroTheme {
     borderRadius: BorderRadius.circular(16),
     boxShadow: [
       BoxShadow(
-        color: Colors.black.withOpacity(0.1),
-        blurRadius: 8,
+        color: Colors.black.withValues(alpha: 0.1),
+        blurRadius: 10,
         offset: const Offset(0, 4),
       ),
     ],
@@ -182,7 +182,6 @@ class AfroTheme {
         primary: primaryColor,
         secondary: secondaryColor,
         surface: surfaceColor,
-        background: backgroundColor,
         error: errorColor,
       ),
 
@@ -204,7 +203,7 @@ class AfroTheme {
       cardTheme: CardThemeData(
         color: surfaceColor,
         elevation: 8,
-        shadowColor: Colors.black.withOpacity(0.1),
+        shadowColor: Colors.black.withValues(alpha: 0.1),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
@@ -277,7 +276,7 @@ class AfroTheme {
       // Chip theme
       chipTheme: ChipThemeData(
         backgroundColor: cardColor,
-        selectedColor: primaryColor.withOpacity(0.1),
+        selectedColor: primaryColor.withValues(alpha: 0.1),
         disabledColor: Colors.grey.shade300,
         labelStyle: const TextStyle(color: textPrimary),
         secondaryLabelStyle: const TextStyle(color: primaryColor),

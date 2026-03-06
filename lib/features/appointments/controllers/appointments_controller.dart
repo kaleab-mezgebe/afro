@@ -163,27 +163,26 @@ class AppointmentsController extends GetxController {
     services.clear();
     timeSlots.clear();
 
-    // Map specialist data to Provider entity
+    // Mapping logic
     final provider = Provider(
       id: specialist['id'] ?? 'unknown',
       name: specialist['name'] ?? 'Specialist',
       category: (specialist['categories'] as List?)?.first ?? 'Barber',
       rating: (specialist['rating'] as num?)?.toDouble() ?? 4.5,
       imageUrl: specialist['image'] ?? '',
-      isFavorite: false,
+      location: specialist['location'] ?? 'Unknown Location',
+      services: (specialist['categories'] as List?)?.map((e) => e.toString()).toList() ?? [],
     );
 
     selectedProvider.value = provider;
 
     if (service != null) {
-      // Map service data to Service entity
       final serviceEntity = Service(
         id: service['id'] ?? service['name']?.toLowerCase()?.replaceAll(' ', '_') ?? 'service',
+        providerId: provider.id,
         name: service['name'] ?? 'Service',
-        description: service['description'] ?? '',
         priceCents: _parsePrice(service['price']),
         durationMinutes: _parseDuration(service['duration']),
-        category: service['category'] ?? 'General',
       );
       selectedService.value = serviceEntity;
     }
@@ -203,7 +202,7 @@ class AppointmentsController extends GetxController {
     if (price == null) return 0;
     if (price is int) return price;
     final String s = price.toString().replaceAll(RegExp(r'[^0-9.]'), '');
-    return (double.tryParse(s) ?? 0 * 100).toInt();
+    return ((double.tryParse(s) ?? 0) * 100).toInt();
   }
 
   int _parseDuration(dynamic duration) {

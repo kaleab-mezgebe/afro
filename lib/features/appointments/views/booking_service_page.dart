@@ -16,11 +16,8 @@ class _BookingServicePageState extends State<BookingServicePage>
   Map<String, dynamic>? _specialist;
   Map<String, dynamic>? _selectedService;
   DateTime? _selectedDate;
-  int _selectedStep = 1;
   late AnimationController _fadeController;
   late AnimationController _slideController;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
@@ -38,15 +35,6 @@ class _BookingServicePageState extends State<BookingServicePage>
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
-    );
-
-    _slideAnimation =
-        Tween<Offset>(begin: const Offset(0.0, 0.5), end: Offset.zero).animate(
-          CurvedAnimation(parent: _slideController, curve: Curves.easeOutBack),
-        );
 
     // Start entrance animations after a short delay
     Future.delayed(const Duration(milliseconds: 100), () {
@@ -540,7 +528,7 @@ class _BookingServicePageState extends State<BookingServicePage>
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryYellow.withOpacity(0.05) : AppTheme.white,
+          color: isSelected ? AppTheme.primaryYellow.withValues(alpha: 0.05) : AppTheme.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? AppTheme.primaryYellow : AppTheme.grey100,
@@ -1348,7 +1336,7 @@ class _BookingServicePageState extends State<BookingServicePage>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.grey200!),
+        border: Border.all(color: AppTheme.grey200),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -1370,7 +1358,7 @@ class _BookingServicePageState extends State<BookingServicePage>
           ),
           const SizedBox(height: 16),
           // Calendar Grid
-          Container(
+          SizedBox(
             height: 280,
             child: GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -1568,7 +1556,7 @@ class _BookingServicePageState extends State<BookingServicePage>
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.grey200!),
+            border: Border.all(color: AppTheme.grey200),
           ),
           child: Column(
             children: [
@@ -1649,7 +1637,7 @@ class _BookingServicePageState extends State<BookingServicePage>
                         ? Colors.grey[50]
                         : Colors.transparent,
                     border: Border(
-                      bottom: BorderSide(color: AppTheme.grey200!, width: 1),
+                      bottom: BorderSide(color: AppTheme.grey200, width: 1),
                     ),
                   ),
                   child: Row(
@@ -1760,7 +1748,7 @@ class _BookingServicePageState extends State<BookingServicePage>
                     ],
                   ),
                 );
-              }).toList(),
+              }),
             ],
           ),
         ),
@@ -1817,9 +1805,4 @@ class _BookingServicePageState extends State<BookingServicePage>
     );
   }
 
-  void _selectService(Map<String, dynamic> service) {
-    setState(() {
-      _selectedService = service;
-    });
-  }
 }

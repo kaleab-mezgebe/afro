@@ -110,7 +110,7 @@ class EditProfilePage extends GetView<ProfileController> {
                 
                 // Gender Field
                 DropdownButtonFormField<String>(
-                  value: _selectedGender,
+                  initialValue: _selectedGender,
                   decoration: const InputDecoration(
                     labelText: 'Gender',
                     hintText: 'Select your gender',
@@ -255,7 +255,7 @@ class EditProfilePage extends GetView<ProfileController> {
             }
           },
           backgroundColor: AfroTheme.cardColor,
-          selectedColor: AfroTheme.primaryColor.withOpacity(0.2),
+          selectedColor: AfroTheme.primaryColor.withValues(alpha: 0.2),
           checkmarkColor: AfroTheme.primaryColor,
         );
       }).toList(),

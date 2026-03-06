@@ -112,7 +112,7 @@ class BookingHistoryPage extends GetView<AppointmentsController> {
           isUpcoming ? AppTheme.mediumShadow : AppTheme.softShadow,
         ],
         border: Border.all(
-          color: isUpcoming ? AppTheme.primaryYellow.withOpacity(0.1) : AppTheme.grey100,
+          color: isUpcoming ? AppTheme.primaryYellow.withValues(alpha: 0.1) : AppTheme.grey100,
           width: 1,
         ),
       ),
@@ -229,7 +229,7 @@ class BookingHistoryPage extends GetView<AppointmentsController> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(

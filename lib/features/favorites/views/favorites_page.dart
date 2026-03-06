@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/theme/app_theme.dart';
 import '../controllers/favorites_controller.dart';
 import '../widgets/favorite_card.dart';

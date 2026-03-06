@@ -5,6 +5,10 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../routes/app_routes.dart';
 import '../controllers/appointments_controller.dart';
+import '../../../domain/entities/provider.dart' as entity;
+import '../../../domain/entities/service.dart' as entity_service;
+import '../../../domain/entities/booking.dart';
+import '../../../domain/entities/time_slot.dart';
 
 class BookingSummaryPage extends GetView<AppointmentsController> {
   const BookingSummaryPage({super.key});
@@ -160,7 +164,7 @@ class BookingSummaryPage extends GetView<AppointmentsController> {
     );
   }
 
-  Widget _buildProviderCard(provider) {
+  Widget _buildProviderCard(entity.Provider provider) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -200,7 +204,7 @@ class BookingSummaryPage extends GetView<AppointmentsController> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: AppTheme.primaryYellow.withOpacity(0.1),
+              color: AppTheme.primaryYellow.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -219,7 +223,7 @@ class BookingSummaryPage extends GetView<AppointmentsController> {
     );
   }
 
-  Widget _buildDetailsCard(service, timeSlot) {
+  Widget _buildDetailsCard(entity_service.Service service, TimeSlot timeSlot) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -317,7 +321,7 @@ class BookingSummaryPage extends GetView<AppointmentsController> {
     );
   }
 
-  Widget _buildPriceSummary(service) {
+  Widget _buildPriceSummary(entity_service.Service service) {
     final subtotal = service.priceCents;
     final tax = (subtotal * 0.15).round(); // 15% VAT
     final total = subtotal + tax;
@@ -375,7 +379,7 @@ class BookingSummaryPage extends GetView<AppointmentsController> {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.black.withOpacity(0.05),
+            color: AppTheme.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),

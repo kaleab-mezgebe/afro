@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../routes/app_routes.dart';
+import 'package:customer_app/features/appointments/controllers/appointments_controller.dart';
 
 class PortfolioPage extends StatefulWidget {
   final Map<String, dynamic>? specialist;
@@ -338,7 +339,7 @@ class _PortfolioPageState extends State<PortfolioPage> {
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
           boxShadow: [
             BoxShadow(
-              color: AppTheme.black.withOpacity(0.05),
+              color: AppTheme.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, -5),
             ),
@@ -425,33 +426,38 @@ class _PortfolioPageState extends State<PortfolioPage> {
         ),
         const SizedBox(height: 16),
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Rating
-            Row(
-              children: [
-                const Icon(Icons.star, color: AppTheme.primaryYellow, size: 20),
-                const SizedBox(width: 4),
-                Text(
-                  (widget.specialist?['rating'] as double? ?? 4.5)
-                      .toStringAsFixed(1),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.black,
+            Flexible(
+              flex: 0,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.star, color: AppTheme.primaryYellow, size: 20),
+                  const SizedBox(width: 4),
+                  Text(
+                    (widget.specialist?['rating'] as double? ?? 4.5)
+                        .toStringAsFixed(1),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.black,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '(127 reviews)',
-                  style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
-                ),
-              ],
+                  const SizedBox(width: 6),
+                  Text(
+                    '(127)',
+                    style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(width: 24),
+            const SizedBox(width: 16),
             // Categories
             Expanded(
               child: Wrap(
-                spacing: 8,
+                spacing: 6,
                 runSpacing: 4,
                 children: (widget.specialist?['categories'] as List? ?? [])
                     .map<Widget>(
@@ -506,44 +512,42 @@ class _PortfolioPageState extends State<PortfolioPage> {
         ),
         const SizedBox(height: 20),
         // Service Categories Tabs
-        SliverToBoxAdapter(
-          child: SizedBox(
-            height: 50,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: _services.length > 5 ? 5 : _services.length,
-              itemBuilder: (context, index) {
-                final service = _services[index];
-                final isSelected = _selectedServiceIndex == index;
-                return Container(
-                  margin: const EdgeInsets.only(right: 12),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        _selectedServiceIndex = index;
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isSelected
-                          ? AppTheme.primaryYellow
-                          : AppTheme.grey100,
-                      foregroundColor: isSelected
-                          ? AppTheme.black
-                          : AppTheme.textSecondary,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
+        SizedBox(
+          height: 50,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: _services.length > 5 ? 5 : _services.length,
+            itemBuilder: (context, index) {
+              final service = _services[index];
+              final isSelected = _selectedServiceIndex == index;
+              return Container(
+                margin: const EdgeInsets.only(right: 12),
+                child: ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _selectedServiceIndex = index;
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isSelected
+                        ? AppTheme.primaryYellow
+                        : AppTheme.grey100,
+                    foregroundColor: isSelected
+                        ? AppTheme.black
+                        : AppTheme.textSecondary,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
                     ),
-                    child: Text(service['name'] as String),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
                   ),
-                );
-              },
-            ),
+                  child: Text(service['name'] as String),
+                ),
+              );
+            },
           ),
         ),
         const SizedBox(height: 20),
@@ -970,48 +974,6 @@ class _PortfolioPageState extends State<PortfolioPage> {
     );
   }
 
-  Widget _buildBookButton() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppTheme.white,
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
-          ),
-        ],
-      ),
-      child: SizedBox(
-        width: double.infinity,
-        height: 56,
-        child: ElevatedButton(
-          onPressed: () {
-            Get.toNamed(
-              AppRoutes.bookingService,
-              arguments: {
-                'specialist': widget.specialist,
-                'service': _services[_selectedServiceIndex],
-              },
-            );
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.primaryYellow,
-            foregroundColor: AppTheme.black,
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(28),
-            ),
-          ),
-          child: const Text(
-            'Book Appointment',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-        ),
-      ),
-    );
-  }
 
   void _showFavoriteToast() {
     ScaffoldMessenger.of(context).showSnackBar(

@@ -246,12 +246,10 @@ class AppTheme {
         primary: primaryYellow,
         secondary: primaryYellow,
         surface: white,
-        background: white,
         error: error,
         onPrimary: textOnYellow,
         onSecondary: textOnYellow,
         onSurface: textPrimary,
-        onBackground: textPrimary,
         onError: white,
       ),
 
@@ -290,7 +288,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: white,
         elevation: 0,
-        shadowColor: Colors.black.withOpacity(0.05),
+        shadowColor: Colors.black.withValues(alpha: 0.05),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
@@ -385,7 +383,7 @@ class AppTheme {
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return yellowLight.withOpacity(0.3);
+            return yellowLight.withValues(alpha: 0.3);
           }
           return grey300;
         }),
@@ -437,13 +435,13 @@ class AppTheme {
       dialogTheme: DialogThemeData(
         backgroundColor: white,
         elevation: 8,
-        shadowColor: Colors.black.withOpacity(0.1),
+        shadowColor: Colors.black.withValues(alpha: 0.1),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         titleTextStyle: heading4,
         contentTextStyle: bodyMedium,
       ),
 
-      scaffoldBackgroundColor: AppTheme.white,
+      scaffoldBackgroundColor: white,
     );
   }
 }

@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 
-import '../../../data/datasources/local/local_storage.dart';
 import '../../../data/repositories/profile_repository_impl.dart';
 import '../../../domain/repositories/profile_repository.dart';
 import '../../../domain/usecases/profile/change_password.dart';

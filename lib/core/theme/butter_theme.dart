@@ -65,7 +65,7 @@ class ButterTheme {
   );
 
   // Butter Theme Data
-  static ThemeData get ShegabetTheme {
+  static ThemeData get light {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
@@ -75,12 +75,10 @@ class ButterTheme {
         primary: primaryGolden,
         secondary: secondaryLatte,
         surface: neutralWarmWhite,
-        background: neutralLightCream,
         error: errorRose,
         onPrimary: textOnPrimary,
         onSecondary: textPrimary,
         onSurface: textPrimary,
-        onBackground: textPrimary,
         onError: neutralWarmWhite,
       ),
 
@@ -353,14 +351,14 @@ class ButterTheme {
 
       // Switch Theme
       switchTheme: SwitchThemeData(
-        thumbColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return primaryGolden;
           }
           return neutralWarmGray;
         }),
-        trackColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return primaryButter;
           }
           return neutralSoftGray;
@@ -369,20 +367,20 @@ class ButterTheme {
 
       // Checkbox Theme
       checkboxTheme: CheckboxThemeData(
-        fillColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        fillColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return primaryGolden;
           }
           return neutralWarmWhite;
         }),
-        checkColor: MaterialStateProperty.all(textOnPrimary),
+        checkColor: WidgetStateProperty.all(textOnPrimary),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
       ),
 
       // Radio Theme
       radioTheme: RadioThemeData(
-        fillColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        fillColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return primaryGolden;
           }
           return neutralWarmGray;

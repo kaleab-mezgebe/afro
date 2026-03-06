@@ -73,10 +73,10 @@ class SettingsPage extends GetView<ProfileController> {
       decoration: BoxDecoration(
         color: AppTheme.white,
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: AppTheme.grey200.withOpacity(0.5)),
+        border: Border.all(color: AppTheme.grey200.withValues(alpha: 0.5)),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.black.withOpacity(0.04),
+            color: AppTheme.black.withValues(alpha: 0.04),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -106,12 +106,12 @@ class SettingsPage extends GetView<ProfileController> {
                     end: Alignment.bottomRight,
                     colors: [
                       AppTheme.primaryYellow,
-                      AppTheme.primaryYellow.withOpacity(0.3),
+                      AppTheme.primaryYellow.withValues(alpha: 0.3),
                     ],
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primaryYellow.withOpacity(0.2),
+                      color: AppTheme.primaryYellow.withValues(alpha: 0.2),
                       blurRadius: 20,
                       spreadRadius: 5,
                     ),
@@ -178,7 +178,7 @@ class SettingsPage extends GetView<ProfileController> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: AppTheme.primaryYellow.withOpacity(0.1),
+              color: AppTheme.primaryYellow.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(100),
             ),
             child: Row(
@@ -250,9 +250,9 @@ class SettingsPage extends GetView<ProfileController> {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppTheme.grey50.withOpacity(0.5),
+                color: AppTheme.grey50.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: AppTheme.grey200.withOpacity(0.5)),
+                border: Border.all(color: AppTheme.grey200.withValues(alpha: 0.5)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -262,7 +262,7 @@ class SettingsPage extends GetView<ProfileController> {
                       Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryYellow.withOpacity(0.1),
+                          color: AppTheme.primaryYellow.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
@@ -288,7 +288,7 @@ class SettingsPage extends GetView<ProfileController> {
                     profile.bio!,
                     style: TextStyle(
                       fontSize: 15,
-                      color: AppTheme.black.withOpacity(0.7),
+                      color: AppTheme.black.withValues(alpha: 0.7),
                       height: 1.6,
                       fontStyle: FontStyle.italic,
                     ),
@@ -306,7 +306,7 @@ class SettingsPage extends GetView<ProfileController> {
     return Expanded(
       child: Column(
         children: [
-          Icon(icon, size: 20, color: AppTheme.primaryYellow.withOpacity(0.8)),
+          Icon(icon, size: 20, color: AppTheme.primaryYellow.withValues(alpha: 0.8)),
           const SizedBox(height: 8),
           Text(
             label.toUpperCase(),
@@ -672,10 +672,10 @@ class SettingsPage extends GetView<ProfileController> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFFF6B35).withOpacity(0.1),
+                color: const Color(0xFFFF6B35).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: const Color(0xFFFF6B35).withOpacity(0.2),
+                  color: const Color(0xFFFF6B35).withValues(alpha: 0.2),
                 ),
               ),
               child: const Row(
@@ -725,7 +725,7 @@ class SettingsPage extends GetView<ProfileController> {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryYellow.withOpacity(0.1),
+                    color: AppTheme.primaryYellow.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: const Icon(
@@ -828,7 +828,7 @@ class SettingsPage extends GetView<ProfileController> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: isSelected
-                ? AppTheme.primaryYellow.withOpacity(0.1)
+                ? AppTheme.primaryYellow.withValues(alpha: 0.1)
                 : AppTheme.grey50,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
@@ -894,7 +894,7 @@ class SettingsPage extends GetView<ProfileController> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryYellow.withOpacity(0.1),
+                  color: AppTheme.primaryYellow.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(icon, color: AppTheme.primaryYellow, size: 24),

@@ -87,7 +87,7 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
                     bottom: false,
                     child: Positioned.fill(
                       child: Container(
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withValues(alpha: 0.3),
                         child: Align(
                           alignment: Alignment
                               .center, // Center horizontally, slightly lower vertically
@@ -101,14 +101,14 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
                                 borderRadius: BorderRadius.circular(30),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
+                                    color: Colors.black.withValues(alpha: 0.1),
                                     blurRadius: 10,
                                     offset: const Offset(0, 5),
                                   ),
                                 ],
                               ),
                               child: Center(
-                                child: Container(
+                                child: SizedBox(
                                   width: 40,
                                   height: 40,
                                   child: CircularProgressIndicator(
@@ -134,7 +134,7 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
   }
 
   Widget _buildLogo() {
-    return Container(
+    return SizedBox(
       width: 120,
       height: 120,
       child: Center(
@@ -172,7 +172,7 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
           border: Border.all(color: AppTheme.grey300),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -181,7 +181,7 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
         child: Row(
           children: [
             // Country Picker
-            Container(
+            SizedBox(
               width: 28.w,
               height: 7.h,
               child: CountryPickerWidget(

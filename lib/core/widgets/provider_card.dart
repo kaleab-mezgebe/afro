@@ -17,7 +17,7 @@ class ProviderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: isSelected ? 4 : 1,
-      color: isSelected ? Theme.of(context).primaryColor.withOpacity(0.1) : null,
+      color: isSelected ? Theme.of(context).primaryColor.withValues(alpha: 0.1) : null,
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: Theme.of(context).primaryColor,

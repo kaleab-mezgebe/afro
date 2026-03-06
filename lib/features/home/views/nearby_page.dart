@@ -118,7 +118,7 @@ class _NearByPageState extends State<NearByPage> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.white.withOpacity(0.9),
+        backgroundColor: Colors.white.withValues(alpha: 0.9),
         elevation: 0,
         centerTitle: true,
       ),
@@ -144,7 +144,7 @@ class _NearByPageState extends State<NearByPage> {
   }
 
   Widget _buildProviderCards() {
-    return Container(
+    return SizedBox(
       height: 120,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
@@ -164,7 +164,7 @@ class _NearByPageState extends State<NearByPage> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -242,8 +242,8 @@ class _NearByPageState extends State<NearByPage> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: provider.category == 'barber'
-                                      ? AppTheme.primaryYellow.withOpacity(0.1)
-                                      : AppTheme.info.withOpacity(0.1),
+                                      ? AppTheme.primaryYellow.withValues(alpha: 0.1)
+                                      : AppTheme.info.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
@@ -361,7 +361,7 @@ class _NearByPageState extends State<NearByPage> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

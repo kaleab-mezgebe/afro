@@ -17,7 +17,7 @@ class BrandLoadingButton extends StatelessWidget {
   final EdgeInsets? padding;
 
   const BrandLoadingButton({
-    Key? key,
+    super.key,
     required this.text,
     required this.onTap,
     this.isLoading = false,
@@ -29,7 +29,7 @@ class BrandLoadingButton extends StatelessWidget {
     this.fontWeight,
     this.borderRadius,
     this.padding,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +44,7 @@ class BrandLoadingButton extends StatelessWidget {
             borderRadius: borderRadius ?? BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 8,
                 offset: const Offset(0, 1),
                 spreadRadius: 0,
@@ -81,8 +81,8 @@ class BrandLoadingButton extends StatelessWidget {
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
-                color: (backgroundColor ?? AfroTheme.primaryColor).withOpacity(
-                  0.9,
+                color: (backgroundColor ?? AfroTheme.primaryColor).withValues(
+                  alpha: 0.9,
                 ),
                 borderRadius: borderRadius ?? BorderRadius.circular(12),
               ),
@@ -102,7 +102,7 @@ class BrandLoadingButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
             spreadRadius: 0,
@@ -110,7 +110,7 @@ class BrandLoadingButton extends StatelessWidget {
         ],
       ),
       child: Center(
-        child: Container(
+        child: SizedBox(
           width: 24,
           height: 24,
           child: CircularProgressIndicator(
@@ -131,16 +131,16 @@ class BrandLoadingOverlay extends StatelessWidget {
   final Color? textColor;
 
   const BrandLoadingOverlay({
-    Key? key,
+    super.key,
     this.message = 'Loading...',
     this.backgroundColor,
     this.textColor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: (backgroundColor ?? Colors.black).withOpacity(0.5),
+      color: (backgroundColor ?? Colors.black).withValues(alpha: 0.5),
       child: Center(
         child: Container(
           padding: const EdgeInsets.all(24),
@@ -149,7 +149,7 @@ class BrandLoadingOverlay extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
+                color: Colors.black.withValues(alpha: 0.15),
                 blurRadius: 16,
                 offset: const Offset(0, 4),
                 spreadRadius: 0,
@@ -181,11 +181,11 @@ class BrandLoadingOverlay extends StatelessWidget {
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: AfroTheme.primaryColor.withOpacity(0.1),
+        color: AfroTheme.primaryColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(24),
       ),
       child: Center(
-        child: Container(
+        child: SizedBox(
           width: 32,
           height: 32,
           child: CircularProgressIndicator(
@@ -204,12 +204,11 @@ class CompactBrandLoader extends StatelessWidget {
   final double size;
   final Color? color;
 
-  const CompactBrandLoader({Key? key, this.size = 24, this.color})
-    : super(key: key);
+  const CompactBrandLoader({super.key, this.size = 24, this.color});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: size,
       height: size,
       child: CircularProgressIndicator(
@@ -239,7 +238,7 @@ class SocialLoginButton extends StatelessWidget {
   final BorderRadius? borderRadius;
 
   const SocialLoginButton({
-    Key? key,
+    super.key,
     required this.text,
     required this.iconAssetPath,
     required this.onTap,
@@ -252,7 +251,7 @@ class SocialLoginButton extends StatelessWidget {
     this.fontSize,
     this.fontWeight,
     this.borderRadius,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -271,7 +270,7 @@ class SocialLoginButton extends StatelessWidget {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 8,
                 offset: const Offset(0, 1),
                 spreadRadius: 0,

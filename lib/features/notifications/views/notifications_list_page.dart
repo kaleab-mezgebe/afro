@@ -72,7 +72,7 @@ class NotificationsListPage extends GetView<NotificationsListController> {
           border: Border.all(
             color: notification.isRead
                 ? AppTheme.grey200
-                : AppTheme.primaryYellow.withOpacity(0.3),
+                : AppTheme.primaryYellow.withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -123,7 +123,7 @@ class NotificationsListPage extends GetView<NotificationsListController> {
                   Text(
                     notification.timeAgo,
                     style: TextStyle(
-                      color: AppTheme.textSecondary.withOpacity(0.7),
+                      color: AppTheme.textSecondary.withValues(alpha: 0.7),
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
                     ),
@@ -145,22 +145,22 @@ class NotificationsListPage extends GetView<NotificationsListController> {
     switch (type) {
       case NotificationType.booking:
         icon = Icons.calendar_today_rounded;
-        backgroundColor = AppTheme.primaryYellow.withOpacity(0.1);
+        backgroundColor = AppTheme.primaryYellow.withValues(alpha: 0.1);
         iconColor = AppTheme.primaryYellow;
         break;
       case NotificationType.promotion:
         icon = Icons.local_offer_rounded;
-        backgroundColor = Colors.green.withOpacity(0.1);
+        backgroundColor = Colors.green.withValues(alpha: 0.1);
         iconColor = Colors.green;
         break;
       case NotificationType.reminder:
         icon = Icons.notifications_active_rounded;
-        backgroundColor = Colors.orange.withOpacity(0.1);
+        backgroundColor = Colors.orange.withValues(alpha: 0.1);
         iconColor = Colors.orange;
         break;
       case NotificationType.update:
         icon = Icons.info_rounded;
-        backgroundColor = Colors.blue.withOpacity(0.1);
+        backgroundColor = Colors.blue.withValues(alpha: 0.1);
         iconColor = Colors.blue;
         break;
     }
@@ -199,7 +199,7 @@ class NotificationsListPage extends GetView<NotificationsListController> {
           Text(
             'We\'ll notify you when something arrives',
             style: TextStyle(
-              color: AppTheme.textSecondary.withOpacity(0.7),
+              color: AppTheme.textSecondary.withValues(alpha: 0.7),
               fontSize: 14,
             ),
           ),

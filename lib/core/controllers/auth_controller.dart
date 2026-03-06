@@ -104,7 +104,8 @@ class AuthController extends GetxController {
       // Clear any GetX storage if you're using it
       // Get.reset();
     } catch (e) {
-      print('Error clearing local data: $e');
+      // Log error silently in production
+      debugPrint('Error clearing local data: $e');
     }
   }
 
@@ -117,7 +118,7 @@ class AuthController extends GetxController {
       await _clearLocalData();
       Get.offAllNamed(AppRoutes.splash);
     } catch (e) {
-      print('Force logout error: $e');
+      debugPrint('Force logout error: $e');
       Get.offAllNamed(AppRoutes.splash);
     }
   }
@@ -128,7 +129,7 @@ class AuthController extends GetxController {
       user.value = _auth.currentUser;
       isLoggedIn.value = user.value != null;
     } catch (e) {
-      print('Error checking auth status: $e');
+      debugPrint('Error checking auth status: $e');
       user.value = null;
       isLoggedIn.value = false;
     }

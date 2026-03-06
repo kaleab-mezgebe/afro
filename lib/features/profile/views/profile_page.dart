@@ -113,8 +113,8 @@ class ProfilePage extends GetView<ProfileController> {
                             color: ButterTheme.primaryGolden,
                           ),
                         ),
-                        backgroundColor: ButterTheme.primaryGolden.withOpacity(
-                          0.1,
+                        backgroundColor: ButterTheme.primaryGolden.withValues(
+                          alpha: 0.1,
                         ),
                       );
                     }).toList(),
@@ -149,7 +149,7 @@ class ProfilePage extends GetView<ProfileController> {
               borderRadius: BorderRadius.circular(40),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -192,7 +192,7 @@ class ProfilePage extends GetView<ProfileController> {
                 Text(
                   profile.email,
                   style: Get.textTheme.bodyMedium?.copyWith(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                   ),
                 ),
               ],
@@ -223,7 +223,7 @@ class ProfilePage extends GetView<ProfileController> {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
