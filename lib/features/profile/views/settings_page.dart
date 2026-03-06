@@ -7,7 +7,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../routes/app_routes.dart';
 
 class SettingsPage extends GetView<ProfileController> {
-  const SettingsPage({super.key});
+  SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -28,14 +28,17 @@ class SettingsPage extends GetView<ProfileController> {
         }
 
         final profile = controller.profile;
-        
+
         return SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Profile Section
-              if (profile != null) _buildProfileSection(profile) else _buildGuestProfileSection(),
+              if (profile != null)
+                _buildProfileSection(profile)
+              else
+                _buildGuestProfileSection(),
               const SizedBox(height: 32),
 
               // Preferences Section
@@ -60,7 +63,10 @@ class SettingsPage extends GetView<ProfileController> {
     );
   }
 
-  Widget _buildSectionCard({required Widget child, EdgeInsetsGeometry? padding}) {
+  Widget _buildSectionCard({
+    required Widget child,
+    EdgeInsetsGeometry? padding,
+  }) {
     return Container(
       width: double.infinity,
       padding: padding ?? const EdgeInsets.all(24),
@@ -116,15 +122,20 @@ class SettingsPage extends GetView<ProfileController> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: AppTheme.white,
-                    image: profile.avatar != null 
-                      ? DecorationImage(image: NetworkImage(profile.avatar!), fit: BoxFit.cover)
-                      : null,
+                    image: profile.avatar != null
+                        ? DecorationImage(
+                            image: NetworkImage(profile.avatar!),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
                   ),
-                  child: profile.avatar == null ? const Icon(
-                    Icons.person,
-                    color: AppTheme.primaryYellow,
-                    size: 60,
-                  ) : null,
+                  child: profile.avatar == null
+                      ? const Icon(
+                          Icons.person,
+                          color: AppTheme.primaryYellow,
+                          size: 60,
+                        )
+                      : null,
                 ),
               ),
               // Edit Button (Top Right)
@@ -141,14 +152,18 @@ class SettingsPage extends GetView<ProfileController> {
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: AppTheme.grey200),
                     ),
-                    child: const Icon(Icons.edit_outlined, color: AppTheme.primaryYellow, size: 20),
+                    child: const Icon(
+                      Icons.edit_outlined,
+                      color: AppTheme.primaryYellow,
+                      size: 20,
+                    ),
                   ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 20),
-          
+
           // Name and Role/Email
           Text(
             profile.name,
@@ -169,7 +184,11 @@ class SettingsPage extends GetView<ProfileController> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.verified_user_rounded, size: 14, color: AppTheme.primaryYellow),
+                const Icon(
+                  Icons.verified_user_rounded,
+                  size: 14,
+                  color: AppTheme.primaryYellow,
+                ),
                 const SizedBox(width: 6),
                 Text(
                   profile.email,
@@ -182,31 +201,48 @@ class SettingsPage extends GetView<ProfileController> {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 32),
           const Divider(height: 1, thickness: 1, color: AppTheme.grey100),
           const SizedBox(height: 24),
-          
+
           // Row Wise Info Grid (Quick Stats/Details)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildModernDetailItem(Icons.phone_outlined, 'Phone', profile.phoneNumber ?? 'Not set'),
+              _buildModernDetailItem(
+                Icons.phone_outlined,
+                'Phone',
+                profile.phoneNumber ?? 'Not set',
+              ),
               _buildModernVerticalDivider(),
-              _buildModernDetailItem(Icons.person_outline_rounded, 'Gender', profile.gender ?? 'Not set'),
+              _buildModernDetailItem(
+                Icons.person_outline_rounded,
+                'Gender',
+                profile.gender ?? 'Not set',
+              ),
             ],
           ),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildModernDetailItem(Icons.cake_outlined, 'Birthday', 
-                profile.dateOfBirth != null ? '${profile.dateOfBirth!.day}/${profile.dateOfBirth!.month}/${profile.dateOfBirth!.year}' : 'Not set'),
+              _buildModernDetailItem(
+                Icons.cake_outlined,
+                'Birthday',
+                profile.dateOfBirth != null
+                    ? '${profile.dateOfBirth!.day}/${profile.dateOfBirth!.month}/${profile.dateOfBirth!.year}'
+                    : 'Not set',
+              ),
               _buildModernVerticalDivider(),
-              _buildModernDetailItem(Icons.history_rounded, 'Member Since', 'Oct 2024'),
+              _buildModernDetailItem(
+                Icons.history_rounded,
+                'Member Since',
+                'Oct 2024',
+              ),
             ],
           ),
-          
+
           if (profile.bio != null && profile.bio!.isNotEmpty) ...[
             const SizedBox(height: 32),
             // Bio Section with amazing style
@@ -229,7 +265,11 @@ class SettingsPage extends GetView<ProfileController> {
                           color: AppTheme.primaryYellow.withOpacity(0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.format_quote_rounded, size: 14, color: AppTheme.primaryYellow),
+                        child: const Icon(
+                          Icons.format_quote_rounded,
+                          size: 14,
+                          color: AppTheme.primaryYellow,
+                        ),
                       ),
                       const SizedBox(width: 10),
                       const Text(
@@ -293,11 +333,7 @@ class SettingsPage extends GetView<ProfileController> {
   }
 
   Widget _buildModernVerticalDivider() {
-    return Container(
-      height: 40,
-      width: 1,
-      color: AppTheme.grey200,
-    );
+    return Container(height: 40, width: 1, color: AppTheme.grey200);
   }
 
   Widget _buildSmallTag(IconData icon, String label) {
@@ -353,7 +389,9 @@ class SettingsPage extends GetView<ProfileController> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primaryYellow,
               foregroundColor: AppTheme.black,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             child: const Text('Login'),
           ),
@@ -388,34 +426,40 @@ class SettingsPage extends GetView<ProfileController> {
           _buildServicePreferenceTile(),
 
           // Notifications Toggle
-          Obx(() => _buildSettingTile(
-            icon: Icons.notifications_none_rounded,
-            title: 'Push Notifications',
-            subtitle: 'Booking reminders and updates',
-            isToggle: true,
-            value: _notificationsEnabled.value,
-            onChanged: (value) => _notificationsEnabled.value = value,
-          )),
+          Obx(
+            () => _buildSettingTile(
+              icon: Icons.notifications_none_rounded,
+              title: 'Push Notifications',
+              subtitle: 'Booking reminders and updates',
+              isToggle: true,
+              value: _notificationsEnabled.value,
+              onChanged: (value) => _notificationsEnabled.value = value,
+            ),
+          ),
 
           // Location Toggle
-          Obx(() => _buildSettingTile(
-            icon: Icons.location_on_outlined,
-            title: 'Location Services',
-            subtitle: 'Access your current location',
-            isToggle: true,
-            value: _locationEnabled.value,
-            onChanged: (value) => _locationEnabled.value = value,
-          )),
+          Obx(
+            () => _buildSettingTile(
+              icon: Icons.location_on_outlined,
+              title: 'Location Services',
+              subtitle: 'Access your current location',
+              isToggle: true,
+              value: _locationEnabled.value,
+              onChanged: (value) => _locationEnabled.value = value,
+            ),
+          ),
 
           // Dark Mode Toggle
-          Obx(() => _buildSettingTile(
-            icon: Icons.dark_mode_outlined,
-            title: 'Dark Mode',
-            subtitle: 'Use dark theme across the app',
-            isToggle: true,
-            value: _darkModeEnabled.value,
-            onChanged: (value) => _darkModeEnabled.value = value,
-          )),
+          Obx(
+            () => _buildSettingTile(
+              icon: Icons.dark_mode_outlined,
+              title: 'Dark Mode',
+              subtitle: 'Use dark theme across the app',
+              isToggle: true,
+              value: _darkModeEnabled.value,
+              onChanged: (value) => _darkModeEnabled.value = value,
+            ),
+          ),
         ],
       ),
     );
@@ -437,24 +481,28 @@ class SettingsPage extends GetView<ProfileController> {
           const SizedBox(height: 24),
 
           // Language Selection
-          Obx(() => _buildSettingTile(
-            icon: Icons.language_rounded,
-            title: 'Language',
-            subtitle: _selectedLanguage.value,
-            isToggle: false,
-            value: null,
-            onChanged: (value) => _showLanguageDialog(),
-          )),
+          Obx(
+            () => _buildSettingTile(
+              icon: Icons.language_rounded,
+              title: 'Language',
+              subtitle: _selectedLanguage.value,
+              isToggle: false,
+              value: null,
+              onChanged: (value) => _showLanguageDialog(),
+            ),
+          ),
 
           // Currency Selection
-          Obx(() => _buildSettingTile(
-            icon: Icons.payments_outlined,
-            title: 'Currency',
-            subtitle: _selectedCurrency.value,
-            isToggle: false,
-            value: null,
-            onChanged: (value) => _showCurrencyDialog(),
-          )),
+          Obx(
+            () => _buildSettingTile(
+              icon: Icons.payments_outlined,
+              title: 'Currency',
+              subtitle: _selectedCurrency.value,
+              isToggle: false,
+              value: null,
+              onChanged: (value) => _showCurrencyDialog(),
+            ),
+          ),
 
           // Payment Methods
           _buildSettingTile(
@@ -492,16 +540,26 @@ class SettingsPage extends GetView<ProfileController> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Select Language', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text(
+              'Select Language',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 20),
-            ...languages.map((lang) => ListTile(
-              title: Text(lang),
-              trailing: _selectedLanguage.value == lang ? const Icon(Icons.check_circle, color: AppTheme.primaryYellow) : null,
-              onTap: () {
-                _selectedLanguage.value = lang;
-                Get.back();
-              },
-            )),
+            ...languages.map(
+              (lang) => ListTile(
+                title: Text(lang),
+                trailing: _selectedLanguage.value == lang
+                    ? const Icon(
+                        Icons.check_circle,
+                        color: AppTheme.primaryYellow,
+                      )
+                    : null,
+                onTap: () {
+                  _selectedLanguage.value = lang;
+                  Get.back();
+                },
+              ),
+            ),
           ],
         ),
       ),
@@ -520,16 +578,26 @@ class SettingsPage extends GetView<ProfileController> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Select Currency', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text(
+              'Select Currency',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 20),
-            ...currencies.map((curr) => ListTile(
-              title: Text(curr),
-              trailing: _selectedCurrency.value == curr ? const Icon(Icons.check_circle, color: AppTheme.primaryYellow) : null,
-              onTap: () {
-                _selectedCurrency.value = curr;
-                Get.back();
-              },
-            )),
+            ...currencies.map(
+              (curr) => ListTile(
+                title: Text(curr),
+                trailing: _selectedCurrency.value == curr
+                    ? const Icon(
+                        Icons.check_circle,
+                        color: AppTheme.primaryYellow,
+                      )
+                    : null,
+                onTap: () {
+                  _selectedCurrency.value = curr;
+                  Get.back();
+                },
+              ),
+            ),
           ],
         ),
       ),
@@ -613,7 +681,11 @@ class SettingsPage extends GetView<ProfileController> {
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.logout_rounded, color: Color(0xFFFF6B35), size: 22),
+                  Icon(
+                    Icons.logout_rounded,
+                    color: Color(0xFFFF6B35),
+                    size: 22,
+                  ),
                   SizedBox(width: 12),
                   Text(
                     'Logout Account',
@@ -715,11 +787,19 @@ class SettingsPage extends GetView<ProfileController> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
-            _buildPreferenceOption('Barber', 'barber', Icons.content_cut_rounded),
+            _buildPreferenceOption(
+              'Barber',
+              'barber',
+              Icons.content_cut_rounded,
+            ),
             const SizedBox(height: 12),
             _buildPreferenceOption('Salon', 'salon', Icons.spa_outlined),
             const SizedBox(height: 12),
-            _buildPreferenceOption('Both Services', 'all', Icons.grid_view_rounded),
+            _buildPreferenceOption(
+              'Both Services',
+              'all',
+              Icons.grid_view_rounded,
+            ),
             const SizedBox(height: 24),
           ],
         ),
@@ -776,7 +856,10 @@ class SettingsPage extends GetView<ProfileController> {
                 ),
               ),
               if (isSelected)
-                const Icon(Icons.check_circle_rounded, color: AppTheme.primaryYellow),
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: AppTheme.primaryYellow,
+                ),
             ],
           ),
         ),
@@ -882,7 +965,9 @@ class SettingsPage extends GetView<ProfileController> {
               backgroundColor: const Color(0xFFFF6B35),
               foregroundColor: Colors.white,
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             child: const Text('Logout'),
           ),

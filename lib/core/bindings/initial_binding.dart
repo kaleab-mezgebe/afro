@@ -16,6 +16,10 @@ import '../../domain/usecases/auth/login.dart';
 import '../../domain/usecases/auth/register.dart';
 import '../constants/app_constants.dart';
 
+import '../../domain/repositories/search_repository.dart';
+import '../../data/repositories/search_repository_impl.dart';
+import '../../domain/usecases/search/search_providers.dart';
+
 class InitialBinding extends Bindings {
   @override
   void dependencies() {
@@ -38,6 +42,9 @@ class InitialBinding extends Bindings {
     Get.lazyPut<AuthRepository>(
       () => AuthRepositoryImpl(localStorage: Get.find<LocalStorage>()),
     );
+    Get.lazyPut<SearchRepository>(
+      () => SearchRepositoryImpl(localStorage: Get.find<LocalStorage>()),
+    );
 
     // Use cases
     Get.lazyPut<GetProviders>(
@@ -52,6 +59,9 @@ class InitialBinding extends Bindings {
     );
     Get.lazyPut<GetBookingHistory>(
       () => GetBookingHistory(Get.find<BookingRepository>()),
+    );
+    Get.lazyPut<SearchProviders>(
+      () => SearchProviders(Get.find<SearchRepository>()),
     );
     Get.lazyPut<Login>(() => Login(Get.find<AuthRepository>()));
     Get.lazyPut<Register>(() => Register(Get.find<AuthRepository>()));

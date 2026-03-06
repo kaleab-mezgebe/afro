@@ -26,6 +26,7 @@ import '../features/profile/bindings/profile_binding.dart';
 import '../features/profile/views/edit_profile_page.dart';
 import '../features/profile/views/profile_page.dart';
 import '../features/profile/views/settings_page.dart';
+import '../features/search/bindings/search_binding.dart';
 import '../features/search/views/search_page.dart' as search;
 import '../features/splash/views/splash_page_simple.dart';
 
@@ -149,6 +150,10 @@ class AppPages {
       page: () => const BookingHistoryPage(),
       binding: BookingBinding(),
     ),
-    GetPage(name: AppRoutes.search, page: () => const search.SearchPage()),
+    GetPage(
+      name: AppRoutes.search,
+      page: () => const search.SearchPage(),
+      binding: SearchBinding(),
+    ),
   ];
 }

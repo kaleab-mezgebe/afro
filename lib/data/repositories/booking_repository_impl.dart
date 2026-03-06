@@ -157,6 +157,7 @@ class BookingRepositoryImpl implements BookingRepository {
         name: 'Afro Cuts Salon',
         category: 'salon',
         rating: 4.8,
+        location: 'Nairobi CBD',
         imageUrl: null,
       ),
       const ProviderModel(
@@ -164,6 +165,7 @@ class BookingRepositoryImpl implements BookingRepository {
         name: 'Barber Joe',
         category: 'barber',
         rating: 4.9,
+        location: 'Westlands',
         imageUrl: null,
       ),
       const ProviderModel(
@@ -171,6 +173,7 @@ class BookingRepositoryImpl implements BookingRepository {
         name: 'Style Studio',
         category: 'salon',
         rating: 4.7,
+        location: 'Kilimani',
         imageUrl: null,
       ),
     ];

@@ -49,6 +49,10 @@ class ProviderModel extends Provider {
     required super.name,
     required super.category,
     required super.rating,
+    required super.location,
+    super.services = const [],
+    super.minPrice = 0.0,
+    super.maxPrice = 0.0,
     super.imageUrl,
   });
 
@@ -58,6 +62,10 @@ class ProviderModel extends Provider {
       name: json['name'] as String,
       category: json['category'] as String,
       rating: (json['rating'] as num).toDouble(),
+      location: json['location'] as String? ?? '',
+      services: List<String>.from(json['services'] ?? []),
+      minPrice: (json['minPrice'] ?? 0.0).toDouble(),
+      maxPrice: (json['maxPrice'] ?? 0.0).toDouble(),
       imageUrl: json['imageUrl'] as String?,
     );
   }
@@ -68,6 +76,10 @@ class ProviderModel extends Provider {
       'name': name,
       'category': category,
       'rating': rating,
+      'location': location,
+      'services': services,
+      'minPrice': minPrice,
+      'maxPrice': maxPrice,
       'imageUrl': imageUrl,
     };
   }

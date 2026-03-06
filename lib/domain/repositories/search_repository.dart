@@ -7,4 +7,7 @@ abstract class SearchRepository {
   Future<List<Provider>> getNearbyProviders(String location);
   Future<List<Provider>> getProvidersByCategory(String category);
   Future<List<Provider>> getProvidersByService(List<String> services);
+  Future<void> saveSearchHistory(String query);
+  Future<List<String>> getSearchHistory();
+  Future<void> clearSearchHistory();
 }

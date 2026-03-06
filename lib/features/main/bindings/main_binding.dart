@@ -87,7 +87,10 @@ class MainBinding extends Bindings {
     );
 
     Get.lazyPut<SearchController>(
-      () => SearchController(searchProviders: Get.find<SearchProviders>()),
+      () => SearchController(
+        searchProviders: Get.find<SearchProviders>(),
+        searchRepository: Get.find<SearchRepository>(),
+      ),
     );
 
     Get.lazyPut<FavoritesController>(() => FavoritesController());

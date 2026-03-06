@@ -28,19 +28,21 @@ class FavoritesPage extends GetView<FavoritesController> {
       ),
       body: Obx(
         () => controller.isLoading.value
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(
+                child: CircularProgressIndicator(color: AppTheme.primaryYellow),
+              )
             : controller.favorites.isEmpty
             ? _buildEmptyState()
             : _buildFavoritesList(),
       ),
       floatingActionButton: Obx(
-        () => controller.favorites.isNotEmpty
-            ? FloatingActionButton(
-                onPressed: controller.refreshFavorites,
-                backgroundColor: AppTheme.primaryYellow,
-                child: const Icon(Icons.refresh, color: Colors.white),
-              )
-            : const SizedBox.shrink(),
+        () => FloatingActionButton(
+          onPressed: controller.favorites.isNotEmpty
+              ? controller.refreshFavorites
+              : null,
+          backgroundColor: AppTheme.primaryYellow,
+          child: const Icon(Icons.refresh, color: Colors.white),
+        ),
       ),
     );
   }

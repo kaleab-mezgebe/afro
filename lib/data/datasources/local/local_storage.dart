@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 abstract class LocalStorage {
   Future<void> save(String key, String value);
@@ -8,26 +9,34 @@ abstract class LocalStorage {
 }
 
 class LocalStorageImpl implements LocalStorage {
-  final Map<String, String> _storage = {};
+  SharedPreferences? _prefs;
+
+  Future<void> _init() async {
+    _prefs ??= await SharedPreferences.getInstance();
+  }
 
   @override
   Future<void> save(String key, String value) async {
-    _storage[key] = value;
+    await _init();
+    await _prefs!.setString(key, value);
   }
 
   @override
   Future<String?> get(String key) async {
-    return _storage[key];
+    await _init();
+    return _prefs!.getString(key);
   }
 
   @override
   Future<void> remove(String key) async {
-    _storage.remove(key);
+    await _init();
+    await _prefs!.remove(key);
   }
 
   @override
   Future<void> clear() async {
-    _storage.clear();
+    await _init();
+    await _prefs!.clear();
   }
 
   Future<void> saveObject<T>(String key, T object) async {
