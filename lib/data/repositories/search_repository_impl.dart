@@ -46,6 +46,10 @@ class SearchRepositoryImpl implements SearchRepository {
       );
     }).toList();
 
+    // Merge with mock results for demonstration
+    final mockResults = _getMockProviders();
+    results.addAll(mockResults);
+
     // Secondary local filtering for text search and complex filters
     if (filter.query != null && filter.query!.isNotEmpty) {
       final searchTerm = filter.query!.toLowerCase();
@@ -54,6 +58,10 @@ class SearchRepositoryImpl implements SearchRepository {
         p.category.toLowerCase().contains(searchTerm) ||
         p.services.any((s) => s.toLowerCase().contains(searchTerm))
       ).toList();
+    }
+
+    if (filter.category != null && filter.category!.isNotEmpty && filter.category != 'All') {
+      results = results.where((p) => p.category == filter.category).toList();
     }
 
     if (filter.location != null && filter.location!.isNotEmpty) {
@@ -76,6 +84,77 @@ class SearchRepositoryImpl implements SearchRepository {
     }
 
     return results;
+  }
+
+  List<Provider> _getMockProviders() {
+    return [
+      Provider(
+        id: 'mock_barber_1',
+        name: 'The Gentleman\'s Cut',
+        category: 'Barber',
+        rating: 4.9,
+        location: 'Downtown, CA',
+        services: ['Haircut', 'Beard Trim', 'Shave'],
+        minPrice: 30,
+        maxPrice: 60,
+        imageUrl: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=300&auto=format&fit=crop',
+      ),
+      Provider(
+        id: 'mock_salon_1',
+        name: 'Luxe Beauty Lounge',
+        category: 'Salon',
+        rating: 4.8,
+        location: 'Westside, NY',
+        services: ['Coloring', 'Styling', 'Manicure', 'Pedicure'],
+        minPrice: 50,
+        maxPrice: 200,
+        imageUrl: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=300&auto=format&fit=crop',
+      ),
+      Provider(
+        id: 'mock_barber_2',
+        name: 'Old School Barber Co.',
+        category: 'Barber',
+        rating: 4.7,
+        location: 'Brooklyn, NY',
+        services: ['Classic Cut', 'Hot Towel Shave', 'Fade'],
+        minPrice: 25,
+        maxPrice: 50,
+        imageUrl: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=300&auto=format&fit=crop',
+      ),
+      Provider(
+        id: 'mock_salon_2',
+        name: 'Bloom Hair Design',
+        category: 'Salon',
+        rating: 4.6,
+        location: 'Miami, FL',
+        services: ['Highlights', 'Blowout', 'Extensions'],
+        minPrice: 70,
+        maxPrice: 300,
+        imageUrl: 'https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?q=80&w=300&auto=format&fit=crop',
+      ),
+      Provider(
+        id: 'mock_barber_3',
+        name: 'Urban Edge Shop',
+        category: 'Barber',
+        rating: 4.5,
+        location: 'Chicago, IL',
+        services: ['Design', 'Taper Fade', 'Shape Up'],
+        minPrice: 35,
+        maxPrice: 80,
+        imageUrl: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=300&auto=format&fit=crop',
+      ),
+      Provider(
+        id: 'mock_salon_3',
+        name: 'Ethereal Spa & Salon',
+        category: 'Salon',
+        rating: 5.0,
+        location: 'Beverly Hills, CA',
+        services: ['Facial', 'Massage', 'Bridal Styling'],
+        minPrice: 120,
+        maxPrice: 500,
+        imageUrl: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=300&auto=format&fit=crop',
+      ),
+    ];
   }
 
   @override

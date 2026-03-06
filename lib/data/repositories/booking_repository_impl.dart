@@ -124,9 +124,122 @@ class BookingRepositoryImpl implements BookingRepository {
           .map((json) => BookingModel.fromJson(json as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      // Fallback to local storage for demo purposes
-      return _getBookingsFromLocalStorage();
+      // Fallback to local storage + mock data for demo purposes
+      final localBookings = await _getBookingsFromLocalStorage();
+      final mockBookings = _getMockBookings();
+      return [...localBookings, ...mockBookings];
     }
+  }
+
+  List<Booking> _getMockBookings() {
+    final now = DateTime.now();
+    return [
+      BookingModel(
+        id: 'mock_u1',
+        provider: const ProviderModel(
+          id: 'mock_barber_1',
+          name: 'The Gentleman\'s Cut',
+          category: 'Barber',
+          rating: 4.9,
+          location: 'Downtown, CA',
+        ),
+        service: const ServiceModel(
+          id: 's1',
+          providerId: 'mock_barber_1',
+          name: 'Haircut & Beard Trim',
+          durationMinutes: 45,
+          priceCents: 4500,
+        ),
+        start: now.add(const Duration(days: 2, hours: 10)),
+        end: now.add(const Duration(days: 2, hours: 10, minutes: 45)),
+        status: BookingStatus.confirmed,
+        totalPriceCents: 4500,
+      ),
+      BookingModel(
+        id: 'mock_u2',
+        provider: const ProviderModel(
+          id: 'mock_salon_1',
+          name: 'Luxe Beauty Lounge',
+          category: 'Salon',
+          rating: 4.8,
+          location: 'Westside, NY',
+        ),
+        service: const ServiceModel(
+          id: 's2',
+          providerId: 'mock_salon_1',
+          name: 'Full Color & Styling',
+          durationMinutes: 120,
+          priceCents: 15000,
+        ),
+        start: now.add(const Duration(days: 5, hours: 14)),
+        end: now.add(const Duration(days: 5, hours: 16)),
+        status: BookingStatus.confirmed,
+        totalPriceCents: 15000,
+      ),
+      BookingModel(
+        id: 'mock_p1',
+        provider: const ProviderModel(
+          id: 'mock_barber_2',
+          name: 'Old School Barber Co.',
+          category: 'Barber',
+          rating: 4.7,
+          location: 'Brooklyn, NY',
+        ),
+        service: const ServiceModel(
+          id: 's3',
+          providerId: 'mock_barber_2',
+          name: 'Classic Cut',
+          durationMinutes: 30,
+          priceCents: 3500,
+        ),
+        start: now.subtract(const Duration(days: 3, hours: 11)),
+        end: now.subtract(const Duration(days: 3, hours: 10, minutes: 30)),
+        status: BookingStatus.completed,
+        totalPriceCents: 3500,
+      ),
+      BookingModel(
+        id: 'mock_p2',
+        provider: const ProviderModel(
+          id: 'mock_salon_2',
+          name: 'Bloom Hair Design',
+          category: 'Salon',
+          rating: 4.6,
+          location: 'Miami, FL',
+        ),
+        service: const ServiceModel(
+          id: 's4',
+          providerId: 'mock_salon_2',
+          name: 'Blowout',
+          durationMinutes: 45,
+          priceCents: 5000,
+        ),
+        start: now.subtract(const Duration(days: 10, hours: 15)),
+        end: now.subtract(const Duration(days: 10, hours: 14, minutes: 15)),
+        status: BookingStatus.completed,
+        totalPriceCents: 5000,
+      ),
+      BookingModel(
+        id: 'mock_p3',
+        provider: const ProviderModel(
+          id: 'mock_barber_3',
+          name: 'Urban Edge Shop',
+          category: 'Barber',
+          rating: 4.5,
+          location: 'Chicago, IL',
+        ),
+        service: const ServiceModel(
+          id: 's5',
+          providerId: 'mock_barber_3',
+          name: 'Fade & Design',
+          durationMinutes: 60,
+          priceCents: 5500,
+        ),
+        start: now.subtract(const Duration(days: 15, hours: 9)),
+        end: now.subtract(const Duration(days: 15, hours: 8)),
+        status: BookingStatus.cancelled,
+        totalPriceCents: 5500,
+      ),
+    ];
   }
 
   Future<void> _saveBookingToLocalStorage(BookingModel booking) async {

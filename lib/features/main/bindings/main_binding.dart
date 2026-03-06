@@ -2,7 +2,7 @@ import 'package:get/get.dart';
 import '../controllers/main_controller.dart';
 import '../../home/controllers/home_controller.dart';
 import '../../notifications/controllers/notifications_list_controller.dart';
-import '../../booking/controllers/booking_controller.dart';
+import '../../appointments/controllers/appointments_controller.dart';
 import '../../profile/controllers/profile_controller.dart';
 import '../../search/controllers/search_controller.dart';
 import '../../favorites/controllers/favorites_controller.dart';
@@ -67,8 +67,8 @@ class MainBinding extends Bindings {
     );
 
     // Controllers with dependencies
-    Get.lazyPut<BookingController>(
-      () => BookingController(
+    Get.lazyPut<AppointmentsController>(
+      () => AppointmentsController(
         getProviders: Get.find<GetProviders>(),
         getServices: Get.find<GetServices>(),
         getAvailability: Get.find<GetAvailability>(),

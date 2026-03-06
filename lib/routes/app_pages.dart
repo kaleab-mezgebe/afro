@@ -5,11 +5,11 @@ import '../features/auth/bindings/otp_verification_binding.dart';
 import '../features/auth/bindings/user_registration_binding.dart';
 import '../features/auth/views/phone_auth_page.dart';
 import '../features/auth/views/otp_verification_page.dart';
-import '../features/booking/bindings/booking_binding.dart';
-import '../features/booking/views/booking_history_page.dart';
-import '../features/booking/views/booking_service_page.dart';
-import '../features/booking/views/booking_summary_page.dart';
-import '../features/booking/views/booking_time_page.dart';
+import '../features/appointments/bindings/appointments_binding.dart';
+import '../features/appointments/views/booking_history_page.dart';
+import '../features/appointments/views/booking_service_page.dart';
+import '../features/appointments/views/booking_summary_page.dart';
+import '../features/appointments/views/booking_time_page.dart';
 import '../features/favorites/bindings/favorites_binding.dart';
 import '../features/favorites/views/favorites_page.dart';
 import '../features/home/bindings/home_binding.dart';
@@ -133,22 +133,22 @@ class AppPages {
     GetPage(
       name: AppRoutes.bookingService,
       page: () => const BookingServicePage(),
-      binding: BookingBinding(),
+      binding: AppointmentsBinding(),
     ),
     GetPage(
       name: AppRoutes.bookingTime,
       page: () => const BookingTimePage(),
-      binding: BookingBinding(),
+      binding: AppointmentsBinding(),
     ),
     GetPage(
       name: AppRoutes.bookingSummary,
       page: () => const BookingSummaryPage(),
-      binding: BookingBinding(),
+      binding: AppointmentsBinding(),
     ),
     GetPage(
       name: AppRoutes.bookingHistory,
       page: () => const BookingHistoryPage(),
-      binding: BookingBinding(),
+      binding: AppointmentsBinding(),
     ),
     GetPage(
       name: AppRoutes.search,

@@ -10,9 +10,9 @@ import '../../../domain/usecases/booking/get_booking_history.dart';
 import '../../../domain/usecases/booking/get_providers.dart';
 import '../../../domain/usecases/booking/get_services.dart';
 import '../../../core/constants/app_constants.dart';
-import '../controllers/booking_controller.dart';
+import '../controllers/appointments_controller.dart';
 
-class BookingBinding extends Bindings {
+class AppointmentsBinding extends Bindings {
   @override
   void dependencies() {
     // Core dependencies (if not already registered)
@@ -51,8 +51,8 @@ class BookingBinding extends Bindings {
     );
 
     // Controller
-    Get.lazyPut<BookingController>(
-      () => BookingController(
+    Get.lazyPut<AppointmentsController>(
+      () => AppointmentsController(
         getProviders: Get.find<GetProviders>(),
         getServices: Get.find<GetServices>(),
         getAvailability: Get.find<GetAvailability>(),

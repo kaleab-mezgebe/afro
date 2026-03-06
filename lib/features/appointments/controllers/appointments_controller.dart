@@ -10,7 +10,7 @@ import '../../../domain/usecases/booking/get_booking_history.dart';
 import '../../../domain/usecases/booking/get_providers.dart';
 import '../../../domain/usecases/booking/get_services.dart';
 
-class BookingController extends GetxController {
+class AppointmentsController extends GetxController {
   final GetProviders getProviders;
   final GetServices getServices;
   final GetAvailability getAvailability;
@@ -31,7 +31,7 @@ class BookingController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxString error = ''.obs;
 
-  BookingController({
+  AppointmentsController({
     required this.getProviders,
     required this.getServices,
     required this.getAvailability,
@@ -135,6 +135,8 @@ class BookingController extends GetxController {
       isLoading.value = true;
       error.value = '';
       final result = await getBookingHistory();
+      // Sort: Upcoming (closest first) then Past (newest first)
+      result.sort((a, b) => b.start.compareTo(a.start));
       bookings.value = result;
     } catch (e) {
       error.value = e.toString();

@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../core/utils/date_utils.dart';
-import '../controllers/booking_controller.dart';
+import '../../../routes/app_routes.dart';
+import '../controllers/appointments_controller.dart';
 
-class BookingSummaryPage extends GetView<BookingController> {
+class BookingSummaryPage extends GetView<AppointmentsController> {
   const BookingSummaryPage({super.key});
 
   @override

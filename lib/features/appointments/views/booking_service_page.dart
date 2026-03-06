@@ -343,58 +343,227 @@ class _BookingServicePageState extends State<BookingServicePage>
       ),
       body: Column(
         children: [
-          // Progress Indicator
-          _buildProgressIndicator(),
+          // Progress Indicator (only if specialist selected)
+          if (_specialist != null) _buildProgressIndicator(),
+          
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Specialist Info
-                  if (_specialist != null) _buildSpecialistInfo(),
-                  const SizedBox(height: 32),
-
-                  // Service Providers List (Main Content)
-                  if (_selectedService != null) _buildServiceProvidersList(),
-                  if (_selectedService != null) _buildDateSelector(),
-                  if (_selectedService != null) _buildServiceTimeTable(),
-                  if (_selectedService != null) _buildSelectedServiceSummary(),
-                ],
-              ),
-            ),
+            child: _specialist == null 
+              ? _buildDiscoveryView()
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSpecialistInfo(),
+                      const SizedBox(height: 32),
+                      if (_selectedService != null) ...[
+                        _buildServiceProvidersList(),
+                        _buildDateSelector(),
+                        _buildServiceTimeTable(),
+                        _buildSelectedServiceSummary(),
+                      ] else ...[
+                        _buildCategorySection(),
+                        const SizedBox(height: 24),
+                        _buildServiceGrid(),
+                      ],
+                    ],
+                  ),
+                ),
           ),
-          // Bottom Button
-          _buildBottomButton(),
+          // Bottom Button (only if specialist selected)
+          if (_specialist != null) _buildBottomButton(),
         ],
       ),
     );
   }
 
-  Widget _buildServiceProvidersList() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.grey50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.grey200),
-      ),
+  Widget _buildDiscoveryView() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Service Providers',
+            'Ready for a new look?',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 28,
               fontWeight: FontWeight.bold,
               color: AppTheme.black,
+              letterSpacing: -1,
             ),
           ),
-          const SizedBox(height: 12),
-          // Service Provider Cards
-          ..._buildServiceProviderCards(),
+          const SizedBox(height: 8),
+          const Text(
+            'Choose a service and find the perfect specialist.',
+            style: TextStyle(color: AppTheme.grey600, fontSize: 16),
+          ),
+          const SizedBox(height: 32),
+          
+          _buildDiscoveryCategory('Popular Services', [
+            {'icon': Icons.content_cut, 'label': 'Haircut'},
+            {'icon': Icons.brush, 'label': 'Color'},
+            {'icon': Icons.face, 'label': 'Beard'},
+            {'icon': Icons.spa, 'label': 'Spa'},
+          ]),
+          
+          const SizedBox(height: 40),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Top Rated Specialists',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              TextButton(
+                onPressed: () => Get.toNamed(AppRoutes.search),
+                child: const Text('See All'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildSpecialistPreviewList(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDiscoveryCategory(String title, List<Map<String, dynamic>> categories) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 16),
+        GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: 4,
+          mainAxisSpacing: 16,
+          crossAxisSpacing: 16,
+          childAspectRatio: 0.8,
+          children: categories.map((cat) => _buildCategoryItem(cat['icon'], cat['label'])).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCategoryItem(IconData icon, String label) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppTheme.grey50,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.grey100),
+          ),
+          child: Icon(icon, color: AppTheme.primaryYellow),
+        ),
+        const SizedBox(height: 8),
+        Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+      ],
+    );
+  }
+
+  Widget _buildSpecialistPreviewList() {
+    return SizedBox(
+      height: 200,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: 3,
+        itemBuilder: (context, index) {
+          return Container(
+            width: 160,
+            margin: const EdgeInsets.only(right: 16),
+            decoration: BoxDecoration(
+              color: AppTheme.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [AppTheme.softShadow],
+              border: Border.all(color: AppTheme.grey100),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppTheme.grey100,
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                    ),
+                    child: const Center(child: Icon(Icons.person, size: 40, color: AppTheme.grey300)),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Premium Barbers',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.star, color: AppTheme.primaryYellow, size: 12),
+                          SizedBox(width: 4),
+                          Text('4.9', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildCategorySection() {
+    return const Text('Select a Service', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold));
+  }
+
+  Widget _buildServiceGrid() {
+    return Column(
+      children: _availableServices.map((service) => _buildServiceRow(service)).toList(),
+    );
+  }
+
+  Widget _buildServiceRow(Map<String, dynamic> service) {
+    final isSelected = _selectedService?['id'] == service['id'];
+    return GestureDetector(
+      onTap: () => setState(() => _selectedService = service),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected ? AppTheme.primaryYellow.withOpacity(0.05) : AppTheme.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? AppTheme.primaryYellow : AppTheme.grey100,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(service['name'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  Text(service['duration'], style: const TextStyle(color: AppTheme.grey600, fontSize: 14)),
+                ],
+              ),
+            ),
+            Text(
+              service['price'],
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.primaryYellow),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -436,6 +605,34 @@ class _BookingServicePageState extends State<BookingServicePage>
     return providers
         .map((provider) => _buildServiceProviderCard(provider))
         .toList();
+  }
+
+  Widget _buildServiceProvidersList() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.grey50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.grey200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Service Providers',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.black,
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Service Provider Cards
+          ..._buildServiceProviderCards(),
+        ],
+      ),
+    );
   }
 
   Widget _buildServiceProviderCard(Map<String, dynamic> provider) {
@@ -957,7 +1154,7 @@ class _BookingServicePageState extends State<BookingServicePage>
                     'https://picsum.photos/seed/specialist/200/150.jpg',
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
-                  return const Center(
+                  return Center(
                     child: Icon(
                       Icons.person,
                       size: 30,
@@ -976,7 +1173,7 @@ class _BookingServicePageState extends State<BookingServicePage>
               children: [
                 Text(
                   _specialist?['name'] as String? ?? 'Specialist',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: AppTheme.black,
@@ -985,7 +1182,7 @@ class _BookingServicePageState extends State<BookingServicePage>
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.star,
                       color: AppTheme.primaryYellow,
                       size: 16,
@@ -994,7 +1191,7 @@ class _BookingServicePageState extends State<BookingServicePage>
                     Text(
                       (_specialist!['rating'] as double?)?.toStringAsFixed(1) ??
                           '0.0',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: AppTheme.black,
@@ -1072,7 +1269,7 @@ class _BookingServicePageState extends State<BookingServicePage>
                   children: [
                     Text(
                       _selectedService!['name'] as String,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.black,
@@ -1121,7 +1318,7 @@ class _BookingServicePageState extends State<BookingServicePage>
                 children: [
                   Text(
                     _selectedService!['price'] as String,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: AppTheme.primaryYellow,

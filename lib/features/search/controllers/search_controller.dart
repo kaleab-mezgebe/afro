@@ -1,9 +1,16 @@
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'dart:ui' as ui;
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/painting.dart';
 
 import '../../../domain/entities/provider.dart';
 import '../../../domain/entities/search_filter.dart';
 import '../../../domain/usecases/search/search_providers.dart';
 import '../../../domain/repositories/search_repository.dart';
+import '../../../core/utils/map_helper.dart';
+import 'package:flutter/material.dart';
 
 class SearchController extends GetxController {
   final SearchProviders searchProviders;
@@ -34,6 +41,8 @@ class SearchController extends GetxController {
   final RxList<Provider> filteredProviders = <Provider>[].obs;
   final RxBool isLoading = false.obs;
   final RxList<String> searchHistory = <String>[].obs;
+  final RxBool showMap = false.obs;
+  final RxSet<Marker> markers = <Marker>{}.obs;
 
   final List<String> categories = ['All', 'salon', 'barber'];
   final List<String> availableServices = [
@@ -141,6 +150,7 @@ class SearchController extends GetxController {
     );
 
     _applySorting();
+    generateMarkers();
   }
 
   void _applySorting() {
@@ -255,18 +265,58 @@ class SearchController extends GetxController {
     loadProviders();
   }
 
-  bool get hasActiveFilters =>
-      query.value.isNotEmpty ||
-      selectedCategory.value != 'All' ||
-      minRating.value > 0.0 ||
-      maxPrice.value < 500.0 ||
-      minPrice.value > 0.0 ||
-      location.value.isNotEmpty ||
-      selectedServices.isNotEmpty ||
-      onlyOpenNow.value ||
-      onlyFeatured.value ||
-      onlyVerified.value ||
-      availability.value != 'any' ||
-      gender.value != 'any' ||
-      maxDistance.value < 50.0;
+  bool get hasActiveFilters => activeFilterCount > 0;
+
+  int get activeFilterCount {
+    int count = 0;
+    if (query.value.isNotEmpty) count++;
+    if (selectedCategory.value != 'All') count++;
+    if (minRating.value > 0.0) count++;
+    if (maxPrice.value < 500.0) count++;
+    if (minPrice.value > 0.0) count++;
+    if (location.value.isNotEmpty) count++;
+    if (selectedServices.isNotEmpty) count++;
+    if (onlyOpenNow.value) count++;
+    if (onlyFeatured.value) count++;
+    if (onlyVerified.value) count++;
+    if (availability.value != 'any') count++;
+    if (gender.value != 'any') count++;
+    if (maxDistance.value < 50.0) count++;
+    return count;
+  }
+
+  void toggleMap() {
+    showMap.value = !showMap.value;
+    if (showMap.value) {
+      generateMarkers();
+    }
+  }
+
+  Future<void> generateMarkers() async {
+    final Set<Marker> newMarkers = {};
+    for (var provider in filteredProviders) {
+      final marker = await _createMarker(provider);
+      newMarkers.add(marker);
+    }
+    markers.value = newMarkers;
+  }
+
+  Future<Marker> _createMarker(Provider provider) async {
+    final icon = await MapHelper.getMarkerIcon(
+      provider.imageUrl ?? 'https://picsum.photos/seed/${provider.id}/200/200',
+      const Size(100, 100),
+    );
+
+    return Marker(
+      markerId: MarkerId(provider.id),
+      position: LatLng(
+        9.03 + (double.tryParse(provider.id) ?? 0) * 0.01,
+        38.74 + (double.tryParse(provider.id) ?? 0) * 0.01,
+      ),
+      onTap: () {
+        // Optional: Show provider detail card or navigate
+      },
+      icon: icon,
+    );
+  }
 }

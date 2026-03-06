@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../core/utils/date_utils.dart';
-import '../controllers/booking_controller.dart';
+import '../../../routes/app_routes.dart';
+import '../controllers/appointments_controller.dart';
 
-class BookingTimePage extends GetView<BookingController> {
+class BookingTimePage extends GetView<AppointmentsController> {
   const BookingTimePage({super.key});
 
   @override
@@ -616,7 +617,7 @@ class BookingTimePage extends GetView<BookingController> {
       child: Obx(
         () => ElevatedButton(
           onPressed: controller.selectedTimeSlot.value != null
-              ? () => Get.toNamed('/booking/summary')
+              ? () => Get.toNamed(AppRoutes.bookingSummary)
               : null,
           child: const Text('Continue to Summary'),
         ),
