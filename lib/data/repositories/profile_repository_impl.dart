@@ -20,7 +20,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
     // Return default profile if none exists
     final defaultProfile = Profile(
       id: 'default_profile',
-      name: 'John Doe',
+      name: 'Kaleab Mezgebe',
       email: 'john.doe@example.com',
       phoneNumber: '+1234567890',
       bio: 'Welcome to my profile!',

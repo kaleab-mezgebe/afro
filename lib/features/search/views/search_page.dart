@@ -1938,7 +1938,7 @@ class _SearchPageState extends State<SearchPage> {
                   ],
                   'reviews': [
                     {
-                      'name': 'John D.',
+                      'name': 'Kaleab.',
                       'rating': 5.0,
                       'comment': 'Amazing service! Very professional.',
                       'date': '2 days ago',

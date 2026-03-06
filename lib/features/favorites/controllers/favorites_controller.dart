@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
@@ -26,23 +27,26 @@ class FavoritesController extends GetxController {
         return;
       }
 
-      final favoritesDoc = await FirebaseFirestore.instance
+      final snapshot = await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
           .collection('favorites')
           .get();
 
-      if (favoritesDoc.exists) {
-        final favoritesData = favoritesDoc.data() as Map<String, dynamic>?;
-        final favoritesList = favoritesData?['favorites'] as List<dynamic>? ?? [];
-        favorites.assignAll(favoritesList.cast<Map<String, dynamic>>());
-      }
+      final favoritesList = snapshot.docs.map((doc) {
+        final data = doc.data();
+        return {
+          'id': doc.id,
+          ...data,
+        };
+      }).toList();
+      
+      favorites.assignAll(favoritesList);
     } catch (e) {
       Get.snackbar(
         'Error',
         'Failed to load favorites: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
       isLoading.value = false;
@@ -54,21 +58,24 @@ class FavoritesController extends GetxController {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
 
-      await FirebaseFirestore.instance
+      final docRef = await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
           .collection('favorites')
           .add({
-            'id': DateTime.now().millisecondsSinceEpoch.toString(),
             ...provider,
             'createdAt': FieldValue.serverTimestamp(),
           });
 
+      favorites.add({
+        'id': docRef.id,
+        ...provider,
+      });
+
       Get.snackbar(
         'Added to Favorites',
         '${provider['name']} has been added to your favorites',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
       );
     } catch (e) {
       Get.snackbar(
@@ -123,5 +130,21 @@ class FavoritesController extends GetxController {
       backgroundColor: Colors.blue,
       colorText: Colors.white,
     );
+  }
+
+  bool isFavorited(String providerId) {
+    return favorites.any((fav) => (fav['id']?.toString() == providerId) || (fav['providerId']?.toString() == providerId));
+  }
+
+  Future<void> toggleFavorite(Map<String, dynamic> provider) async {
+    final providerId = provider['id']?.toString();
+    if (providerId == null) return;
+
+    if (isFavorited(providerId)) {
+      final favorite = favorites.firstWhere((fav) => (fav['id']?.toString() == providerId) || (fav['providerId']?.toString() == providerId));
+      await removeFromFavorites(favorite['id']);
+    } else {
+      await addToFavorites(provider);
+    }
   }
 }

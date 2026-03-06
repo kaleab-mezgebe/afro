@@ -10,6 +10,8 @@ import '../features/booking/views/booking_history_page.dart';
 import '../features/booking/views/booking_service_page.dart';
 import '../features/booking/views/booking_summary_page.dart';
 import '../features/booking/views/booking_time_page.dart';
+import '../features/favorites/bindings/favorites_binding.dart';
+import '../features/favorites/views/favorites_page.dart';
 import '../features/home/bindings/home_binding.dart';
 import '../features/home/bindings/portfolio_binding.dart';
 import '../features/home/views/home_page.dart';
@@ -46,6 +48,11 @@ class AppPages {
     GetPage(
       name: AppRoutes.preferenceSelection,
       page: () => const PreferenceSelectionPage(),
+    ),
+    GetPage(
+      name: AppRoutes.favorites,
+      page: () => const FavoritesPage(),
+      binding: FavoritesBinding(),
     ),
 
     GetPage(
@@ -107,7 +114,11 @@ class AppPages {
       },
       binding: PortfolioBinding(),
     ),
-    GetPage(name: AppRoutes.settings, page: () => const SettingsPage()),
+    GetPage(
+      name: AppRoutes.settings,
+      page: () => SettingsPage(),
+      binding: ProfileBinding(),
+    ),
     GetPage(
       name: AppRoutes.profile,
       page: () => const ProfilePage(),

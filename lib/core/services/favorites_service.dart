@@ -33,17 +33,17 @@ class FavoritesService {
 
   static Future<List<Map<String, dynamic>>> getFavorites(String userId) async {
     try {
-      final favoritesDoc = await favoritesCollection
+      final snapshot = await favoritesCollection
           .doc(userId)
           .collection('favorites')
           .get();
 
-      if (favoritesDoc.exists) {
-        final favoritesData = favoritesDoc.data() as Map<String, dynamic>?;
-        final favoritesList = favoritesData?['favorites'] as List<dynamic>? ?? [];
-        return favoritesList.cast<Map<String, dynamic>>();
-      }
-      return [];
+      return snapshot.docs.map((doc) {
+        return {
+          'id': doc.id,
+          ...doc.data(),
+        };
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get favorites: $e');
     }

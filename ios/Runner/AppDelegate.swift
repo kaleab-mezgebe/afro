@@ -2,6 +2,7 @@ import Flutter
 import UIKit
 import FirebaseCore
 import GoogleSignIn
+import GoogleMaps
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
@@ -10,6 +11,7 @@ import GoogleSignIn
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     FirebaseApp.configure()
+    GMSServices.provideAPIKey("YOUR_API_KEY_HERE")
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 

@@ -121,6 +121,12 @@ class FavoriteCard extends StatelessWidget {
                     ),
                   ],
                 ),
+              ),
+              if (onRemove != null)
+                IconButton(
+                  icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                  onPressed: onRemove,
+                ),
             ],
           ),
         ),

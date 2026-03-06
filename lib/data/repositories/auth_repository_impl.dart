@@ -18,7 +18,7 @@ class AuthRepositoryImpl implements AuthRepository {
     // Mock user data
     final mockUser = User(
       id: 'user_${DateTime.now().millisecondsSinceEpoch}',
-      name: 'John Doe',
+      name: 'Kaleab Mezgebe',
       email: email,
       isEmailVerified: true,
       createdAt: DateTime.now(),

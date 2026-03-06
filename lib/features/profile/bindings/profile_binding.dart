@@ -12,8 +12,7 @@ import '../controllers/profile_controller.dart';
 class ProfileBinding extends Bindings {
   @override
   void dependencies() {
-    // Data sources
-    Get.lazyPut<LocalStorage>(() => LocalStorageImpl());
+    // LocalStorage is already in InitialBinding
     
     // Repositories
     Get.lazyPut<ProfileRepository>(

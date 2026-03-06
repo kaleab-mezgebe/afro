@@ -23,7 +23,7 @@ class InitialBinding extends Bindings {
     Get.put<AuthController>(AuthController());
 
     // Core
-    Get.lazyPut<LocalStorage>(() => LocalStorageImpl());
+    Get.put<LocalStorage>(LocalStorageImpl());
     Get.lazyPut<ApiClient>(
       () => ApiClientImpl(baseUrl: AppConstants.apiBaseUrl),
     );

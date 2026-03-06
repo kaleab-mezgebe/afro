@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/loading_widget.dart';
 import '../controllers/favorites_controller.dart';
 import '../widgets/favorite_card.dart';
 
@@ -29,18 +28,19 @@ class FavoritesPage extends GetView<FavoritesController> {
       ),
       body: Obx(
         () => controller.isLoading.value
-            ? const Center(child: LoadingWidget())
+            ? const Center(child: CircularProgressIndicator())
             : controller.favorites.isEmpty
             ? _buildEmptyState()
             : _buildFavoritesList(),
       ),
       floatingActionButton: Obx(
-        () => controller.favorites.isNotEmpty,
-        child: FloatingActionButton(
-          onPressed: controller.refreshFavorites,
-          backgroundColor: AppTheme.primaryYellow,
-          child: const Icon(Icons.refresh, color: Colors.white),
-        ),
+        () => controller.favorites.isNotEmpty
+            ? FloatingActionButton(
+                onPressed: controller.refreshFavorites,
+                backgroundColor: AppTheme.primaryYellow,
+                child: const Icon(Icons.refresh, color: Colors.white),
+              )
+            : const SizedBox.shrink(),
       ),
     );
   }
@@ -83,7 +83,7 @@ class FavoritesPage extends GetView<FavoritesController> {
           return FavoriteCard(
             favorite: favorite,
             onTap: () => controller.navigateToProvider(favorite),
-            onRemove: () => controller.removeFromFavorites(favorite.id),
+            onRemove: () => controller.removeFromFavorites(favorite['id']),
           );
         },
       ),

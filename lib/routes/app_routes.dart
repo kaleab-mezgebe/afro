@@ -12,10 +12,11 @@ abstract class AppRoutes {
   static const editProfile = '/profile/edit';
   static const settings = '/settings';
   static const notifications = '/notifications';
-
   static const portfolio = '/portfolio';
   static const bookingService = '/booking/service';
   static const bookingTime = '/booking/time';
   static const bookingSummary = '/booking/summary';
   static const bookingHistory = '/booking/history';
+  static const favorites = '/favorites';
+  static const nearby = '/nearby';
 }

@@ -14,6 +14,10 @@ class ProfilePage extends GetView<ProfileController> {
         title: const Text('My Profile'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () => Get.toNamed('/settings'),
+          ),
+          IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () => Get.toNamed('/profile/edit'),
           ),

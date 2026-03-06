@@ -60,6 +60,7 @@ dependencies:
   flutter_svg: ^2.0.10
   flutter_facebook_auth: ^6.1.1
   shared_preferences: ^2.5.4
+  cloud_firestore: ^4.15.1
 
 dev_dependencies:
   flutter_test:

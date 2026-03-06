@@ -1,174 +1,324 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../controllers/profile_controller.dart';
 
 import '../../../core/controllers/auth_controller.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../routes/app_routes.dart';
 
-class SettingsPage extends StatefulWidget {
+class SettingsPage extends GetView<ProfileController> {
   const SettingsPage({super.key});
-
-  @override
-  State<SettingsPage> createState() => _SettingsPageState();
-}
-
-class _SettingsPageState extends State<SettingsPage> {
-  bool _notificationsEnabled = true;
-  bool _locationEnabled = true;
-  bool _darkModeEnabled = false;
-  String _selectedLanguage = 'English';
-  String _servicePreference = 'all';
-
-  @override
-  void initState() {
-    super.initState();
-    _loadServicePreference();
-  }
-
-  Future<void> _loadServicePreference() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _servicePreference = prefs.getString('user_preference') ?? 'all';
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.white,
+      backgroundColor: AppTheme.grey50,
       appBar: AppBar(
         backgroundColor: AppTheme.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.black),
-          onPressed: () => Get.back(),
-        ),
         title: const Text(
           'Settings',
           style: TextStyle(color: AppTheme.black, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Profile Section
-            _buildProfileSection(),
-            const SizedBox(height: 32),
+      body: Obx(() {
+        if (controller.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-            // Preferences Section
-            _buildPreferencesSection(),
-            const SizedBox(height: 32),
+        final profile = controller.profile;
+        
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Profile Section
+              if (profile != null) _buildProfileSection(profile) else _buildGuestProfileSection(),
+              const SizedBox(height: 32),
 
-            // App Settings Section
-            _buildAppSettingsSection(),
-            const SizedBox(height: 32),
+              // Preferences Section
+              _buildPreferencesSection(),
+              const SizedBox(height: 32),
 
-            // Support Section
-            _buildSupportSection(),
-            const SizedBox(height: 32),
+              // App Settings Section
+              _buildAppSettingsSection(),
+              const SizedBox(height: 32),
 
-            // Account Actions
-            _buildAccountActionsSection(),
-            const SizedBox(height: 100), // Bottom padding
+              // Support Section
+              _buildSupportSection(),
+              const SizedBox(height: 32),
+
+              // Account Actions
+              _buildAccountActionsSection(),
+              const SizedBox(height: 100), // Bottom padding
+            ],
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildSectionCard({required Widget child, EdgeInsetsGeometry? padding}) {
+    return Container(
+      width: double.infinity,
+      padding: padding ?? const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppTheme.white,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: AppTheme.grey200.withOpacity(0.5)),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.black.withOpacity(0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+
+  Widget _buildProfileSection(profile) {
+    return _buildSectionCard(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+      child: Column(
+        children: [
+          // Top Actions & Header
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              // Avatar with Premium Ring
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppTheme.primaryYellow,
+                      AppTheme.primaryYellow.withOpacity(0.3),
+                    ],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primaryYellow.withOpacity(0.2),
+                      blurRadius: 20,
+                      spreadRadius: 5,
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(4),
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppTheme.white,
+                    image: profile.avatar != null 
+                      ? DecorationImage(image: NetworkImage(profile.avatar!), fit: BoxFit.cover)
+                      : null,
+                  ),
+                  child: profile.avatar == null ? const Icon(
+                    Icons.person,
+                    color: AppTheme.primaryYellow,
+                    size: 60,
+                  ) : null,
+                ),
+              ),
+              // Edit Button (Top Right)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: InkWell(
+                  onTap: () => Get.toNamed(AppRoutes.editProfile),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.grey50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppTheme.grey200),
+                    ),
+                    child: const Icon(Icons.edit_outlined, color: AppTheme.primaryYellow, size: 20),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          
+          // Name and Role/Email
+          Text(
+            profile.name,
+            style: const TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.w900,
+              color: AppTheme.black,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryYellow.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(100),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.verified_user_rounded, size: 14, color: AppTheme.primaryYellow),
+                const SizedBox(width: 6),
+                Text(
+                  profile.email,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.primaryYellow,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 32),
+          const Divider(height: 1, thickness: 1, color: AppTheme.grey100),
+          const SizedBox(height: 24),
+          
+          // Row Wise Info Grid (Quick Stats/Details)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildModernDetailItem(Icons.phone_outlined, 'Phone', profile.phoneNumber ?? 'Not set'),
+              _buildModernVerticalDivider(),
+              _buildModernDetailItem(Icons.person_outline_rounded, 'Gender', profile.gender ?? 'Not set'),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildModernDetailItem(Icons.cake_outlined, 'Birthday', 
+                profile.dateOfBirth != null ? '${profile.dateOfBirth!.day}/${profile.dateOfBirth!.month}/${profile.dateOfBirth!.year}' : 'Not set'),
+              _buildModernVerticalDivider(),
+              _buildModernDetailItem(Icons.history_rounded, 'Member Since', 'Oct 2024'),
+            ],
+          ),
+          
+          if (profile.bio != null && profile.bio!.isNotEmpty) ...[
+            const SizedBox(height: 32),
+            // Bio Section with amazing style
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppTheme.grey50.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: AppTheme.grey200.withOpacity(0.5)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryYellow.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.format_quote_rounded, size: 14, color: AppTheme.primaryYellow),
+                      ),
+                      const SizedBox(width: 10),
+                      const Text(
+                        'MY BIOGRAPHY',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.textSecondary,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    profile.bio!,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: AppTheme.black.withOpacity(0.7),
+                      height: 1.6,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
-        ),
+        ],
       ),
     );
   }
 
-  Widget _buildProfileSection() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppTheme.grey50,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.grey200),
-      ),
+  Widget _buildModernDetailItem(IconData icon, String label, String value) {
+    return Expanded(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Profile Settings',
-            style: TextStyle(
-              fontSize: 20,
+          Icon(icon, size: 20, color: AppTheme.primaryYellow.withOpacity(0.8)),
+          const SizedBox(height: 8),
+          Text(
+            label.toUpperCase(),
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.textMuted,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 14,
               fontWeight: FontWeight.bold,
               color: AppTheme.black,
             ),
+            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: AppTheme.primaryYellow,
-                ),
-                child: const Icon(
-                  Icons.person,
-                  color: AppTheme.black,
-                  size: 30,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'John Doe',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.black,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '+25171234567',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppTheme.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'john.doe@email.com',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppTheme.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(Icons.edit, color: AppTheme.primaryYellow),
-            ],
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                Get.toNamed(AppRoutes.editProfile);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryYellow,
-                foregroundColor: AppTheme.black,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'Edit Profile',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModernVerticalDivider() {
+    return Container(
+      height: 40,
+      width: 1,
+      color: AppTheme.grey200,
+    );
+  }
+
+  Widget _buildSmallTag(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppTheme.grey50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.grey100),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: AppTheme.textSecondary),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.textSecondary,
             ),
           ),
         ],
@@ -176,14 +326,51 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildPreferencesSection() {
+  Widget _buildGuestProfileSection() {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppTheme.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppTheme.grey200),
       ),
+      child: Row(
+        children: [
+          const CircleAvatar(
+            radius: 30,
+            backgroundColor: AppTheme.grey100,
+            child: Icon(Icons.person, color: AppTheme.grey400),
+          ),
+          const SizedBox(width: 16),
+          const Expanded(
+            child: Text(
+              'Sign in to sync your profile',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Get.toNamed('/login'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryYellow,
+              foregroundColor: AppTheme.black,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Login'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  final RxBool _notificationsEnabled = true.obs;
+  final RxBool _locationEnabled = true.obs;
+  final RxBool _darkModeEnabled = false.obs;
+  final RxString _selectedLanguage = 'English'.obs;
+  final RxString _selectedCurrency = 'ETB'.obs;
+  final RxString _servicePreference = 'all'.obs;
+
+  Widget _buildPreferencesSection() {
+    return _buildSectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -195,79 +382,47 @@ class _SettingsPageState extends State<SettingsPage> {
               color: AppTheme.black,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
           // Service Preference
           _buildServicePreferenceTile(),
 
           // Notifications Toggle
-          _buildSettingTile(
-            icon: Icons.notifications,
+          Obx(() => _buildSettingTile(
+            icon: Icons.notifications_none_rounded,
             title: 'Push Notifications',
-            subtitle: 'Receive booking reminders and updates',
+            subtitle: 'Booking reminders and updates',
             isToggle: true,
-            value: _notificationsEnabled,
-            onChanged: (value) {
-              setState(() {
-                _notificationsEnabled = value;
-              });
-            },
-          ),
+            value: _notificationsEnabled.value,
+            onChanged: (value) => _notificationsEnabled.value = value,
+          )),
 
           // Location Toggle
-          _buildSettingTile(
-            icon: Icons.location_on,
+          Obx(() => _buildSettingTile(
+            icon: Icons.location_on_outlined,
             title: 'Location Services',
-            subtitle: 'Allow app to access your location',
+            subtitle: 'Access your current location',
             isToggle: true,
-            value: _locationEnabled,
-            onChanged: (value) {
-              setState(() {
-                _locationEnabled = value;
-              });
-            },
-          ),
+            value: _locationEnabled.value,
+            onChanged: (value) => _locationEnabled.value = value,
+          )),
 
           // Dark Mode Toggle
-          _buildSettingTile(
-            icon: Icons.dark_mode,
+          Obx(() => _buildSettingTile(
+            icon: Icons.dark_mode_outlined,
             title: 'Dark Mode',
             subtitle: 'Use dark theme across the app',
             isToggle: true,
-            value: _darkModeEnabled,
-            onChanged: (value) {
-              setState(() {
-                _darkModeEnabled = value;
-              });
-            },
-          ),
-
-          // Language Selection
-          _buildSettingTile(
-            icon: Icons.language,
-            title: 'Language',
-            subtitle: 'Choose your preferred language',
-            isToggle: false,
-            value: _selectedLanguage,
-            onChanged: (value) {
-              setState(() {
-                _selectedLanguage = value;
-              });
-            },
-          ),
+            value: _darkModeEnabled.value,
+            onChanged: (value) => _darkModeEnabled.value = value,
+          )),
         ],
       ),
     );
   }
 
   Widget _buildAppSettingsSection() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppTheme.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.grey200),
-      ),
+    return _buildSectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -279,35 +434,45 @@ class _SettingsPageState extends State<SettingsPage> {
               color: AppTheme.black,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
+
+          // Language Selection
+          Obx(() => _buildSettingTile(
+            icon: Icons.language_rounded,
+            title: 'Language',
+            subtitle: _selectedLanguage.value,
+            isToggle: false,
+            value: null,
+            onChanged: (value) => _showLanguageDialog(),
+          )),
+
+          // Currency Selection
+          Obx(() => _buildSettingTile(
+            icon: Icons.payments_outlined,
+            title: 'Currency',
+            subtitle: _selectedCurrency.value,
+            isToggle: false,
+            value: null,
+            onChanged: (value) => _showCurrencyDialog(),
+          )),
 
           // Payment Methods
           _buildSettingTile(
-            icon: Icons.payment,
+            icon: Icons.account_balance_wallet_outlined,
             title: 'Payment Methods',
             subtitle: 'Manage your payment options',
             isToggle: false,
-            value: '2 cards',
-            onChanged: (value) {},
-          ),
-
-          // Booking Preferences
-          _buildSettingTile(
-            icon: Icons.calendar_today,
-            title: 'Booking Preferences',
-            subtitle: 'Default booking settings',
-            isToggle: false,
-            value: 'Manage',
+            value: null,
             onChanged: (value) {},
           ),
 
           // Privacy Settings
           _buildSettingTile(
-            icon: Icons.privacy_tip,
+            icon: Icons.security_outlined,
             title: 'Privacy & Security',
             subtitle: 'Control your privacy settings',
             isToggle: false,
-            value: 'Manage',
+            value: null,
             onChanged: (value) {},
           ),
         ],
@@ -315,14 +480,64 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildSupportSection() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppTheme.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.grey200),
+  void _showLanguageDialog() {
+    final languages = ['English', 'Amharic', 'Oromiffa', 'French'];
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Select Language', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 20),
+            ...languages.map((lang) => ListTile(
+              title: Text(lang),
+              trailing: _selectedLanguage.value == lang ? const Icon(Icons.check_circle, color: AppTheme.primaryYellow) : null,
+              onTap: () {
+                _selectedLanguage.value = lang;
+                Get.back();
+              },
+            )),
+          ],
+        ),
       ),
+    );
+  }
+
+  void _showCurrencyDialog() {
+    final currencies = ['ETB', 'USD', 'EUR', 'GBP'];
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Select Currency', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 20),
+            ...currencies.map((curr) => ListTile(
+              title: Text(curr),
+              trailing: _selectedCurrency.value == curr ? const Icon(Icons.check_circle, color: AppTheme.primaryYellow) : null,
+              onTap: () {
+                _selectedCurrency.value = curr;
+                Get.back();
+              },
+            )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSupportSection() {
+    return _buildSectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -334,35 +549,32 @@ class _SettingsPageState extends State<SettingsPage> {
               color: AppTheme.black,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
-          // Help Center
           _buildSettingTile(
-            icon: Icons.help,
+            icon: Icons.help_outline_rounded,
             title: 'Help Center',
-            subtitle: 'Get help and support',
+            subtitle: 'FAQs & Guides',
             isToggle: false,
-            value: 'FAQs & Guides',
+            value: null,
             onChanged: (value) {},
           ),
 
-          // Contact Us
           _buildSettingTile(
-            icon: Icons.contact_support,
+            icon: Icons.mail_outline_rounded,
             title: 'Contact Us',
             subtitle: 'Get in touch with our team',
             isToggle: false,
-            value: 'Send Message',
+            value: null,
             onChanged: (value) {},
           ),
 
-          // About
           _buildSettingTile(
-            icon: Icons.info,
+            icon: Icons.info_outline_rounded,
             title: 'About',
-            subtitle: 'App version and information',
+            subtitle: 'Version 1.0.0',
             isToggle: false,
-            value: 'Version 1.0.0',
+            value: null,
             onChanged: (value) {},
           ),
         ],
@@ -371,13 +583,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildAccountActionsSection() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppTheme.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.grey200),
-      ),
+    return _buildSectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -389,45 +595,35 @@ class _SettingsPageState extends State<SettingsPage> {
               color: AppTheme.black,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
           // Logout Button
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: const Color(0xFFFF6B35).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: const Color(0xFFFF6B35).withValues(alpha: 0.3),
-              ),
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(12),
-                onTap: _showLogoutDialog,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.logout,
-                        color: Color(0xFFFF6B35),
-                        size: 20,
-                      ),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'Logout',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFFF6B35),
-                        ),
-                      ),
-                    ],
-                  ),
+          InkWell(
+            onTap: _showLogoutDialog,
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF6B35).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: const Color(0xFFFF6B35).withOpacity(0.2),
                 ),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.logout_rounded, color: Color(0xFFFF6B35), size: 22),
+                  SizedBox(width: 12),
+                  Text(
+                    'Logout Account',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFFF6B35),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -437,34 +633,33 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildServicePreferenceTile() {
-    String preferenceLabel = _servicePreference == 'barber'
-        ? 'Barber'
-        : _servicePreference == 'salon'
-        ? 'Salon'
-        : 'Both';
+    return Obx(() {
+      String preferenceLabel = _servicePreference.value == 'barber'
+          ? 'Barber'
+          : _servicePreference.value == 'salon'
+          ? 'Salon'
+          : 'Both';
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Material(
-        color: Colors.transparent,
+      return Container(
+        margin: const EdgeInsets.only(bottom: 8),
         child: InkWell(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           onTap: _showServicePreferenceDialog,
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(vertical: 12),
             child: Row(
               children: [
                 Container(
-                  width: 40,
-                  height: 40,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryYellow.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    color: AppTheme.primaryYellow.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   child: const Icon(
-                    Icons.store,
+                    Icons.storefront_outlined,
                     color: AppTheme.primaryYellow,
-                    size: 20,
+                    size: 24,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -480,114 +675,113 @@ class _SettingsPageState extends State<SettingsPage> {
                           color: AppTheme.black,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       Text(
                         'Currently showing: $preferenceLabel',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 13,
                           color: AppTheme.textSecondary,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const Icon(
-                  Icons.arrow_forward_ios,
-                  color: AppTheme.textSecondary,
-                  size: 16,
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppTheme.grey400,
+                  size: 24,
                 ),
               ],
             ),
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   void _showServicePreferenceDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text(
-          'Service Preference',
-          style: TextStyle(fontWeight: FontWeight.bold),
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        content: Column(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildPreferenceOption('Barber', 'barber', Icons.content_cut),
+            const Text(
+              'Service Preference',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 24),
+            _buildPreferenceOption('Barber', 'barber', Icons.content_cut_rounded),
             const SizedBox(height: 12),
-            _buildPreferenceOption('Salon', 'salon', Icons.spa),
+            _buildPreferenceOption('Salon', 'salon', Icons.spa_outlined),
             const SizedBox(height: 12),
-            _buildPreferenceOption('Both', 'all', Icons.apps),
+            _buildPreferenceOption('Both Services', 'all', Icons.grid_view_rounded),
+            const SizedBox(height: 24),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-        ],
       ),
     );
   }
 
   Widget _buildPreferenceOption(String label, String value, IconData icon) {
-    final isSelected = _servicePreference == value;
+    return Obx(() {
+      final isSelected = _servicePreference.value == value;
 
-    return InkWell(
-      onTap: () async {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('user_preference', value);
-        setState(() {
-          _servicePreference = value;
-        });
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Service preference updated to $label'),
+      return InkWell(
+        onTap: () {
+          _servicePreference.value = value;
+          Get.back();
+          Get.snackbar(
+            'Preference Updated',
+            'Now showing $label services',
+            snackPosition: SnackPosition.BOTTOM,
             backgroundColor: AppTheme.primaryYellow,
-          ),
-        );
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppTheme.primaryYellow.withValues(alpha: 0.2)
-              : AppTheme.grey100,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? AppTheme.primaryYellow : Colors.transparent,
-            width: 2,
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              color: isSelected
-                  ? AppTheme.primaryYellow
-                  : AppTheme.textSecondary,
+            colorText: AppTheme.black,
+          );
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppTheme.primaryYellow.withOpacity(0.1)
+                : AppTheme.grey50,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected ? AppTheme.primaryYellow : Colors.transparent,
+              width: 1.5,
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? AppTheme.black : AppTheme.textSecondary,
+          ),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                color: isSelected
+                    ? AppTheme.primaryYellow
+                    : AppTheme.textSecondary,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                    color: isSelected ? AppTheme.black : AppTheme.textSecondary,
+                  ),
                 ),
               ),
-            ),
-            if (isSelected)
-              const Icon(Icons.check_circle, color: AppTheme.primaryYellow),
-          ],
+              if (isSelected)
+                const Icon(Icons.check_circle_rounded, color: AppTheme.primaryYellow),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   Widget _buildSettingTile({
@@ -598,128 +792,97 @@ class _SettingsPageState extends State<SettingsPage> {
     required dynamic value,
     required Function(dynamic) onChanged,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () {
-            if (isToggle) {
-              onChanged(!value);
-            } else {
-              // Handle non-toggle actions
-              _showActionDialog(title, subtitle);
-            }
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryYellow.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(icon, color: AppTheme.primaryYellow, size: 20),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () {
+          if (isToggle) {
+            onChanged(!value);
+          } else {
+            onChanged(null);
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryYellow.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.black,
-                        ),
+                child: Icon(icon, color: AppTheme.primaryYellow, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.black,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: AppTheme.textSecondary,
-                        ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppTheme.textSecondary,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                if (isToggle) ...[
-                  Switch(
-                    value: value as bool,
-                    onChanged: onChanged,
-                    activeColor: AppTheme.primaryYellow,
-                    inactiveThumbColor: AppTheme.grey300,
-                  ),
-                ] else ...[
-                  const Icon(
-                    Icons.arrow_forward_ios,
-                    color: AppTheme.textSecondary,
-                    size: 16,
-                  ),
-                ],
+              ),
+              if (isToggle) ...[
+                Switch.adaptive(
+                  value: value as bool,
+                  onChanged: onChanged,
+                  activeColor: AppTheme.primaryYellow,
+                ),
+              ] else ...[
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppTheme.grey400,
+                  size: 24,
+                ),
               ],
-            ),
+            ],
           ),
         ),
-      ),
-    );
-  }
-
-  void _showActionDialog(String title, String subtitle) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(subtitle),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Feature coming soon!'),
-                  backgroundColor: AppTheme.primaryYellow,
-                ),
-              );
-            },
-            child: const Text('OK'),
-          ),
-        ],
       ),
     );
   }
 
   void _showLogoutDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Logout'),
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Text('Logout Account?'),
         content: const Text(
-          'Are you sure you want to logout? You will need to login again to access your account.',
+          'Are you sure you want to logout? You will need to login again to access your bookings.',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            onPressed: () => Get.back(),
+            child: Text('Cancel', style: TextStyle(color: AppTheme.grey600)),
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context);
+              Get.back();
               _performLogout();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFF6B35),
               foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
             child: const Text('Logout'),
           ),
@@ -729,16 +892,14 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _performLogout() {
-    // Use the AuthController for proper logout with safe access
     if (AuthController.isInitialized) {
       AuthController.to.logout();
     } else {
-      // Fallback: Show error message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Authentication system not available'),
-          backgroundColor: Colors.red,
-        ),
+      Get.snackbar(
+        'Error',
+        'Authentication system not available',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
       );
     }
   }

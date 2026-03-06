@@ -25,9 +25,9 @@ class HomeHeader extends GetView<HomeController> {
             ),
             const SizedBox(height: 4),
             const Text(
-              'Jacob Thomas',
+              'Kaleab Mezgebe',
               style: TextStyle(
-                color: AppTheme.black,
+                color: AppTheme.primaryYellow,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -36,9 +36,10 @@ class HomeHeader extends GetView<HomeController> {
         ),
         Row(
           children: [
+            _buildFavoritesButton(),
+            const SizedBox(width: 12),
             Obx(() => _buildNotificationBell()),
             const SizedBox(width: 12),
-            _buildProfilePicture(),
           ],
         ),
       ],
@@ -85,24 +86,24 @@ class HomeHeader extends GetView<HomeController> {
     );
   }
 
-  Widget _buildProfilePicture() {
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: AppTheme.primaryYellow,
-        borderRadius: BorderRadius.circular(22),
-        image: const DecorationImage(
-          image: NetworkImage('https://picsum.photos/seed/profile/100/100.jpg'),
-          fit: BoxFit.cover,
+  Widget _buildFavoritesButton() {
+    return InkWell(
+      onTap: () => Get.toNamed(AppRoutes.favorites),
+      borderRadius: BorderRadius.circular(22),
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: AppTheme.grey100,
+          borderRadius: BorderRadius.circular(22),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+        child: const Center(
+          child: Icon(
+            Icons.favorite_outline_rounded,
+            color: AppTheme.black,
+            size: 24,
           ),
-        ],
+        ),
       ),
     );
   }
