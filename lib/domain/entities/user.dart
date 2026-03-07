@@ -10,6 +10,16 @@ class User extends Equatable {
   final DateTime createdAt;
   final DateTime? updatedAt;
 
+  // Extended profile fields for registration
+  final String? firstName;
+  final String? lastName;
+  final String? location;
+  final String? gender;
+  final String? dateOfBirth;
+  final String? hairType;
+  final String? skinType;
+  final List<String>? preferredServices;
+
   const User({
     required this.id,
     required this.name,
@@ -19,19 +29,35 @@ class User extends Equatable {
     this.isEmailVerified = false,
     required this.createdAt,
     this.updatedAt,
+    this.firstName,
+    this.lastName,
+    this.location,
+    this.gender,
+    this.dateOfBirth,
+    this.hairType,
+    this.skinType,
+    this.preferredServices,
   });
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        email,
-        phoneNumber,
-        avatar,
-        isEmailVerified,
-        createdAt,
-        updatedAt,
-      ];
+    id,
+    name,
+    email,
+    phoneNumber,
+    avatar,
+    isEmailVerified,
+    createdAt,
+    updatedAt,
+    firstName,
+    lastName,
+    location,
+    gender,
+    dateOfBirth,
+    hairType,
+    skinType,
+    preferredServices,
+  ];
 
   User copyWith({
     String? id,
@@ -42,6 +68,14 @@ class User extends Equatable {
     bool? isEmailVerified,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? firstName,
+    String? lastName,
+    String? location,
+    String? gender,
+    String? dateOfBirth,
+    String? hairType,
+    String? skinType,
+    List<String>? preferredServices,
   }) {
     return User(
       id: id ?? this.id,
@@ -52,6 +86,14 @@ class User extends Equatable {
       isEmailVerified: isEmailVerified ?? this.isEmailVerified,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      location: location ?? this.location,
+      gender: gender ?? this.gender,
+      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+      hairType: hairType ?? this.hairType,
+      skinType: skinType ?? this.skinType,
+      preferredServices: preferredServices ?? this.preferredServices,
     );
   }
 
@@ -65,6 +107,14 @@ class User extends Equatable {
       'isEmailVerified': isEmailVerified,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
+      'firstName': firstName,
+      'lastName': lastName,
+      'location': location,
+      'gender': gender,
+      'dateOfBirth': dateOfBirth,
+      'hairType': hairType,
+      'skinType': skinType,
+      'preferredServices': preferredServices,
     };
   }
 
@@ -80,6 +130,15 @@ class User extends Equatable {
       updatedAt: json['updatedAt'] != null
           ? DateTime.parse(json['updatedAt'] as String)
           : null,
+      firstName: json['firstName'] as String?,
+      lastName: json['lastName'] as String?,
+      location: json['location'] as String?,
+      gender: json['gender'] as String?,
+      dateOfBirth: json['dateOfBirth'] as String?,
+      hairType: json['hairType'] as String?,
+      skinType: json['skinType'] as String?,
+      preferredServices: (json['preferredServices'] as List<dynamic>?)
+          ?.cast<String>(),
     );
   }
 }

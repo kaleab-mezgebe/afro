@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 
 import '../../../domain/entities/user.dart';
 import '../../../core/theme/butter_theme.dart';
 import '../../../core/utils/preference_helper.dart';
+import '../../../core/services/firebase_user_service.dart';
+import '../../../data/repositories/firebase_auth_repository_impl.dart';
+import '../../../data/datasources/local/local_storage.dart';
 
 class UserRegistrationController extends GetxController {
   final ImagePicker _imagePicker = ImagePicker();
+  final FirebaseUserService _firebaseUserService = FirebaseUserService();
+  final LocalStorageImpl _localStorage = LocalStorageImpl();
 
   // Form fields
   final RxString firstName = ''.obs;
@@ -112,16 +118,31 @@ class UserRegistrationController extends GetxController {
       isLoading.value = true;
       error.value = '';
 
-      // Mock registration - replace with actual implementation
-      await Future.delayed(const Duration(seconds: 2));
+      // Get current authenticated user
+      final currentUser = auth.FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        throw Exception('No authenticated user found. Please sign in first.');
+      }
 
-      // Create user profile
-      final userProfile = User(
-        id: '1',
+      // Save complete user registration to Firebase
+      final userProfile = await _firebaseUserService.saveUserRegistration(
+        uid: currentUser.uid,
         name: '${firstName.value.trim()} ${lastName.value.trim()}',
-        email: 'user@example.com', // This would come from auth
-        phoneNumber: phoneNumber.value.trim(),
-        createdAt: DateTime.now(),
+        email: currentUser.email ?? '',
+        phoneNumber: phoneNumber.value.trim().isEmpty
+            ? null
+            : phoneNumber.value.trim(),
+        avatar: selectedImagePath.value.isNotEmpty
+            ? selectedImagePath.value
+            : currentUser.photoURL,
+        firstName: firstName.value.trim(),
+        lastName: lastName.value.trim(),
+        location: location.value.trim(),
+        gender: gender.value,
+        dateOfBirth: dateOfBirth.value,
+        hairType: hairType.value,
+        skinType: skinType.value,
+        preferredServices: preferredServices.toList(),
       );
 
       // Handle successful registration
@@ -133,7 +154,7 @@ class UserRegistrationController extends GetxController {
         duration: const Duration(seconds: 3),
       );
 
-      // Navigate to preference selection
+      // Navigate to preference selection or home
       await PreferenceHelper.navigateAfterAuth();
     } catch (e) {
       error.value = e.toString();

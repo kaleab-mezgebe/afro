@@ -259,25 +259,6 @@ class SearchController extends GetxController {
     }
   }
 
-  void clearFilters() {
-    query.value = '';
-    selectedCategory.value = 'All';
-    minRating.value = 0.0;
-    maxPrice.value = 500.0;
-    minPrice.value = 0.0;
-    location.value = '';
-    sortBy.value = 'rating';
-    sortOrder.value = false;
-    availability.value = 'any';
-    gender.value = 'any';
-    onlyOpenNow.value = false;
-    onlyFeatured.value = false;
-    onlyVerified.value = false;
-    maxDistance.value = 50.0;
-    selectedServices.clear();
-    applyFilters();
-  }
-
   void applyFilters() {
     loadProviders();
   }
