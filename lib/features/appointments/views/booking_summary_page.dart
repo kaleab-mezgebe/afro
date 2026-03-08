@@ -7,7 +7,6 @@ import '../../../routes/app_routes.dart';
 import '../controllers/appointments_controller.dart';
 import '../../../domain/entities/provider.dart' as entity;
 import '../../../domain/entities/service.dart' as entity_service;
-import '../../../domain/entities/booking.dart';
 import '../../../domain/entities/time_slot.dart';
 
 class BookingSummaryPage extends GetView<AppointmentsController> {
@@ -104,16 +103,25 @@ class BookingSummaryPage extends GetView<AppointmentsController> {
     );
   }
 
-  Widget _buildProgressStep(int step, String title, bool isActive, bool isCompleted) {
+  Widget _buildProgressStep(
+    int step,
+    String title,
+    bool isActive,
+    bool isCompleted,
+  ) {
     return Column(
       children: [
         Container(
           width: 32,
           height: 32,
           decoration: BoxDecoration(
-            color: isCompleted ? AppTheme.primaryYellow : (isActive ? AppTheme.white : AppTheme.grey100),
+            color: isCompleted
+                ? AppTheme.primaryYellow
+                : (isActive ? AppTheme.white : AppTheme.grey100),
             shape: BoxShape.circle,
-            border: Border.all(color: isActive ? AppTheme.primaryYellow : AppTheme.grey300),
+            border: Border.all(
+              color: isActive ? AppTheme.primaryYellow : AppTheme.grey300,
+            ),
           ),
           child: Center(
             child: isCompleted
@@ -192,11 +200,18 @@ class BookingSummaryPage extends GetView<AppointmentsController> {
               children: [
                 Text(
                   provider.name,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
                 Text(
                   provider.category.toUpperCase(),
-                  style: TextStyle(color: AppTheme.grey500, fontSize: 12, letterSpacing: 1),
+                  style: TextStyle(
+                    color: AppTheme.grey500,
+                    fontSize: 12,
+                    letterSpacing: 1,
+                  ),
                 ),
               ],
             ),
@@ -213,7 +228,10 @@ class BookingSummaryPage extends GetView<AppointmentsController> {
                 const SizedBox(width: 4),
                 Text(
                   provider.rating.toStringAsFixed(1),
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
               ],
             ),
@@ -234,11 +252,7 @@ class BookingSummaryPage extends GetView<AppointmentsController> {
       ),
       child: Column(
         children: [
-          _buildDetailRow(
-            Icons.content_cut,
-            'Service',
-            service.name,
-          ),
+          _buildDetailRow(Icons.content_cut, 'Service', service.name),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 16),
             child: Divider(height: 1),
@@ -277,9 +291,15 @@ class BookingSummaryPage extends GetView<AppointmentsController> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: TextStyle(color: AppTheme.grey500, fontSize: 12)),
+            Text(
+              label,
+              style: TextStyle(color: AppTheme.grey500, fontSize: 12),
+            ),
             const SizedBox(height: 2),
-            Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+            Text(
+              value,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            ),
           ],
         ),
       ],
@@ -303,15 +323,25 @@ class BookingSummaryPage extends GetView<AppointmentsController> {
               color: const Color(0xFF1A1A1A),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.credit_card, size: 24, color: AppTheme.primaryYellow),
+            child: const Icon(
+              Icons.credit_card,
+              size: 24,
+              color: AppTheme.primaryYellow,
+            ),
           ),
           const SizedBox(width: 16),
           const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Mastercard', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                Text('**** **** **** 4582', style: TextStyle(color: AppTheme.grey500, fontSize: 13)),
+                Text(
+                  'Mastercard',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                ),
+                Text(
+                  '**** **** **** 4582',
+                  style: TextStyle(color: AppTheme.grey500, fontSize: 13),
+                ),
               ],
             ),
           ),
@@ -334,20 +364,38 @@ class BookingSummaryPage extends GetView<AppointmentsController> {
       ),
       child: Column(
         children: [
-          _buildPriceRow('Subtotal', AppDateUtils.formatPrice(subtotal), isBold: false),
+          _buildPriceRow(
+            'Subtotal',
+            AppDateUtils.formatPrice(subtotal),
+            isBold: false,
+          ),
           const SizedBox(height: 12),
-          _buildPriceRow('VAT (15%)', AppDateUtils.formatPrice(tax), isBold: false),
+          _buildPriceRow(
+            'VAT (15%)',
+            AppDateUtils.formatPrice(tax),
+            isBold: false,
+          ),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 16),
             child: Divider(height: 1),
           ),
-          _buildPriceRow('Total Amount', AppDateUtils.formatPrice(total), isBold: true, isTotal: true),
+          _buildPriceRow(
+            'Total Amount',
+            AppDateUtils.formatPrice(total),
+            isBold: true,
+            isTotal: true,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildPriceRow(String label, String value, {required bool isBold, bool isTotal = false}) {
+  Widget _buildPriceRow(
+    String label,
+    String value, {
+    required bool isBold,
+    bool isTotal = false,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -389,17 +437,24 @@ class BookingSummaryPage extends GetView<AppointmentsController> {
         child: SizedBox(
           width: double.infinity,
           height: 56,
-          child: Obx(() => ElevatedButton(
-                onPressed: controller.isLoading.value ? null : controller.createNewBooking,
-                style: AppTheme.primaryButton,
-                child: controller.isLoading.value
-                    ? const SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(color: AppTheme.black, strokeWidth: 2),
-                      )
-                    : const Text('Complete Payment'),
-              )),
+          child: Obx(
+            () => ElevatedButton(
+              onPressed: controller.isLoading.value
+                  ? null
+                  : controller.createNewBooking,
+              style: AppTheme.primaryButton,
+              child: controller.isLoading.value
+                  ? const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(
+                        color: AppTheme.black,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text('Complete Payment'),
+            ),
+          ),
         ),
       ),
     );

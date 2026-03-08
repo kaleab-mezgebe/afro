@@ -77,7 +77,9 @@ class FirebaseUserService {
     Map<String, dynamic>? additionalData,
   }) async {
     try {
-      final updateData = {'updatedAt': DateTime.now().toIso8601String()};
+      final updateData = <String, Object?>{
+        'updatedAt': DateTime.now().toIso8601String(),
+      };
 
       if (name != null) updateData['name'] = name;
       if (phoneNumber != null) updateData['phoneNumber'] = phoneNumber;
