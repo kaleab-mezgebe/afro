@@ -1,37 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/portfolio_provider.dart';
 
-class RecentReviewsCard extends StatelessWidget {
+class RecentReviewsCard extends ConsumerWidget {
   const RecentReviewsCard({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Mock reviews data
-    final reviews = [
-      {
-        'customerName': 'John Smith',
-        'rating': 5.0,
-        'comment': 'Amazing haircut! Sarah always does a great job.',
-        'date': '2 days ago',
-      },
-      {
-        'customerName': 'Mike Wilson',
-        'rating': 4.5,
-        'comment': 'Good service, but could be faster.',
-        'date': '5 days ago',
-      },
-      {
-        'customerName': 'Emily Davis',
-        'rating': 4.8,
-        'comment': 'Perfect beard trim! Very professional.',
-        'date': '1 week ago',
-      },
-      {
-        'customerName': 'Robert Johnson',
-        'rating': 5.0,
-        'comment': 'Best haircut I\'ve ever had! Highly recommend.',
-        'date': '2 weeks ago',
-      },
-    ];
+  Widget build(BuildContext context, WidgetRef ref) {
+    final portfolioState = ref.watch(portfolioProvider);
 
     return Card(
       child: Padding(
@@ -46,18 +22,57 @@ class RecentReviewsCard extends StatelessWidget {
                   ),
             ),
             const SizedBox(height: 16),
-            ...reviews
-                .map((review) => _ReviewItem(
-                      customerName: review['customerName'] as String,
-                      rating: review['rating'] as double,
-                      comment: review['comment'] as String,
-                      date: review['date'] as String,
-                    ))
-                .toList(),
+            if (portfolioState.isLoading)
+              const Center(child: CircularProgressIndicator())
+            else if (portfolioState.error != null)
+              Center(
+                child: Text(
+                  portfolioState.error!,
+                  style: TextStyle(color: Colors.red[700]),
+                ),
+              )
+            else if (portfolioState.reviews.isEmpty)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(32.0),
+                  child: Text('No reviews yet'),
+                ),
+              )
+            else
+              ...portfolioState.reviews.map((review) {
+                final timeAgo = _getTimeAgo(review.createdAt);
+                return _ReviewItem(
+                  customerName: review.customerName,
+                  rating: review.rating,
+                  comment: review.comment,
+                  date: timeAgo,
+                );
+              }),
           ],
         ),
       ),
     );
+  }
+
+  String _getTimeAgo(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays > 365) {
+      return '${(difference.inDays / 365).floor()} year${(difference.inDays / 365).floor() > 1 ? 's' : ''} ago';
+    } else if (difference.inDays > 30) {
+      return '${(difference.inDays / 30).floor()} month${(difference.inDays / 30).floor() > 1 ? 's' : ''} ago';
+    } else if (difference.inDays > 7) {
+      return '${(difference.inDays / 7).floor()} week${(difference.inDays / 7).floor() > 1 ? 's' : ''} ago';
+    } else if (difference.inDays > 0) {
+      return '${difference.inDays} day${difference.inDays > 1 ? 's' : ''} ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours} hour${difference.inHours > 1 ? 's' : ''} ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''} ago';
+    } else {
+      return 'Just now';
+    }
   }
 }
 

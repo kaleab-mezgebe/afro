@@ -24,7 +24,7 @@ class ReviewApiService {
       final response = await _apiClient.post('/reviews', data: data);
       return response.data;
     } catch (e) {
-      AppLogger.e('Error creating review', error: e);
+      AppLogger.e('Error creating review: $e');
       rethrow;
     }
   }
@@ -47,7 +47,7 @@ class ReviewApiService {
 
       return response.data as List<dynamic>;
     } catch (e) {
-      AppLogger.e('Error getting barber reviews', error: e);
+      AppLogger.e('Error getting barber reviews: $e');
       rethrow;
     }
   }
@@ -66,7 +66,7 @@ class ReviewApiService {
 
       return response.data as List<dynamic>;
     } catch (e) {
-      AppLogger.e('Error getting my reviews', error: e);
+      AppLogger.e('Error getting my reviews: $e');
       rethrow;
     }
   }
@@ -77,7 +77,7 @@ class ReviewApiService {
       final response = await _apiClient.get('/reviews/$reviewId');
       return response.data;
     } catch (e) {
-      AppLogger.e('Error getting review', error: e);
+      AppLogger.e('Error getting review: $e');
       rethrow;
     }
   }
@@ -96,7 +96,7 @@ class ReviewApiService {
       final response = await _apiClient.put('/reviews/$reviewId', data: data);
       return response.data;
     } catch (e) {
-      AppLogger.e('Error updating review', error: e);
+      AppLogger.e('Error updating review: $e');
       rethrow;
     }
   }
@@ -106,7 +106,7 @@ class ReviewApiService {
     try {
       await _apiClient.delete('/reviews/$reviewId');
     } catch (e) {
-      AppLogger.e('Error deleting review', error: e);
+      AppLogger.e('Error deleting review: $e');
       rethrow;
     }
   }

@@ -9,6 +9,9 @@ import '../services/staff_service.dart';
 import '../services/service_service.dart';
 import '../services/appointment_service.dart';
 import '../services/analytics_service.dart';
+import '../services/analytics_api_service.dart';
+import '../services/customer_service.dart';
+import '../services/portfolio_service.dart';
 
 final _logger = Logger();
 
@@ -22,6 +25,9 @@ late StaffService staffService;
 late ServiceService serviceService;
 late AppointmentService appointmentService;
 late AnalyticsService analyticsService;
+late AnalyticsApiService analyticsApiService;
+late CustomerService customerService;
+late PortfolioService portfolioService;
 
 Future<void> initializeDependencies() async {
   // Shared Preferences
@@ -40,7 +46,10 @@ Future<void> initializeDependencies() async {
   staffService = StaffService(apiClient);
   serviceService = ServiceService(apiClient);
   appointmentService = AppointmentService(apiClient);
-  analyticsService = AnalyticsService(apiClient);
+  analyticsService = AnalyticsService(); // Firebase Analytics (no parameters)
+  analyticsApiService = AnalyticsApiService(apiClient); // Backend API analytics
+  customerService = CustomerService(apiClient);
+  portfolioService = PortfolioService(apiClient);
 
   _logger.i('Dependencies initialized');
 }

@@ -11,6 +11,14 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [revenueData, setRevenueData] = useState([]);
   const [userGrowthData, setUserGrowthData] = useState([]);
+  const [summary, setSummary] = useState({
+    totalRevenue: 0,
+    newUsers: 0,
+    totalAppointments: 0,
+    revenueGrowth: 0,
+    userGrowth: 0,
+    appointmentGrowth: 0,
+  });
 
   useEffect(() => {
     loadAnalytics();
@@ -18,14 +26,24 @@ export default function AnalyticsPage() {
 
   const loadAnalytics = async () => {
     try {
-      const [revenueRes, userRes] = await Promise.all([
+      const [revenueRes, userRes, systemRes] = await Promise.all([
         api.getRevenueAnalytics(period),
         api.getUserAnalytics(period),
+        api.getSystemAnalytics(period),
       ]);
       
       setRevenueData(revenueRes.data.chartData || []);
       setUserGrowthData(userRes.data.chartData || []);
+      setSummary({
+        totalRevenue: systemRes.data.totalRevenue || 0,
+        newUsers: systemRes.data.totalUsers || 0,
+        totalAppointments: systemRes.data.totalAppointments || 0,
+        revenueGrowth: systemRes.data.revenueGrowth || 0,
+        userGrowth: systemRes.data.userGrowth || 0,
+        appointmentGrowth: systemRes.data.appointmentGrowth || 0,
+      });
     } catch (error) {
+      console.error('Analytics error:', error);
       toast.error('Failed to load analytics');
     } finally {
       setLoading(false);
@@ -53,6 +71,7 @@ export default function AnalyticsPage() {
             <p className="text-gray-600 mt-2">System-wide statistics and insights</p>
           </div>
           <select
+            aria-label="Select time period"
             className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={period}
             onChange={(e) => setPeriod(e.target.value)}
@@ -97,20 +116,32 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-sm font-medium text-gray-500">Total Revenue</h3>
-            <p className="text-3xl font-bold text-gray-900 mt-2">$45,231</p>
-            <p className="text-sm text-green-600 mt-2">↑ 12% from last period</p>
+            <p className="text-3xl font-bold text-gray-900 mt-2">
+              ${summary.totalRevenue.toLocaleString()}
+            </p>
+            <p className={`text-sm mt-2 ${summary.revenueGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {summary.revenueGrowth >= 0 ? '↑' : '↓'} {Math.abs(summary.revenueGrowth)}% from last period
+            </p>
           </div>
 
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-sm font-medium text-gray-500">New Users</h3>
-            <p className="text-3xl font-bold text-gray-900 mt-2">1,234</p>
-            <p className="text-sm text-green-600 mt-2">↑ 8% from last period</p>
+            <p className="text-3xl font-bold text-gray-900 mt-2">
+              {summary.newUsers.toLocaleString()}
+            </p>
+            <p className={`text-sm mt-2 ${summary.userGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {summary.userGrowth >= 0 ? '↑' : '↓'} {Math.abs(summary.userGrowth)}% from last period
+            </p>
           </div>
 
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-sm font-medium text-gray-500">Appointments</h3>
-            <p className="text-3xl font-bold text-gray-900 mt-2">892</p>
-            <p className="text-sm text-green-600 mt-2">↑ 15% from last period</p>
+            <p className="text-3xl font-bold text-gray-900 mt-2">
+              {summary.totalAppointments.toLocaleString()}
+            </p>
+            <p className={`text-sm mt-2 ${summary.appointmentGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {summary.appointmentGrowth >= 0 ? '↑' : '↓'} {Math.abs(summary.appointmentGrowth)}% from last period
+            </p>
           </div>
         </div>
       </div>

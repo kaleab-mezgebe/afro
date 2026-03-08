@@ -27,7 +27,7 @@ class ServiceApiService {
 
       return response.data as List<dynamic>;
     } catch (e) {
-      AppLogger.e('Error getting services', error: e);
+      AppLogger.e('Error getting services: $e');
       rethrow;
     }
   }
@@ -38,7 +38,7 @@ class ServiceApiService {
       final response = await _apiClient.get('/services/category/$category');
       return response.data as List<dynamic>;
     } catch (e) {
-      AppLogger.e('Error getting services by category', error: e);
+      AppLogger.e('Error getting services by category: $e');
       rethrow;
     }
   }
@@ -49,7 +49,7 @@ class ServiceApiService {
       final response = await _apiClient.get('/services/$serviceId');
       return response.data;
     } catch (e) {
-      AppLogger.e('Error getting service', error: e);
+      AppLogger.e('Error getting service: $e');
       rethrow;
     }
   }

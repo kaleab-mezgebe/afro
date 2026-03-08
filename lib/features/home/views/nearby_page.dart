@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/services/barber_api_service.dart';
 import '../../../domain/entities/provider.dart';
 import '../../../routes/app_routes.dart';
+import '../../../core/widgets/app_loading.dart';
+import '../../../core/widgets/app_empty_state.dart';
 
 class NearByPage extends StatefulWidget {
   const NearByPage({super.key});
@@ -18,79 +21,67 @@ class _NearByPageState extends State<NearByPage> {
     zoom: 14.0,
   );
 
-  // Sample provider data for demo
-  final List<Provider> _providers = [
-    Provider(
-      id: '1',
-      name: 'Premium Barber Shop',
-      category: 'barber',
-      rating: 4.8,
-      location: 'Bole, Addis Ababa',
-      services: ['Haircut', 'Beard Trim', 'Hot Towel Shave'],
-      minPrice: 150,
-      maxPrice: 500,
-      imageUrl: 'https://picsum.photos/seed/barber1/200/200',
-      isFeatured: true,
-      isVerified: true,
-      gender: 'male',
-      reviewCount: 127,
-    ),
-    Provider(
-      id: '2',
-      name: 'Elegant Beauty Salon',
-      category: 'salon',
-      rating: 4.5,
-      location: 'Mekanisa, Addis Ababa',
-      services: ['Hair Coloring', 'Styling', 'Facial'],
-      minPrice: 200,
-      maxPrice: 800,
-      imageUrl: 'https://picsum.photos/seed/salon1/200/200',
-      isFeatured: false,
-      isVerified: true,
-      gender: 'female',
-      reviewCount: 89,
-    ),
-    Provider(
-      id: '3',
-      name: 'Modern Cuts',
-      category: 'barber',
-      rating: 4.9,
-      location: 'Kazanchis, Addis Ababa',
-      services: ['Haircut', 'Hair & Beard', 'Styling'],
-      minPrice: 100,
-      maxPrice: 300,
-      imageUrl: 'https://picsum.photos/seed/barber2/200/200',
-      isFeatured: true,
-      isVerified: false,
-      gender: 'unisex',
-      reviewCount: 203,
-    ),
-    Provider(
-      id: '4',
-      name: 'Luxury Spa & Salon',
-      category: 'salon',
-      rating: 4.7,
-      location: 'Bole, Addis Ababa',
-      services: ['Manicure', 'Pedicure', 'Hair Treatment'],
-      minPrice: 250,
-      maxPrice: 1000,
-      imageUrl: 'https://picsum.photos/seed/salon2/200/200',
-      isFeatured: true,
-      isVerified: true,
-      gender: 'female',
-      reviewCount: 156,
-    ),
-  ];
+  final BarberApiService _barberService = Get.find<BarberApiService>();
+  List<Provider> _providers = [];
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNearbyProviders();
+  }
+
+  Future<void> _loadNearbyProviders() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      // Fetch all barbers - in production, you'd pass location coordinates
+      final barbers = await _barberService.getBarbers();
+
+      setState(() {
+        _providers = barbers
+            .map(
+              (barber) => Provider(
+                id: barber['id'] ?? '',
+                name: barber['name'] ?? 'Unknown',
+                category: barber['category'] ?? 'barber',
+                rating: (barber['rating'] ?? 0.0).toDouble(),
+                location: barber['location'] ?? '',
+                services: List<String>.from(barber['services'] ?? []),
+                minPrice: (barber['minPrice'] ?? 0.0).toDouble(),
+                maxPrice: (barber['maxPrice'] ?? 0.0).toDouble(),
+                imageUrl: barber['imageUrl'],
+                isFeatured: barber['isFeatured'] ?? false,
+                isVerified: barber['isVerified'] ?? false,
+                gender: barber['gender'] ?? 'unisex',
+                reviewCount: barber['reviewCount'] ?? 0,
+              ),
+            )
+            .toList();
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = 'Failed to load nearby providers: $e';
+        _isLoading = false;
+      });
+    }
+  }
 
   Set<Marker> _createMarkers() {
-    return _providers.map((provider) {
+    return _providers.asMap().entries.map((entry) {
+      final index = entry.key;
+      final provider = entry.value;
+
       return Marker(
         markerId: MarkerId(provider.id),
         position: LatLng(
-          9.03 +
-              (double.parse(provider.id) *
-                  0.01), // Slightly different positions
-          38.74 + (double.parse(provider.id) * 0.01),
+          9.03 + (index * 0.01), // Slightly different positions
+          38.74 + (index * 0.01),
         ),
         infoWindow: InfoWindow(
           title: provider.name,
@@ -98,234 +89,212 @@ class _NearByPageState extends State<NearByPage> {
         ),
         icon: BitmapDescriptor.defaultMarkerWithHue(
           provider.category == 'barber'
-              ? BitmapDescriptor.hueOrange
-              : BitmapDescriptor.hueBlue,
+              ? BitmapDescriptor.hueBlue
+              : BitmapDescriptor.hueMagenta,
         ),
+        onTap: () {
+          _showProviderDetails(provider);
+        },
       );
     }).toSet();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: const Text(
-          'Nearby Providers',
-          style: TextStyle(
-            color: AppTheme.black,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: Colors.white.withValues(alpha: 0.9),
-        elevation: 0,
-        centerTitle: true,
-      ),
-      body: Stack(
-        children: [
-          GoogleMap(
-            initialCameraPosition: _kInitialPosition,
-            markers: _createMarkers(),
-            myLocationEnabled: true,
-            myLocationButtonEnabled: true,
-            zoomControlsEnabled: false,
-          ),
-          Positioned(top: 100, left: 16, right: 16, child: _buildSearchBox()),
-          Positioned(
-            bottom: 140,
-            left: 16,
-            right: 16,
-            child: _buildProviderCards(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProviderCards() {
-    return SizedBox(
-      height: 120,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: _providers.length,
-        itemBuilder: (context, index) {
-          final provider = _providers[index];
-          return GestureDetector(
-            onTap: () => Get.toNamed(
-              AppRoutes.portfolio,
-              arguments: {'specialist': _mapProviderToMap(provider)},
+  void _showProviderDetails(Provider provider) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        builder: (context, scrollController) {
+          return Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
-            child: Container(
-              width: 280,
-              margin: const EdgeInsets.only(right: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    margin: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: DecorationImage(
-                        image: NetworkImage(
-                          provider.imageUrl ??
-                              'https://picsum.photos/seed/${provider.id}/200/200',
+            child: SingleChildScrollView(
+              controller: scrollController,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppTheme.grey300,
+                          borderRadius: BorderRadius.circular(2),
                         ),
-                        fit: BoxFit.cover,
-                      ),
-                      border: Border.all(
-                        color: provider.isFeatured == true
-                            ? AppTheme.primaryYellow
-                            : Colors.transparent,
-                        width: provider.isFeatured == true ? 3 : 0,
                       ),
                     ),
-                  ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  provider.name,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppTheme.black,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              if (provider.isVerified == true)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.success,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Icon(
-                                    Icons.verified_rounded,
-                                    color: Colors.white,
-                                    size: 12,
-                                  ),
-                                ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
+                    const SizedBox(height: 20),
+                    if (provider.imageUrl != null)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          provider.imageUrl!,
+                          height: 200,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: provider.category == 'barber'
-                                      ? AppTheme.primaryYellow.withValues(alpha: 0.1)
-                                      : AppTheme.info.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  provider.category.toUpperCase(),
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: provider.category == 'barber'
-                                        ? AppTheme.primaryYellow
-                                        : AppTheme.info,
-                                  ),
-                                ),
+                                height: 200,
+                                color: AppTheme.grey200,
+                                child: const Icon(Icons.store, size: 60),
                               ),
-                              const SizedBox(width: 8),
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.star_rounded,
-                                    color: AppTheme.primaryYellow,
-                                    size: 14,
-                                  ),
-                                  const SizedBox(width: 2),
-                                  Text(
-                                    provider.rating.toStringAsFixed(1),
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppTheme.black,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            provider.location,
+                        ),
+                      ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            provider.name,
                             style: const TextStyle(
-                              fontSize: 11,
-                              color: AppTheme.textSecondary,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Text(
-                                provider.minPrice > 0
-                                    ? 'From \$${provider.minPrice.toInt()}'
-                                    : 'Variable pricing',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.black,
-                                ),
-                              ),
-                              const Spacer(),
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.chat_bubble_outline_rounded,
-                                    color: AppTheme.textMuted,
-                                    size: 12,
-                                  ),
-                                  const SizedBox(width: 2),
-                                  Text(
-                                    '(${provider.reviewCount ?? 0})',
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      color: AppTheme.textMuted,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                        ),
+                        if (provider.isVerified == true)
+                          const Icon(
+                            Icons.verified,
+                            color: AppTheme.primaryYellow,
+                            size: 24,
                           ),
-                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(Icons.star, color: Colors.amber, size: 20),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${provider.rating}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          ' (${provider.reviewCount} reviews)',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: AppTheme.grey600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on,
+                          size: 20,
+                          color: AppTheme.grey600,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            provider.location,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppTheme.grey600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Services',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: provider.services
+                          .map(
+                            (service) => Chip(
+                              label: Text(service),
+                              backgroundColor: AppTheme.primaryYellow
+                                  .withOpacity(0.1),
+                              labelStyle: const TextStyle(
+                                color: AppTheme.primaryYellow,
+                                fontSize: 12,
+                              ),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        const Text(
+                          'Price Range: ',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          '\$${provider.minPrice.toInt()} - \$${provider.maxPrice.toInt()}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: AppTheme.primaryYellow,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Get.toNamed(
+                            AppRoutes.portfolio,
+                            arguments: {
+                              'specialist': {
+                                'id': provider.id,
+                                'name': provider.name,
+                                'rating': provider.rating,
+                                'location': provider.location,
+                                'categories': [provider.category],
+                                'services': provider.services,
+                                'imageUrl': provider.imageUrl,
+                              },
+                            },
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryYellow,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'View Details & Book',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           );
@@ -334,45 +303,190 @@ class _NearByPageState extends State<NearByPage> {
     );
   }
 
-  Map<String, dynamic> _mapProviderToMap(Provider provider) {
-    return {
-      'id': provider.id,
-      'name': provider.name,
-      'image':
-          provider.imageUrl ??
-          'https://picsum.photos/seed/${provider.id}/200/200',
-      'rating': provider.rating,
-      'categories': [provider.category],
-      'location': provider.location,
-      'services': provider.services,
-      'contact': {
-        'phone': '+251 712 345 678',
-        'email': 'info@salon.com',
-        'address': provider.location,
-      },
-    };
-  }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: [
+          if (_isLoading)
+            const Center(child: AppLoading())
+          else if (_error != null)
+            Center(
+              child: AppEmptyState(
+                icon: Icons.error_outline,
+                title: 'Error Loading Providers',
+                message: _error!,
+                actionText: 'Retry',
+                onAction: _loadNearbyProviders,
+              ),
+            )
+          else if (_providers.isEmpty)
+            const Center(
+              child: AppEmptyState(
+                icon: Icons.location_off,
+                title: 'No Providers Nearby',
+                message: 'No providers found in your area',
+              ),
+            )
+          else
+            GoogleMap(
+              initialCameraPosition: _kInitialPosition,
+              markers: _createMarkers(),
+              myLocationEnabled: true,
+              myLocationButtonEnabled: true,
+              zoomControlsEnabled: false,
+              mapToolbarEnabled: false,
+            ),
 
-  Widget _buildSearchBox() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+          // Search bar overlay
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 16,
+            left: 16,
+            right: 16,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: 'Search for services nearby...',
+                  border: InputBorder.none,
+                  icon: const Padding(
+                    padding: EdgeInsets.only(left: 16),
+                    child: Icon(Icons.search, color: AppTheme.grey500),
+                  ),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.tune, color: AppTheme.grey500),
+                    onPressed: () {
+                      // Show filter options
+                    },
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
+                  ),
+                ),
+                onSubmitted: (value) {
+                  // Implement search
+                },
+              ),
+            ),
           ),
+
+          // Provider list overlay
+          if (!_isLoading && _error == null && _providers.isNotEmpty)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 180,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, -2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(
+                        '${_providers.length} providers nearby',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: _providers.length,
+                        itemBuilder: (context, index) {
+                          final provider = _providers[index];
+                          return GestureDetector(
+                            onTap: () => _showProviderDetails(provider),
+                            child: Container(
+                              width: 140,
+                              margin: const EdgeInsets.only(right: 12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: provider.imageUrl != null
+                                        ? Image.network(
+                                            provider.imageUrl!,
+                                            height: 80,
+                                            width: 140,
+                                            fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (context, error, stackTrace) =>
+                                                    Container(
+                                                      height: 80,
+                                                      color: AppTheme.grey200,
+                                                      child: const Icon(
+                                                        Icons.store,
+                                                      ),
+                                                    ),
+                                          )
+                                        : Container(
+                                            height: 80,
+                                            color: AppTheme.grey200,
+                                            child: const Icon(Icons.store),
+                                          ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    provider.name,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.star,
+                                        size: 14,
+                                        color: Colors.amber,
+                                      ),
+                                      const SizedBox(width: 2),
+                                      Text(
+                                        '${provider.rating}',
+                                        style: const TextStyle(fontSize: 12),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
-      ),
-      child: const TextField(
-        decoration: InputDecoration(
-          hintText: 'Search for services nearby...',
-          border: InputBorder.none,
-          icon: Icon(Icons.search, color: AppTheme.grey500),
-        ),
       ),
     );
   }

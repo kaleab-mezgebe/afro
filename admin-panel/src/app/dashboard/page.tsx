@@ -30,6 +30,7 @@ export default function DashboardPage() {
         totalRevenue: response.data.totalRevenue || 0,
       });
     } catch (error) {
+      console.error('Dashboard data error:', error);
       toast.error('Failed to load dashboard data');
     } finally {
       setLoading(false);
@@ -88,37 +89,22 @@ export default function DashboardPage() {
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
             <div className="space-y-4">
-              <div className="flex items-center justify-between py-3 border-b">
-                <div>
-                  <p className="text-sm font-medium text-gray-900">New provider registered</p>
-                  <p className="text-xs text-gray-500">2 hours ago</p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between py-3 border-b">
-                <div>
-                  <p className="text-sm font-medium text-gray-900">Appointment completed</p>
-                  <p className="text-xs text-gray-500">4 hours ago</p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between py-3">
-                <div>
-                  <p className="text-sm font-medium text-gray-900">New customer signed up</p>
-                  <p className="text-xs text-gray-500">6 hours ago</p>
-                </div>
-              </div>
+              <p className="text-sm text-gray-500 text-center py-8">
+                Activity feed coming soon. Connect to backend activity logs for real-time updates.
+              </p>
             </div>
           </div>
 
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
             <div className="space-y-3">
-              <button className="w-full text-left px-4 py-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
+              <button type="button" className="w-full text-left px-4 py-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
                 <p className="text-sm font-medium text-blue-900">Approve Pending Providers</p>
               </button>
-              <button className="w-full text-left px-4 py-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
+              <button type="button" className="w-full text-left px-4 py-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
                 <p className="text-sm font-medium text-green-900">View Flagged Reviews</p>
               </button>
-              <button className="w-full text-left px-4 py-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">
+              <button type="button" className="w-full text-left px-4 py-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">
                 <p className="text-sm font-medium text-purple-900">Generate Monthly Report</p>
               </button>
             </div>

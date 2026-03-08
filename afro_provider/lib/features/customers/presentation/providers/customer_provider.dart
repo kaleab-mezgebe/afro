@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../domain/entities/customer.dart';
+import '../../../../core/di/injection_container.dart';
 
 // Customer State
 class CustomerState {
@@ -46,52 +47,65 @@ class CustomerNotifier extends StateNotifier<CustomerState> {
     state = const CustomerState(isLoading: true);
 
     try {
-      // TODO: Implement actual API call
-      await Future.delayed(const Duration(seconds: 2));
+      // Get shop ID from provider service (assuming first shop)
+      final shops = await shopService.getShops();
+      if (shops.isEmpty) {
+        state = const CustomerState(
+          isLoading: false,
+          error: 'No shop found. Please create a shop first.',
+          customers: [],
+        );
+        return;
+      }
 
-      // Mock data
-      final mockCustomers = [
-        Customer(
-          id: '1',
-          email: 'john.smith@email.com',
-          firstName: 'John',
-          lastName: 'Smith',
-          phoneNumber: '+1 234-567-8900',
-          totalVisits: 12,
-          totalSpent: 450.0,
-          lastVisit: DateTime.now().subtract(const Duration(days: 7)),
-          status: CustomerStatus.active,
-        ),
-        Customer(
-          id: '2',
-          email: 'mike.wilson@email.com',
-          firstName: 'Mike',
-          lastName: 'Wilson',
-          phoneNumber: '+1 234-567-8901',
-          totalVisits: 8,
-          totalSpent: 320.0,
-          lastVisit: DateTime.now().subtract(const Duration(days: 14)),
-          status: CustomerStatus.active,
-        ),
-        Customer(
-          id: '3',
-          email: 'emily.davis@email.com',
-          firstName: 'Emily',
-          lastName: 'Davis',
-          phoneNumber: '+1 234-567-8902',
-          totalVisits: 15,
-          totalSpent: 680.0,
-          lastVisit: DateTime.now().subtract(const Duration(days: 3)),
-          status: CustomerStatus.active,
-        ),
-      ];
+      final shopId = shops[0]['id'].toString();
+
+      // Fetch customers from API
+      final response = await customerService.getShopCustomers(shopId);
+
+      // Convert API response to Customer models
+      final customers = response.map((json) {
+        return Customer(
+          id: json['id'].toString(),
+          email: json['email'] ?? '',
+          firstName: json['firstName'] ?? '',
+          lastName: json['lastName'] ?? '',
+          phoneNumber: json['phoneNumber'] ?? '',
+          totalVisits: json['totalVisits'] ?? 0,
+          totalSpent: (json['totalSpent'] ?? 0).toDouble(),
+          lastVisit: json['lastVisit'] != null
+              ? DateTime.parse(json['lastVisit'])
+              : DateTime.now(),
+          status: _parseStatus(json['status']),
+        );
+      }).toList();
 
       state = CustomerState(
         isLoading: false,
-        customers: mockCustomers,
+        customers: customers,
+        error: null,
       );
     } catch (e) {
-      state = CustomerState(error: e.toString());
+      state = CustomerState(
+        isLoading: false,
+        error: e.toString(),
+      );
+    }
+  }
+
+  CustomerStatus _parseStatus(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'active':
+        return CustomerStatus.active;
+      case 'inactive':
+        return CustomerStatus.inactive;
+      case 'blocked':
+      case 'suspended':
+        return CustomerStatus.suspended;
+      case 'vip':
+        return CustomerStatus.vip;
+      default:
+        return CustomerStatus.active;
     }
   }
 

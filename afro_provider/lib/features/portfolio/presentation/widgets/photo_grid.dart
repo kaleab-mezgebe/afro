@@ -1,49 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/portfolio_provider.dart';
 
-class PhotoGrid extends StatelessWidget {
+class PhotoGrid extends ConsumerWidget {
   const PhotoGrid({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Mock photos data
-    final photos = [
-      {
-        'id': '1',
-        'url': 'https://picsum.photos/seed/barber1.jpg',
-        'title': 'Classic Fade',
-        'likes': 45,
-      },
-      {
-        'id': '2',
-        'url': 'https://picsum.photos/seed/barber2.jpg',
-        'title': 'Beard Design',
-        'likes': 32,
-      },
-      {
-        'id': '3',
-        'url': 'https://picsum.photos/seed/barber3.jpg',
-        'title': 'Modern Cut',
-        'likes': 28,
-      },
-      {
-        'id': '4',
-        'url': 'https://picsum.photos/seed/barber4.jpg',
-        'title': 'Hair Coloring',
-        'likes': 56,
-      },
-      {
-        'id': '5',
-        'url': 'https://picsum.photos/seed/barber5.jpg',
-        'title': 'Wedding Style',
-        'likes': 89,
-      },
-      {
-        'id': '6',
-        'url': 'https://picsum.photos/seed/barber6.jpg',
-        'title': 'Executive Cut',
-        'likes': 67,
-      },
-    ];
+  Widget build(BuildContext context, WidgetRef ref) {
+    final portfolioState = ref.watch(portfolioProvider);
 
     return Card(
       child: Padding(
@@ -54,29 +18,46 @@ class PhotoGrid extends StatelessWidget {
             Text(
               'Recent Work',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 16),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-                childAspectRatio: 1.0,
+            if (portfolioState.isLoading)
+              const Center(child: CircularProgressIndicator())
+            else if (portfolioState.error != null)
+              Center(
+                child: Text(
+                  portfolioState.error!,
+                  style: TextStyle(color: Colors.red[700]),
+                ),
+              )
+            else if (portfolioState.photos.isEmpty)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(32.0),
+                  child: Text('No photos yet. Upload your first work!'),
+                ),
+              )
+            else
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                  childAspectRatio: 1.0,
+                ),
+                itemCount: portfolioState.photos.length,
+                itemBuilder: (context, index) {
+                  final photo = portfolioState.photos[index];
+                  return _PhotoItem(
+                    url: photo.url,
+                    title: photo.title,
+                    likes: photo.likes,
+                  );
+                },
               ),
-              itemCount: photos.length,
-              itemBuilder: (context, index) {
-                final photo = photos[index];
-                return _PhotoItem(
-                  url: photo['url'] as String,
-                  title: photo['title'] as String,
-                  likes: photo['likes'] as int,
-                );
-              },
-            ),
           ],
         ),
       ),

@@ -12,7 +12,7 @@ class CustomerApiService {
       final response = await _apiClient.get('/customers/profile');
       return response.data;
     } catch (e) {
-      AppLogger.e('Error getting customer profile', error: e);
+      AppLogger.e('Error getting customer profile: $e');
       rethrow;
     }
   }
@@ -40,7 +40,7 @@ class CustomerApiService {
       final response = await _apiClient.put('/customers/profile', data: data);
       return response.data;
     } catch (e) {
-      AppLogger.e('Error updating customer profile', error: e);
+      AppLogger.e('Error updating customer profile: $e');
       rethrow;
     }
   }
@@ -51,7 +51,7 @@ class CustomerApiService {
       final response = await _apiClient.get('/customers/preferences');
       return response.data;
     } catch (e) {
-      AppLogger.e('Error getting preferences', error: e);
+      AppLogger.e('Error getting preferences: $e');
       rethrow;
     }
   }
@@ -67,7 +67,7 @@ class CustomerApiService {
       );
       return response.data;
     } catch (e) {
-      AppLogger.e('Error updating preferences', error: e);
+      AppLogger.e('Error updating preferences: $e');
       rethrow;
     }
   }

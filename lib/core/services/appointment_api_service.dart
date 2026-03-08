@@ -24,7 +24,7 @@ class AppointmentApiService {
       final response = await _apiClient.post('/appointments', data: data);
       return response.data;
     } catch (e) {
-      AppLogger.e('Error creating appointment', error: e);
+      AppLogger.e('Error creating appointment: $e');
       rethrow;
     }
   }
@@ -48,7 +48,7 @@ class AppointmentApiService {
 
       return response.data as List<dynamic>;
     } catch (e) {
-      AppLogger.e('Error getting my appointments', error: e);
+      AppLogger.e('Error getting my appointments: $e');
       rethrow;
     }
   }
@@ -59,7 +59,7 @@ class AppointmentApiService {
       final response = await _apiClient.get('/appointments/$appointmentId');
       return response.data;
     } catch (e) {
-      AppLogger.e('Error getting appointment', error: e);
+      AppLogger.e('Error getting appointment: $e');
       rethrow;
     }
   }
@@ -78,7 +78,7 @@ class AppointmentApiService {
       );
       return response.data;
     } catch (e) {
-      AppLogger.e('Error cancelling appointment', error: e);
+      AppLogger.e('Error cancelling appointment: $e');
       rethrow;
     }
   }
@@ -97,7 +97,7 @@ class AppointmentApiService {
       );
       return response.data;
     } catch (e) {
-      AppLogger.e('Error rescheduling appointment', error: e);
+      AppLogger.e('Error rescheduling appointment: $e');
       rethrow;
     }
   }

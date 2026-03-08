@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import '../providers/appointment_provider.dart';
 
-class AppointmentsList extends StatelessWidget {
+class AppointmentsList extends ConsumerWidget {
   final DateTime selectedDate;
 
   const AppointmentsList({
@@ -9,34 +12,8 @@ class AppointmentsList extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    // Mock appointments for the selected date
-    final appointments = [
-      {
-        'time': '9:00 AM',
-        'customer': 'John Smith',
-        'service': 'Classic Haircut',
-        'staff': 'Sarah Johnson',
-        'status': 'Confirmed',
-        'price': '\$25.00',
-      },
-      {
-        'time': '9:30 AM',
-        'customer': 'Mike Wilson',
-        'service': 'Beard Trim',
-        'staff': 'Mike Wilson',
-        'status': 'Confirmed',
-        'price': '\$15.00',
-      },
-      {
-        'time': '10:00 AM',
-        'customer': 'Emily Davis',
-        'service': 'Hair Coloring',
-        'staff': 'Sarah Johnson',
-        'status': 'In Progress',
-        'price': '\$60.00',
-      },
-    ];
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appointmentState = ref.watch(appointmentProvider);
 
     return Card(
       child: Padding(
@@ -47,22 +24,58 @@ class AppointmentsList extends StatelessWidget {
             Text(
               'Appointments for ${selectedDate.day}/${selectedDate.month}',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 16),
-            ...appointments.map((appointment) => _AppointmentItem(
-              time: appointment['time'] as String,
-              customer: appointment['customer'] as String,
-              service: appointment['service'] as String,
-              staff: appointment['staff'] as String,
-              status: appointment['status'] as String,
-              price: appointment['price'] as String,
-            )).toList(),
+            if (appointmentState.isLoading)
+              const Center(child: CircularProgressIndicator())
+            else if (appointmentState.error != null)
+              Center(
+                child: Text(
+                  appointmentState.error!,
+                  style: TextStyle(color: Colors.red[700]),
+                ),
+              )
+            else if (appointmentState.appointments.isEmpty)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(32.0),
+                  child: Text('No appointments for this date'),
+                ),
+              )
+            else
+              ...appointmentState.appointments.map((appointment) {
+                final timeFormat = DateFormat('h:mm a');
+                final startTime = appointment.startTime ?? DateTime.now();
+                return _AppointmentItem(
+                  time: timeFormat.format(startTime),
+                  customer:
+                      'Customer ${appointment.customerId}', // TODO: Get customer name
+                  service: appointment.services.isNotEmpty
+                      ? 'Service ${appointment.services[0].serviceId}'
+                      : 'Service',
+                  staff: 'Staff ${appointment.staffId}', // TODO: Get staff name
+                  status: _getStatusText(appointment.status.toString()),
+                  price: '\$${appointment.totalPrice.toStringAsFixed(2)}',
+                );
+              }),
           ],
         ),
       ),
     );
+  }
+
+  String _getStatusText(String status) {
+    // Convert enum string to readable text
+    return status
+        .split('.')
+        .last
+        .replaceAllMapped(
+          RegExp(r'([A-Z])'),
+          (match) => ' ${match.group(0)}',
+        )
+        .trim();
   }
 }
 
@@ -100,8 +113,8 @@ class _AppointmentItem extends StatelessWidget {
               Text(
                 time,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
               const Spacer(),
               Container(
@@ -125,22 +138,22 @@ class _AppointmentItem extends StatelessWidget {
           Text(
             customer,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: 4),
           Text(
             service,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[600],
-            ),
+                  color: Colors.grey[600],
+                ),
           ),
           const SizedBox(height: 4),
           Text(
             'with $staff',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.grey[600],
-            ),
+                  color: Colors.grey[600],
+                ),
           ),
           const SizedBox(height: 8),
           Row(
@@ -149,9 +162,9 @@ class _AppointmentItem extends StatelessWidget {
               Text(
                 price,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).primaryColor,
-                ),
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).primaryColor,
+                    ),
               ),
               Row(
                 children: [

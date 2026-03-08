@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:sizer/sizer.dart';
 import 'app/app.dart';
 import 'core/di/injection_container.dart';
 import 'core/utils/app_theme.dart';
@@ -26,13 +27,26 @@ class AfroProviderApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return MaterialApp.router(
-      title: 'AFRO Provider',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.light,
-      routerConfig: AppRouter.router,
+    return Sizer(
+      builder: (context, orientation, deviceType) {
+        return MaterialApp.router(
+          title: 'AFRO Provider',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: ThemeMode.light,
+          routerConfig: AppRouter.router,
+          builder: (context, child) {
+            return MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaleFactor:
+                    MediaQuery.of(context).textScaleFactor.clamp(0.8, 1.3),
+              ),
+              child: child!,
+            );
+          },
+        );
+      },
     );
   }
 }

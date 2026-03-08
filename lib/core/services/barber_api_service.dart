@@ -31,7 +31,7 @@ class BarberApiService {
 
       return response.data as List<dynamic>;
     } catch (e) {
-      AppLogger.e('Error getting barbers', error: e);
+      AppLogger.e('Error getting barbers: $e');
       rethrow;
     }
   }
@@ -42,7 +42,7 @@ class BarberApiService {
       final response = await _apiClient.get('/barbers/$barberId');
       return response.data;
     } catch (e) {
-      AppLogger.e('Error getting barber', error: e);
+      AppLogger.e('Error getting barber: $e');
       rethrow;
     }
   }
@@ -65,7 +65,7 @@ class BarberApiService {
 
       return response.data as List<dynamic>;
     } catch (e) {
-      AppLogger.e('Error getting barber reviews', error: e);
+      AppLogger.e('Error getting barber reviews: $e');
       rethrow;
     }
   }

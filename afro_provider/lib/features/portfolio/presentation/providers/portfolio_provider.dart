@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/portfolio_photo_model.dart';
 import '../../data/models/review_model.dart';
+import '../../../../core/di/injection_container.dart';
 
 // Portfolio State
 class PortfolioState {
@@ -52,55 +53,59 @@ class PortfolioNotifier extends StateNotifier<PortfolioState> {
     state = const PortfolioState(isLoading: true);
 
     try {
-      // TODO: Implement actual API call
-      await Future.delayed(const Duration(seconds: 2));
+      // Get shop ID from provider service (assuming first shop)
+      final shops = await shopService.getShops();
+      if (shops.isEmpty) {
+        state = const PortfolioState(
+          isLoading: false,
+          error: 'No shop found. Please create a shop first.',
+          photos: [],
+          reviews: [],
+        );
+        return;
+      }
 
-      // Mock data
-      final mockPhotos = [
-        PortfolioPhoto(
-          id: '1',
-          url: 'https://example.com/photo1.jpg',
-          title: 'Classic Fade',
-          description: 'Perfect fade for modern look',
-          tags: ['Men', 'Fade', 'Classic'],
-          likes: 45,
-          uploadedAt: DateTime.now().subtract(const Duration(days: 1)),
-        ),
-        PortfolioPhoto(
-          id: '2',
-          url: 'https://example.com/photo2.jpg',
-          title: 'Beard Design',
-          description: 'Professional beard trimming',
-          tags: ['Beard', 'Men', 'Professional'],
-          likes: 32,
-          uploadedAt: DateTime.now().subtract(const Duration(days: 3)),
-        ),
-      ];
+      final shopId = shops[0]['id'].toString();
 
-      final mockReviews = [
-        Review(
-          id: '1',
-          customerName: 'John Smith',
-          rating: 5.0,
-          comment: 'Amazing haircut! Sarah always does a great job.',
-          createdAt: DateTime.now().subtract(const Duration(days: 2)),
-        ),
-        Review(
-          id: '2',
-          customerName: 'Mike Wilson',
-          rating: 4.5,
-          comment: 'Good service, but could be faster.',
-          createdAt: DateTime.now().subtract(const Duration(days: 5)),
-        ),
-      ];
+      // Fetch portfolio photos and reviews from API
+      final photosResponse = await portfolioService.getPortfolioPhotos(shopId);
+      final reviewsResponse = await portfolioService.getShopReviews(shopId);
+
+      // Convert API response to models
+      final photos = photosResponse.map((json) {
+        return PortfolioPhoto(
+          id: json['id'].toString(),
+          url: json['url'] ?? '',
+          title: json['title'] ?? '',
+          description: json['description'] ?? '',
+          tags:
+              (json['tags'] as List?)?.map((t) => t.toString()).toList() ?? [],
+          likes: json['likes'] ?? 0,
+          uploadedAt: DateTime.parse(json['uploadedAt'] ?? json['createdAt']),
+        );
+      }).toList();
+
+      final reviews = reviewsResponse.map((json) {
+        return Review(
+          id: json['id'].toString(),
+          customerName: json['customerName'] ?? 'Anonymous',
+          rating: (json['rating'] ?? 0).toDouble(),
+          comment: json['comment'] ?? '',
+          createdAt: DateTime.parse(json['createdAt']),
+        );
+      }).toList();
 
       state = PortfolioState(
         isLoading: false,
-        photos: mockPhotos,
-        reviews: mockReviews,
+        photos: photos,
+        reviews: reviews,
+        error: null,
       );
     } catch (e) {
-      state = PortfolioState(error: e.toString());
+      state = PortfolioState(
+        isLoading: false,
+        error: e.toString(),
+      );
     }
   }
 

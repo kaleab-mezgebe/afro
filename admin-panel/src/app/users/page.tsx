@@ -88,6 +88,7 @@ export default function UsersPage() {
               <div className="flex items-center gap-2">
                 <FiFilter className="text-gray-400" />
                 <select
+                  aria-label="Filter by role"
                   className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={roleFilter}
                   onChange={(e) => setRoleFilter(e.target.value)}

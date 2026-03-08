@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/models/staff_service_models.dart';
+import '../../../../core/di/injection_container.dart';
 
 // Staff State
 class StaffState {
@@ -46,73 +47,81 @@ class StaffNotifier extends StateNotifier<StaffState> {
     state = const StaffState(isLoading: true);
 
     try {
-      // TODO: Implement actual API call
-      await Future.delayed(const Duration(seconds: 2));
+      // Get shop ID from provider service (assuming first shop)
+      final shops = await shopService.getShops();
+      if (shops.isEmpty) {
+        state = const StaffState(
+          isLoading: false,
+          error: 'No shop found. Please create a shop first.',
+          staff: [],
+        );
+        return;
+      }
 
-      // Mock data
-      final mockStaff = [
-        Staff(
-          id: '1',
-          shopId: 'shop1',
-          firstName: 'Sarah',
-          lastName: 'Johnson',
-          email: 'sarah@barbershop.com',
-          phoneNumber: '+1 234-567-8901',
-          role: StaffRole.barber,
-          status: StaffStatus.active,
-          experience: 5,
-          rating: 4.8,
-          totalReviews: 120,
-          baseSalary: 45000.0,
-          canAcceptOnlineBookings: true,
-          isFeatured: true,
-          createdAt: DateTime.now().subtract(const Duration(days: 365)),
-          updatedAt: DateTime.now(),
-        ),
-        Staff(
-          id: '2',
-          shopId: 'shop1',
-          firstName: 'Mike',
-          lastName: 'Wilson',
-          email: 'mike@barbershop.com',
-          phoneNumber: '+1 234-567-8902',
-          role: StaffRole.barber,
-          status: StaffStatus.active,
-          experience: 3,
-          rating: 4.5,
-          totalReviews: 85,
-          baseSalary: 38000.0,
-          canAcceptOnlineBookings: true,
-          isFeatured: false,
-          createdAt: DateTime.now().subtract(const Duration(days: 180)),
-          updatedAt: DateTime.now(),
-        ),
-        Staff(
-          id: '3',
-          shopId: 'shop1',
-          firstName: 'Emily',
-          lastName: 'Davis',
-          email: 'emily@barbershop.com',
-          phoneNumber: '+1 234-567-8903',
-          role: StaffRole.receptionist,
-          status: StaffStatus.onLeave,
-          experience: 2,
-          rating: 4.6,
-          totalReviews: 45,
-          baseSalary: 32000.0,
-          canAcceptOnlineBookings: false,
-          isFeatured: false,
-          createdAt: DateTime.now().subtract(const Duration(days: 90)),
-          updatedAt: DateTime.now(),
-        ),
-      ];
+      final shopId = shops[0]['id'].toString();
+
+      // Fetch staff from API
+      final response = await staffService.getShopStaff(shopId);
+
+      // Convert API response to Staff models
+      final staff = response.map((json) {
+        return Staff(
+          id: json['id'].toString(),
+          shopId: json['shopId']?.toString() ?? '',
+          firstName: json['firstName'] ?? '',
+          lastName: json['lastName'] ?? '',
+          email: json['email'] ?? '',
+          phoneNumber: json['phoneNumber'] ?? '',
+          role: _parseRole(json['role']),
+          status: _parseStatus(json['status']),
+          experience: json['experience'] ?? 0,
+          rating: (json['rating'] ?? 0).toDouble(),
+          totalReviews: json['totalReviews'] ?? 0,
+          baseSalary: (json['baseSalary'] ?? 0).toDouble(),
+          canAcceptOnlineBookings: json['canAcceptOnlineBookings'] ?? true,
+          isFeatured: json['isFeatured'] ?? false,
+          createdAt: DateTime.parse(json['createdAt']),
+          updatedAt: DateTime.parse(json['updatedAt']),
+        );
+      }).toList();
 
       state = StaffState(
         isLoading: false,
-        staff: mockStaff,
+        staff: staff,
+        error: null,
       );
     } catch (e) {
-      state = StaffState(error: e.toString());
+      state = StaffState(
+        isLoading: false,
+        error: e.toString(),
+      );
+    }
+  }
+
+  StaffRole _parseRole(String? role) {
+    switch (role?.toLowerCase()) {
+      case 'barber':
+        return StaffRole.barber;
+      case 'receptionist':
+        return StaffRole.receptionist;
+      case 'manager':
+        return StaffRole.manager;
+      default:
+        return StaffRole.barber;
+    }
+  }
+
+  StaffStatus _parseStatus(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'active':
+        return StaffStatus.active;
+      case 'on_leave':
+      case 'onleave':
+        return StaffStatus.onLeave;
+      case 'inactive':
+        return StaffStatus.inactive;
+      default:
+        return StaffStatus.active;
     }
   }
 

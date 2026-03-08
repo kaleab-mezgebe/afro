@@ -33,10 +33,11 @@ export default function SettingsPage() {
             </div>
             <div className="p-6 space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="siteName" className="block text-sm font-medium text-gray-700 mb-2">
                   Site Name
                 </label>
                 <input
+                  id="siteName"
                   type="text"
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={settings.siteName}
@@ -45,10 +46,11 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="supportEmail" className="block text-sm font-medium text-gray-700 mb-2">
                   Support Email
                 </label>
                 <input
+                  id="supportEmail"
                   type="email"
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={settings.supportEmail}
@@ -64,10 +66,11 @@ export default function SettingsPage() {
             </div>
             <div className="p-6 space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="commissionRate" className="block text-sm font-medium text-gray-700 mb-2">
                   Commission Rate (%)
                 </label>
                 <input
+                  id="commissionRate"
                   type="number"
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={settings.commissionRate}
@@ -76,10 +79,11 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="minBookingHours" className="block text-sm font-medium text-gray-700 mb-2">
                   Minimum Booking Hours
                 </label>
                 <input
+                  id="minBookingHours"
                   type="number"
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={settings.minBookingHours}
@@ -88,10 +92,11 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="maxCancellationHours" className="block text-sm font-medium text-gray-700 mb-2">
                   Maximum Cancellation Hours
                 </label>
                 <input
+                  id="maxCancellationHours"
                   type="number"
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={settings.maxCancellationHours}
@@ -103,6 +108,7 @@ export default function SettingsPage() {
 
           <div className="flex justify-end">
             <button
+              type="button"
               onClick={handleSave}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >

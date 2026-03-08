@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/models/appointment_analytics_models.dart';
+import '../../../../core/di/injection_container.dart';
 
 // Appointment State
 class AppointmentState {
@@ -51,71 +52,101 @@ class AppointmentNotifier extends StateNotifier<AppointmentState> {
     state = state.copyWith(isLoading: true, selectedDate: date);
 
     try {
-      // TODO: Implement actual API call
-      await Future.delayed(const Duration(seconds: 2));
+      // Format date for API
+      final dateStr =
+          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
-      // Mock data
-      final mockAppointments = [
-        Appointment(
-          id: '1',
-          customerId: 'cust1',
-          staffId: 'staff1',
-          shopId: 'shop1',
-          bookingType: BookingType.online,
-          appointmentDateTime: DateTime(date.year, date.month, date.day, 9, 0),
-          duration: 30,
-          startTime: DateTime(date.year, date.month, date.day, 9, 0),
-          endTime: DateTime(date.year, date.month, date.day, 9, 30),
-          status: AppointmentStatus.confirmed,
-          totalPrice: 25.0,
-          depositAmount: 0.0,
-          tipAmount: 0.0,
-          isNoShow: false,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          services: [
-            AppointmentService(
-              id: 'svc1',
-              serviceId: 'service1',
-              price: 25.0,
-              duration: 30,
-            ),
-          ],
-        ),
-        Appointment(
-          id: '2',
-          customerId: 'cust2',
-          staffId: 'staff2',
-          shopId: 'shop1',
-          bookingType: BookingType.walkIn,
-          appointmentDateTime: DateTime(date.year, date.month, date.day, 10, 0),
-          duration: 45,
-          startTime: DateTime(date.year, date.month, date.day, 10, 0),
-          endTime: DateTime(date.year, date.month, date.day, 10, 45),
-          status: AppointmentStatus.confirmed,
-          totalPrice: 40.0,
-          depositAmount: 0.0,
-          tipAmount: 0.0,
-          isNoShow: false,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          services: [
-            AppointmentService(
-              id: 'svc2',
-              serviceId: 'service2',
-              price: 40.0,
-              duration: 45,
-            ),
-          ],
-        ),
-      ];
+      // Get shop ID from provider service (assuming first shop)
+      final shops = await shopService.getShops();
+      if (shops.isEmpty) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'No shop found. Please create a shop first.',
+          appointments: [],
+        );
+        return;
+      }
 
-      state = AppointmentState(
+      final shopId = shops[0]['id'].toString();
+
+      // Fetch appointments from API
+      final response = await appointmentService.getShopAppointments(
+        shopId,
+        date: dateStr,
+      );
+
+      // Convert API response to Appointment models
+      final appointments = response.map((json) {
+        return Appointment(
+          id: json['id'].toString(),
+          customerId: json['customerId']?.toString() ?? '',
+          staffId: json['staffId']?.toString() ?? '',
+          shopId: json['shopId']?.toString() ?? '',
+          bookingType: _parseBookingType(json['bookingType']),
+          appointmentDateTime: DateTime.parse(json['appointmentDate']),
+          duration: json['duration'] ?? 30,
+          startTime: DateTime.parse(json['startTime']),
+          endTime: DateTime.parse(json['endTime']),
+          status: _parseStatus(json['status']),
+          totalPrice: (json['totalPrice'] ?? 0).toDouble(),
+          depositAmount: (json['depositAmount'] ?? 0).toDouble(),
+          tipAmount: (json['tipAmount'] ?? 0).toDouble(),
+          isNoShow: json['isNoShow'] ?? false,
+          createdAt: DateTime.parse(json['createdAt']),
+          updatedAt: DateTime.parse(json['updatedAt']),
+          services: (json['services'] as List?)?.map((s) {
+                return AppointmentService(
+                  id: s['id'].toString(),
+                  serviceId: s['serviceId'].toString(),
+                  price: (s['price'] ?? 0).toDouble(),
+                  duration: s['duration'] ?? 30,
+                );
+              }).toList() ??
+              [],
+        );
+      }).toList();
+
+      state = state.copyWith(
         isLoading: false,
-        appointments: mockAppointments,
+        appointments: appointments,
+        error: null,
       );
     } catch (e) {
-      state = AppointmentState(error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
+    }
+  }
+
+  BookingType _parseBookingType(String? type) {
+    switch (type?.toLowerCase()) {
+      case 'online':
+        return BookingType.online;
+      case 'walkin':
+      case 'walk_in':
+        return BookingType.walkIn;
+      default:
+        return BookingType.online;
+    }
+  }
+
+  AppointmentStatus _parseStatus(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'pending':
+        return AppointmentStatus.pending;
+      case 'confirmed':
+        return AppointmentStatus.confirmed;
+      case 'in_progress':
+        return AppointmentStatus.inProgress;
+      case 'completed':
+        return AppointmentStatus.completed;
+      case 'cancelled':
+        return AppointmentStatus.cancelled;
+      case 'no_show':
+        return AppointmentStatus.noShow;
+      default:
+        return AppointmentStatus.pending;
     }
   }
 

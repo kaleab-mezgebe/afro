@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/models/provider_models.dart';
+import '../../../../core/di/injection_container.dart';
 
 // Shop State
 class ShopState {
@@ -38,38 +39,56 @@ class ShopNotifier extends StateNotifier<ShopState> {
     state = const ShopState(isLoading: true);
 
     try {
-      // TODO: Implement actual API call
-      await Future.delayed(const Duration(seconds: 2));
+      // Fetch shops from API
+      final response = await shopService.getShops();
 
-      // Mock data
-      final mockShops = [
-        Shop(
-          id: '1',
-          providerId: 'provider_1',
-          name: 'John\'s Barber Shop',
-          category: ShopCategory.barberShop,
-          rating: 4.5,
-          totalReviews: 128,
-          isActive: true,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-        ),
-        Shop(
-          id: '2',
-          providerId: 'provider_1',
-          name: 'Elegant Hair Salon',
-          category: ShopCategory.hairSalon,
-          rating: 4.8,
-          totalReviews: 96,
-          isActive: true,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-        ),
-      ];
+      // Convert API response to Shop models
+      final shops = response.map((json) {
+        return Shop(
+          id: json['id'].toString(),
+          providerId: json['providerId']?.toString() ?? '',
+          name: json['name'] ?? '',
+          category: _parseCategory(json['category']),
+          rating: (json['rating'] ?? 0).toDouble(),
+          totalReviews: json['totalReviews'] ?? 0,
+          isActive: json['isActive'] ?? true,
+          createdAt: DateTime.parse(json['createdAt']),
+          updatedAt: DateTime.parse(json['updatedAt']),
+        );
+      }).toList();
 
-      state = ShopState(isLoading: false, shops: mockShops);
+      state = ShopState(
+        isLoading: false,
+        shops: shops,
+        error: null,
+      );
     } catch (e) {
-      state = ShopState(error: e.toString());
+      state = ShopState(
+        isLoading: false,
+        error: e.toString(),
+      );
+    }
+  }
+
+  ShopCategory _parseCategory(String? category) {
+    switch (category?.toLowerCase()) {
+      case 'barbershop':
+      case 'barber_shop':
+        return ShopCategory.barberShop;
+      case 'hairsalon':
+      case 'hair_salon':
+        return ShopCategory.hairSalon;
+      case 'beautysalon':
+      case 'beauty_salon':
+        return ShopCategory.beautySalon;
+      case 'makeupstudio':
+      case 'makeup_studio':
+        return ShopCategory.makeupStudio;
+      case 'nailstudio':
+      case 'nail_studio':
+        return ShopCategory.nailStudio;
+      default:
+        return ShopCategory.barberShop;
     }
   }
 

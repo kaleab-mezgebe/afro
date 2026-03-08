@@ -38,10 +38,11 @@ export default function AppointmentsPage() {
     }
   };
 
-  const filteredAppointments = appointments.filter(appointment => {
-    const matchesSearch = appointment.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         appointment.providerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         appointment.serviceName?.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredAppointments = appointments.filter((appointment) => {
+    const matchesSearch =
+      appointment.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      appointment.providerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      appointment.serviceName?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || appointment.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -71,6 +72,7 @@ export default function AppointmentsPage() {
               <div className="flex items-center gap-2">
                 <FiFilter className="text-gray-400" />
                 <select
+                  aria-label="Filter by status"
                   className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}

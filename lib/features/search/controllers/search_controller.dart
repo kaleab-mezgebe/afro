@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/painting.dart';
@@ -12,6 +13,10 @@ import 'package:flutter/material.dart';
 class SearchController extends GetxController {
   final SearchProviders searchProviders;
   final SearchRepository searchRepository; // Add repository for history methods
+
+  // Debounce timer for search
+  Timer? _debounceTimer;
+  static const _debounceDuration = Duration(milliseconds: 500);
 
   SearchController({
     required this.searchProviders,
@@ -71,6 +76,12 @@ class SearchController extends GetxController {
     super.onInit();
     loadProviders();
     loadSearchHistory();
+  }
+
+  @override
+  void onClose() {
+    _debounceTimer?.cancel();
+    super.onClose();
   }
 
   Future<void> loadProviders() async {
@@ -223,9 +234,19 @@ class SearchController extends GetxController {
 
   void updateQuery(String value) {
     query.value = value;
+
+    // Cancel previous timer
+    _debounceTimer?.cancel();
+
     if (value.isEmpty) {
       applyFilters();
+      return;
     }
+
+    // Start new debounce timer
+    _debounceTimer = Timer(_debounceDuration, () {
+      performSearch();
+    });
   }
 
   void performSearch() {

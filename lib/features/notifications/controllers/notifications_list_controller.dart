@@ -101,28 +101,11 @@ class NotificationsListController extends GetxController {
         notifications.value = decoded
             .map((item) => NotificationItem.fromJson(item))
             .toList();
-      } else {
-        _loadSampleNotifications();
       }
     } catch (e) {
       debugPrint('Error loading notifications: $e');
-      _loadSampleNotifications();
+      notifications.value = [];
     }
-  }
-
-  void _loadSampleNotifications() {
-    notifications.value = [
-      NotificationItem(
-        id: '1',
-        title: 'Welcome!',
-        message:
-            'Thank you for using our app. Tap the notification bell to see updates!',
-        type: NotificationType.update,
-        timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
-        isRead: false,
-      ),
-    ];
-    _saveNotifications();
   }
 
   Future<void> _saveNotifications() async {
