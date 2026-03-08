@@ -1,6 +1,10 @@
 class AppConstants {
   static const String appName = 'Afro';
-  static const String apiBaseUrl = 'https://api.afro-salon.com';
+  static const String apiBaseUrl = 'http://localhost:3001/api/v1';
+
+  // For Android emulator use: http://10.0.2.2:3001/api/v1
+  // For iOS simulator use: http://localhost:3001/api/v1
+  // For physical device use: http://YOUR_IP:3001/api/v1
 
   // Storage keys
   static const String bookingsKey = 'my_bookings';
