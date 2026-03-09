@@ -32,33 +32,7 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
                     _buildHeader(),
                     SizedBox(height: 3.h),
 
-                    Form(
-                      key: controller.formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildPhoneField(),
-                          Obx(
-                            () => controller.error.value.isNotEmpty
-                                ? Padding(
-                                    padding: EdgeInsets.only(
-                                      top: 1.h,
-                                      left: 2.w,
-                                    ),
-                                    child: Text(
-                                      controller.error.value,
-                                      style: TextStyle(
-                                        color: AppTheme.error,
-                                        fontSize: 11.sp,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  )
-                                : const SizedBox.shrink(),
-                          ),
-                        ],
-                      ),
-                    ),
+                    Form(key: controller.formKey, child: _buildPhoneField()),
 
                     SizedBox(height: 2.h),
 
@@ -165,66 +139,88 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
 
   Widget _buildPhoneField() {
     return Obx(
-      () => Container(
-        decoration: BoxDecoration(
-          color: AppTheme.grey50,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.grey300),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // Country Picker
-            SizedBox(
-              width: 28.w,
-              height: 7.h,
-              child: CountryPickerWidget(
-                country: controller.selectedCountry.value,
-                onCountryChanged: controller.onCountryChanged,
+      () => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: AppTheme.grey50,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: controller.validationError.value.isNotEmpty
+                    ? AppTheme.error
+                    : AppTheme.grey300,
               ),
-            ),
-
-            // Phone Number
-            Expanded(
-              child: TextFormField(
-                controller: controller.phoneController,
-                keyboardType: TextInputType.phone,
-                onChanged: controller.setPhoneNumber,
-                maxLength: controller.maxPhoneLength.value,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                decoration: InputDecoration(
-                  hintText: 'Phone Number',
-                  filled: false,
-                  border: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  counterText: '',
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 5.w,
-                    vertical: 1.5.h,
-                  ),
-                  hintStyle: TextStyle(
-                    fontSize: 13.sp,
-                    color: AppTheme.textMuted,
-                    fontWeight: FontWeight.w400,
-                  ),
-                  errorStyle: const TextStyle(height: 0, fontSize: 0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
                 ),
+              ],
+            ),
+            child: Row(
+              children: [
+                // Country Picker
+                SizedBox(
+                  width: 28.w,
+                  height: 7.h,
+                  child: CountryPickerWidget(
+                    country: controller.selectedCountry.value,
+                    onCountryChanged: controller.onCountryChanged,
+                  ),
+                ),
+
+                // Phone Number
+                Expanded(
+                  child: TextFormField(
+                    controller: controller.phoneController,
+                    keyboardType: TextInputType.phone,
+                    onChanged: controller.setPhoneNumber,
+                    maxLength: controller.maxPhoneLength.value,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    decoration: InputDecoration(
+                      hintText: 'Phone Number',
+                      filled: false,
+                      border: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      counterText: '',
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 5.w,
+                        vertical: 1.5.h,
+                      ),
+                      hintStyle: TextStyle(
+                        fontSize: 13.sp,
+                        color: AppTheme.textMuted,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      errorStyle: const TextStyle(height: 0, fontSize: 0),
+                    ),
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: AppTheme.textPrimary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Validation error message at the bottom of the field
+          if (controller.validationError.value.isNotEmpty)
+            Padding(
+              padding: EdgeInsets.only(top: 1.h, left: 2.w),
+              child: Text(
+                controller.validationError.value,
                 style: TextStyle(
-                  fontSize: 14.sp,
-                  color: AppTheme.textPrimary,
+                  color: AppTheme.error,
+                  fontSize: 11.sp,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }

@@ -4,7 +4,7 @@ import 'package:sizer/sizer.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
-import 'core/bindings/initial_binding.dart';
+import 'core/bindings/initial_binding_enhanced.dart';
 import 'core/theme/app_theme.dart';
 import 'core/services/firebase_messaging_service.dart';
 import 'routes/app_pages.dart';
@@ -43,7 +43,7 @@ class CustomerApp extends StatelessWidget {
           title: 'Customer App - Premium Barber Booking',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.light,
-          initialBinding: InitialBinding(),
+          initialBinding: InitialBindingEnhanced(),
           initialRoute: AppRoutes.splash,
           getPages: AppPages.pages,
           defaultTransition: Transition.rightToLeft,

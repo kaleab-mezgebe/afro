@@ -14,7 +14,7 @@ class PhoneAuthController extends GetxController {
   final RxString phoneNumber = ''.obs;
   final RxInt maxPhoneLength = 9.obs;
   final RxBool isLoading = false.obs;
-  final RxString error = ''.obs;
+  final RxString validationError = ''.obs; // Only for validation errors
 
   // Text controllers
   late TextEditingController phoneController;
@@ -84,8 +84,8 @@ class PhoneAuthController extends GetxController {
       );
     }
 
-    if (error.value == 'Please enter a valid phone number') {
-      error.value = '';
+    if (validationError.value == 'Please enter a valid phone number') {
+      validationError.value = '';
     }
   }
 
@@ -106,12 +106,12 @@ class PhoneAuthController extends GetxController {
 
   Future<void> proceed() async {
     if (!isPhoneNumberValid) {
-      error.value = 'Please enter a valid phone number';
+      validationError.value = 'Please enter a valid phone number';
       return;
     }
 
     isLoading.value = true;
-    error.value = '';
+    validationError.value = ''; // Clear validation errors
 
     // Remove leading zero if it exists (e.g., 0914... -> 914...)
     String cleanInput = phoneNumber.value;
@@ -133,15 +133,23 @@ class PhoneAuthController extends GetxController {
                 .signInWithCredential(credential);
             if (userCredential.user != null) {
               Get.snackbar(
-                'Verified!',
-                'Phone number verified automatically',
+                'Success!',
+                'Phone number verified successfully',
                 backgroundColor: ButterTheme.successMint,
                 colorText: Colors.white,
+                duration: const Duration(seconds: 2),
               );
               await PreferenceHelper.navigateAfterAuth();
             }
           } catch (e) {
-            error.value = e.toString();
+            // Don't show network errors in the field, only in snackbar
+            Get.snackbar(
+              'Sign-In Issue',
+              'Verification successful, but there was an issue completing sign-in. Please try again.',
+              backgroundColor: ButterTheme.errorRose,
+              colorText: Colors.white,
+              duration: const Duration(seconds: 4),
+            );
           } finally {
             isLoading.value = false;
           }
@@ -150,22 +158,36 @@ class PhoneAuthController extends GetxController {
         // Called when Firebase rejects the request
         verificationFailed: (FirebaseAuthException e) {
           isLoading.value = false;
-          String msg = 'Failed to send OTP';
+          String userFriendlyMsg;
+
           if (e.code == 'invalid-phone-number') {
-            msg = 'Invalid phone number. Please check and try again.';
+            userFriendlyMsg = 'Please enter a valid phone number.';
+            validationError.value =
+                userFriendlyMsg; // Show in field for validation errors
           } else if (e.code == 'too-many-requests') {
-            msg = 'Too many attempts. Please try again later.';
+            userFriendlyMsg =
+                'Too many attempts. Please wait a few minutes and try again.';
           } else if (e.code == 'quota-exceeded') {
-            msg = 'SMS quota exceeded. Please try again later.';
-          } else if (e.message != null) {
-            msg = e.message!;
+            userFriendlyMsg =
+                'Service temporarily busy. Please try again in a few minutes.';
+          } else if (e.code == 'network-request-failed') {
+            userFriendlyMsg =
+                'Please check your internet connection and try again.';
+          } else if (e.code == 'app-not-authorized') {
+            userFriendlyMsg =
+                'App configuration issue. Please contact support.';
+          } else {
+            // Convert any other technical error to user-friendly message
+            userFriendlyMsg = _getUserFriendlyErrorMessage(e.message ?? e.code);
           }
-          error.value = msg;
+
+          // Show user-friendly error as snackbar
           Get.snackbar(
-            'Failed to Send OTP',
-            msg,
+            'Unable to Send Code',
+            userFriendlyMsg,
             backgroundColor: ButterTheme.errorRose,
             colorText: Colors.white,
+            duration: const Duration(seconds: 4),
           );
         },
 
@@ -173,10 +195,11 @@ class PhoneAuthController extends GetxController {
         codeSent: (String verificationId, int? resendToken) {
           isLoading.value = false;
           Get.snackbar(
-            'OTP Sent!',
-            'Verification code sent to $fullPhoneNumber',
+            'Code Sent!',
+            'We sent a verification code to your phone',
             backgroundColor: ButterTheme.successMint,
             colorText: Colors.white,
+            duration: const Duration(seconds: 3),
           );
           Get.toNamed(
             AppRoutes.otpVerification,
@@ -195,26 +218,64 @@ class PhoneAuthController extends GetxController {
       );
     } catch (e) {
       isLoading.value = false;
-      final msg = 'Unable to send OTP: ${e.toString()}';
-      error.value = msg;
+      // Convert technical error to user-friendly message
+      final userFriendlyMsg = _getUserFriendlyErrorMessage(e.toString());
+
       Get.snackbar(
-        'Failed to Send OTP',
-        msg,
+        'Unable to Send Code',
+        userFriendlyMsg,
         backgroundColor: ButterTheme.errorRose,
         colorText: Colors.white,
+        duration: const Duration(seconds: 4),
       );
     }
   }
 
   void clearError() {
-    error.value = '';
+    validationError.value = '';
+  }
+
+  /// Convert technical error messages to user-friendly messages
+  String _getUserFriendlyErrorMessage(String technicalError) {
+    final lowerError = technicalError.toLowerCase();
+
+    // Network-related errors
+    if (lowerError.contains('network') ||
+        lowerError.contains('connection') ||
+        lowerError.contains('timeout') ||
+        lowerError.contains('unreachable')) {
+      return 'Please check your internet connection and try again.';
+    }
+
+    // Firebase-specific errors
+    if (lowerError.contains('firebase') || lowerError.contains('auth')) {
+      return 'Authentication service is temporarily unavailable. Please try again.';
+    }
+
+    // SMS/OTP related errors
+    if (lowerError.contains('sms') || lowerError.contains('otp')) {
+      return 'Unable to send verification code. Please try again.';
+    }
+
+    // Server errors
+    if (lowerError.contains('server') || lowerError.contains('500')) {
+      return 'Our servers are temporarily busy. Please try again in a moment.';
+    }
+
+    // Permission/quota errors
+    if (lowerError.contains('quota') || lowerError.contains('limit')) {
+      return 'Service temporarily unavailable. Please try again later.';
+    }
+
+    // Generic fallback for unknown errors
+    return 'Something went wrong. Please try again.';
   }
 
   // Social login methods
   Future<void> loginWithGoogle() async {
     try {
       isLoading.value = true;
-      error.value = '';
+      validationError.value = ''; // Clear validation errors
 
       // Initialize Google Sign-In with proper configuration
       final GoogleSignIn googleSignIn = GoogleSignIn(
@@ -261,44 +322,42 @@ class PhoneAuthController extends GetxController {
         await PreferenceHelper.navigateAfterAuth();
       }
     } on FirebaseAuthException catch (e) {
-      String errorMessage = 'Google login failed';
+      String userFriendlyMsg;
+
       if (e.code == 'account-exists-with-different-credential') {
-        final email = e.email ?? '';
-        final methods = email.isNotEmpty
-            ? await FirebaseAuth.instance.fetchSignInMethodsForEmail(email)
-            : <String>[];
-        final methodString = methods.isNotEmpty
-            ? methods.join(', ')
-            : 'another method';
-        errorMessage =
-            'An account already exists with this email ($email) via $methodString. Please use that method to sign in.';
+        userFriendlyMsg =
+            'An account with this email already exists. Please use a different sign-in method.';
       } else if (e.code == 'invalid-credential') {
-        errorMessage = 'The credential is malformed or has expired';
+        userFriendlyMsg = 'Sign-in failed. Please try again.';
       } else if (e.code == 'user-disabled') {
-        errorMessage = 'This user account has been disabled';
+        userFriendlyMsg =
+            'This account has been disabled. Please contact support.';
       } else if (e.code == 'user-not-found') {
-        errorMessage = 'No user found for this account';
-      } else if (e.code == 'wrong-password') {
-        errorMessage = 'Incorrect password';
+        userFriendlyMsg = 'No account found. Please sign up first.';
+      } else if (e.code == 'network-request-failed') {
+        userFriendlyMsg =
+            'Please check your internet connection and try again.';
       } else {
-        errorMessage = 'Firebase error: ${e.message}';
+        userFriendlyMsg = _getUserFriendlyErrorMessage(
+          e.message ?? 'Google sign-in failed',
+        );
       }
 
-      error.value = errorMessage;
       Get.snackbar(
-        'Google Login Failed',
-        errorMessage,
+        'Google Sign-In Failed',
+        userFriendlyMsg,
         backgroundColor: ButterTheme.errorRose,
         colorText: Colors.white,
-        duration: const Duration(seconds: 5),
+        duration: const Duration(seconds: 4),
       );
     } catch (e) {
-      error.value = e.toString();
+      final userFriendlyMsg = _getUserFriendlyErrorMessage(e.toString());
       Get.snackbar(
-        'Google Login Failed',
-        'An unexpected error occurred: ${e.toString()}',
+        'Google Sign-In Failed',
+        userFriendlyMsg,
         backgroundColor: ButterTheme.errorRose,
         colorText: Colors.white,
+        duration: const Duration(seconds: 4),
       );
     } finally {
       isLoading.value = false;
@@ -308,7 +367,7 @@ class PhoneAuthController extends GetxController {
   Future<void> loginWithFacebook() async {
     try {
       isLoading.value = true;
-      error.value = '';
+      validationError.value = ''; // Clear validation errors
 
       final LoginResult result = await FacebookAuth.instance.login(
         permissions: ['email', 'public_profile'],
@@ -343,48 +402,39 @@ class PhoneAuthController extends GetxController {
         throw result.message ?? 'Unknown Facebook login error';
       }
     } on FirebaseAuthException catch (e) {
-      String errorMessage = 'Facebook login failed';
+      String userFriendlyMsg;
+
       if (e.code == 'account-exists-with-different-credential') {
-        // Facebook user data might not be directly available if sign in fails
-        // but often the email is provided in the exception or can be fetched
-        final email = e.email ?? '';
-        if (email.isNotEmpty) {
-          final methods = await FirebaseAuth.instance
-              .fetchSignInMethodsForEmail(email);
-          final methodString = methods.isNotEmpty
-              ? methods.join(', ')
-              : 'another method';
-          errorMessage =
-              'An account already exists with this email ($email) via $methodString. Please use that method to sign in.';
-        } else {
-          errorMessage =
-              'An account already exists with the same email but different sign-in method.';
-        }
+        userFriendlyMsg =
+            'An account with this email already exists. Please use a different sign-in method.';
       } else if (e.code == 'invalid-credential') {
-        errorMessage = 'The credential is malformed or has expired';
+        userFriendlyMsg = 'Sign-in failed. Please try again.';
       } else if (e.code == 'user-disabled') {
-        errorMessage = 'This user account has been disabled';
+        userFriendlyMsg =
+            'This account has been disabled. Please contact support.';
       } else if (e.code == 'user-not-found') {
-        errorMessage = 'No user found for this account';
-      } else if (e.code == 'wrong-password') {
-        errorMessage = 'Incorrect password';
+        userFriendlyMsg = 'No account found. Please sign up first.';
+      } else if (e.code == 'network-request-failed') {
+        userFriendlyMsg =
+            'Please check your internet connection and try again.';
       } else {
-        errorMessage = 'Firebase error: ${e.message}';
+        userFriendlyMsg = _getUserFriendlyErrorMessage(
+          e.message ?? 'Facebook sign-in failed',
+        );
       }
 
-      error.value = errorMessage;
       Get.snackbar(
-        'Facebook Login Failed',
-        errorMessage,
+        'Facebook Sign-In Failed',
+        userFriendlyMsg,
         backgroundColor: ButterTheme.errorRose,
         colorText: Colors.white,
-        duration: const Duration(seconds: 5),
+        duration: const Duration(seconds: 4),
       );
     } catch (e) {
-      error.value = e.toString();
+      final userFriendlyMsg = _getUserFriendlyErrorMessage(e.toString());
       Get.snackbar(
-        'Facebook Login Failed',
-        'An unexpected error occurred: ${e.toString()}',
+        'Facebook Sign-In Failed',
+        userFriendlyMsg,
         backgroundColor: ButterTheme.errorRose,
         colorText: Colors.white,
       );

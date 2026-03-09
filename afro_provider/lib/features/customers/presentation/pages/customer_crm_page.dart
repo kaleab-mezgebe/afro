@@ -20,31 +20,85 @@ class CustomerCRMPage extends ConsumerWidget {
             },
           ),
           IconButton(
+            icon: const Icon(Icons.download),
+            onPressed: () {
+              // Load customers manually
+              ref.read(customerProvider.notifier).loadCustomers();
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              // TODO: Search customers
+              // Simple search - show a dialog (placeholder)
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Search Customers'),
+                  content: const Text('Search functionality coming soon!'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('OK'),
+                    ),
+                  ],
+                ),
+              );
             },
           ),
         ],
       ),
       body: customerState.isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                // Customer Statistics
-                _CustomerStatsCard(),
+          : customerState.error != null
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 64,
+                          color: Colors.red[400],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          customerState.error!,
+                          style: TextStyle(
+                            color: Colors.red[700],
+                            fontSize: 16,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            // Clear error and retry
+                            ref.read(customerProvider.notifier).clearError();
+                            ref.read(customerProvider.notifier).loadCustomers();
+                          },
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : Column(
+                  children: [
+                    // Customer Statistics
+                    _CustomerStatsCard(),
 
-                const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-                // Customer List
-                _CustomerListCard(),
+                    // Customer List
+                    _CustomerListCard(),
 
-                const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-                // Quick Actions
-                _QuickActionsCard(),
-              ],
-            ),
+                    // Quick Actions
+                    _QuickActionsCard(),
+                  ],
+                ),
     );
   }
 

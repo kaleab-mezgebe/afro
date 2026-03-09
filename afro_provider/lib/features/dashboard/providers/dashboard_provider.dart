@@ -44,7 +44,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
 
     try {
       // Load analytics
-      final analytics = await analyticsService.getShopAnalytics(
+      final analytics = await analyticsApiService.getShopAnalytics(
         shopId,
         period: 'today',
       );

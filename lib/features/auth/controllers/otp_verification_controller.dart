@@ -16,7 +16,7 @@ class OTPVerificationController extends GetxController {
   final RxString verificationId = ''.obs;
   int? resendToken;
   final RxBool isLoading = false.obs;
-  final RxString error = ''.obs;
+  final RxString validationError = ''.obs; // Only for validation errors
   final RxInt countdown = 60.obs;
   final RxBool canResend = false.obs;
   final RxBool isSignUpMode = false.obs;
@@ -54,7 +54,7 @@ class OTPVerificationController extends GetxController {
 
     try {
       isLoading.value = true;
-      error.value = '';
+      validationError.value = ''; // Clear validation errors
 
       final credential = PhoneAuthProvider.credential(
         verificationId: verificationId.value,
@@ -67,10 +67,11 @@ class OTPVerificationController extends GetxController {
 
       if (userCredential.user != null) {
         Get.snackbar(
-          'Welcome!',
-          'Successfully verified your phone number',
+          'Success!',
+          'Phone number verified successfully',
           backgroundColor: AppTheme.primaryYellow,
           colorText: AppTheme.black,
+          duration: const Duration(seconds: 2),
         );
 
         if (isSignUpMode.value) {
@@ -83,30 +84,38 @@ class OTPVerificationController extends GetxController {
         }
       }
     } on FirebaseAuthException catch (e) {
-      String msg = 'Verification failed';
+      String userFriendlyMsg;
+
       if (e.code == 'invalid-verification-code') {
-        msg = 'Invalid OTP. Please check and try again.';
+        userFriendlyMsg = 'Incorrect code. Please check and try again.';
+        validationError.value =
+            userFriendlyMsg; // Show in field for validation errors
       } else if (e.code == 'session-expired') {
-        msg = 'OTP has expired. Please request a new one.';
+        userFriendlyMsg = 'Code has expired. Please request a new one.';
       } else if (e.code == 'invalid-verification-id') {
-        msg = 'Session expired. Please go back and try again.';
-      } else if (e.message != null) {
-        msg = e.message!;
+        userFriendlyMsg = 'Session expired. Please go back and try again.';
+      } else if (e.code == 'network-request-failed') {
+        userFriendlyMsg =
+            'Please check your internet connection and try again.';
+      } else {
+        userFriendlyMsg = _getUserFriendlyErrorMessage(e.message ?? e.code);
       }
-      error.value = msg;
+
       Get.snackbar(
         'Verification Failed',
-        msg,
-        backgroundColor: Colors.red.shade400,
+        userFriendlyMsg,
+        backgroundColor: ButterTheme.errorRose,
         colorText: Colors.white,
+        duration: const Duration(seconds: 4),
       );
     } catch (e) {
-      error.value = e.toString();
+      final userFriendlyMsg = _getUserFriendlyErrorMessage(e.toString());
       Get.snackbar(
         'Verification Failed',
-        e.toString(),
-        backgroundColor: Colors.red.shade400,
+        userFriendlyMsg,
+        backgroundColor: ButterTheme.errorRose,
         colorText: Colors.white,
+        duration: const Duration(seconds: 4),
       );
     } finally {
       isLoading.value = false;
@@ -135,11 +144,26 @@ class OTPVerificationController extends GetxController {
 
       verificationFailed: (FirebaseAuthException e) {
         canResend.value = true;
+        String userFriendlyMsg;
+
+        if (e.code == 'too-many-requests') {
+          userFriendlyMsg =
+              'Too many attempts. Please wait a few minutes and try again.';
+        } else if (e.code == 'network-request-failed') {
+          userFriendlyMsg =
+              'Please check your internet connection and try again.';
+        } else {
+          userFriendlyMsg = _getUserFriendlyErrorMessage(
+            e.message ?? 'Failed to resend code',
+          );
+        }
+
         Get.snackbar(
-          'Failed to Resend OTP',
-          e.message ?? 'An error occurred',
+          'Unable to Resend Code',
+          userFriendlyMsg,
           backgroundColor: ButterTheme.errorRose,
           colorText: Colors.white,
+          duration: const Duration(seconds: 4),
         );
       },
 
@@ -148,10 +172,11 @@ class OTPVerificationController extends GetxController {
         resendToken = newResendToken;
         _startCountdown();
         Get.snackbar(
-          'OTP Resent!',
-          'New verification code sent to ${phoneNumber.value}',
+          'Code Sent!',
+          'New verification code sent to your phone',
           backgroundColor: AppTheme.primaryYellow,
           colorText: AppTheme.black,
+          duration: const Duration(seconds: 3),
         );
       },
 
@@ -173,6 +198,27 @@ class OTPVerificationController extends GetxController {
   }
 
   void clearError() {
-    error.value = '';
+    validationError.value = '';
+  }
+
+  /// Convert technical error messages to user-friendly messages
+  String _getUserFriendlyErrorMessage(String technicalError) {
+    final lowerError = technicalError.toLowerCase();
+
+    // Network-related errors
+    if (lowerError.contains('network') ||
+        lowerError.contains('connection') ||
+        lowerError.contains('timeout') ||
+        lowerError.contains('unreachable')) {
+      return 'Please check your internet connection and try again.';
+    }
+
+    // Firebase-specific errors
+    if (lowerError.contains('firebase') || lowerError.contains('auth')) {
+      return 'Verification service is temporarily unavailable. Please try again.';
+    }
+
+    // Generic fallback for unknown errors
+    return 'Something went wrong. Please try again.';
   }
 }

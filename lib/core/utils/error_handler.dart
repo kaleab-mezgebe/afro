@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:app_settings/app_settings.dart';
 import 'logger.dart';
 
 /// Comprehensive error handling utility
@@ -38,6 +39,8 @@ class ErrorHandler {
         break;
 
       case DioExceptionType.connectionError:
+        // Show specific no internet snackbar instead of generic message
+        showNoInternetSnackbar();
         message = 'No internet connection. Please check your network settings.';
         break;
 
@@ -93,7 +96,7 @@ class ErrorHandler {
       message,
       snackPosition: SnackPosition.BOTTOM,
       duration: duration,
-      backgroundColor: Get.theme.colorScheme.error.withOpacity(0.9),
+      backgroundColor: Get.theme.colorScheme.error.withValues(alpha: 0.9),
       colorText: Get.theme.colorScheme.onError,
       mainButton: onRetry != null
           ? TextButton(
@@ -108,6 +111,55 @@ class ErrorHandler {
             )
           : null,
     );
+  }
+
+  /// Show no internet snackbar with settings action
+  static void showNoInternetSnackbar() {
+    Get.snackbar(
+      'No Internet',
+      'Please check your internet connection',
+      snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 5),
+      backgroundColor: Get.theme.colorScheme.error.withValues(alpha: 0.9),
+      colorText: Get.theme.colorScheme.onError,
+      mainButton: TextButton(
+        onPressed: () {
+          Get.back();
+          // Open device settings
+          _openNetworkSettings();
+        },
+        child: Text(
+          'Settings',
+          style: TextStyle(color: Get.theme.colorScheme.onError),
+        ),
+      ),
+    );
+  }
+
+  /// Open device network settings
+  static void _openNetworkSettings() {
+    try {
+      // Open device WiFi settings
+      AppSettings.openAppSettings(type: AppSettingsType.wifi);
+    } catch (e) {
+      AppLogger.e('Error opening network settings: $e');
+      // Fallback to showing instructions dialog
+      Get.dialog(
+        AlertDialog(
+          title: const Text('Network Settings'),
+          content: const Text(
+            'Please go to your device settings and check your internet connection:\n\n'
+            '• Turn WiFi off and on\n'
+            '• Check mobile data\n'
+            '• Restart your router\n'
+            '• Contact your network provider',
+          ),
+          actions: [
+            TextButton(onPressed: () => Get.back(), child: const Text('OK')),
+          ],
+        ),
+      );
+    }
   }
 
   /// Handle error with automatic retry logic
@@ -161,6 +213,18 @@ class ErrorHandler {
           error.response?.statusCode == 403;
     }
     return false;
+  }
+
+  /// Handle any error and show appropriate snackbar
+  static void handleError(dynamic error, {VoidCallback? onRetry}) {
+    if (isNetworkError(error)) {
+      // Show no internet snackbar for network errors
+      showNoInternetSnackbar();
+    } else {
+      // Show regular error snackbar for other errors
+      final message = getErrorMessage(error);
+      showErrorSnackbar(message, onRetry: onRetry);
+    }
   }
 
   /// Get error message from any exception

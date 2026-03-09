@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:sizer/sizer.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:get/get.dart';
 import 'app/app.dart';
 import 'core/di/injection_container.dart';
 import 'core/utils/app_theme.dart';
@@ -13,8 +14,10 @@ void main() async {
   // Initialize Firebase
   await Firebase.initializeApp();
 
-  // Initialize Hive for local storage
-  await Hive.initFlutter();
+  // Initialize GetX and GetStorage
+  await GetStorage.init();
+  Get.put(GetStorage()); // Initialize LocalStorage
+  // Note: GetProviders will be initialized when needed
 
   // Initialize dependencies
   await initializeDependencies();

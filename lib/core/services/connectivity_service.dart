@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get/get.dart';
 import '../utils/logger.dart';
+import '../utils/error_handler.dart';
 
 /// Service for monitoring network connectivity status
 /// Provides real-time updates and offline detection
@@ -14,7 +15,10 @@ class ConnectivityService extends GetxService {
   @override
   void onInit() {
     super.onInit();
-    _initConnectivity();
+    // Initialize asynchronously without blocking
+    _initConnectivity().catchError((e) {
+      AppLogger.e('Error initializing connectivity: $e');
+    });
     _startMonitoring();
   }
 
@@ -66,14 +70,8 @@ class ConnectivityService extends GetxService {
   }
 
   void _showOfflineNotification() {
-    Get.snackbar(
-      'Offline',
-      'You are currently offline. Some features may be limited.',
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 3),
-      backgroundColor: Get.theme.colorScheme.error.withOpacity(0.9),
-      colorText: Get.theme.colorScheme.onError,
-    );
+    // Use the enhanced no internet snackbar from ErrorHandler
+    ErrorHandler.showNoInternetSnackbar();
   }
 
   void _showOnlineNotification() {
@@ -82,7 +80,7 @@ class ConnectivityService extends GetxService {
       'Connection restored',
       snackPosition: SnackPosition.BOTTOM,
       duration: const Duration(seconds: 2),
-      backgroundColor: Get.theme.colorScheme.primary.withOpacity(0.9),
+      backgroundColor: Get.theme.colorScheme.primary.withValues(alpha: 0.9),
       colorText: Get.theme.colorScheme.onPrimary,
     );
   }

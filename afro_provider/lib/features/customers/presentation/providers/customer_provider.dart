@@ -44,9 +44,9 @@ class CustomerNotifier extends StateNotifier<CustomerState> {
   CustomerNotifier() : super(const CustomerState());
 
   Future<void> loadCustomers() async {
-    state = const CustomerState(isLoading: true);
-
     try {
+      state = const CustomerState(isLoading: true);
+
       // Get shop ID from provider service (assuming first shop)
       final shops = await shopService.getShops();
       if (shops.isEmpty) {
@@ -88,7 +88,7 @@ class CustomerNotifier extends StateNotifier<CustomerState> {
     } catch (e) {
       state = CustomerState(
         isLoading: false,
-        error: e.toString(),
+        error: 'Failed to load customers: ${e.toString()}',
       );
     }
   }
