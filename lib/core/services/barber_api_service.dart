@@ -29,7 +29,16 @@ class BarberApiService {
         queryParameters: queryParams,
       );
 
-      return response.data as List<dynamic>;
+      final data = response.data;
+      if (data is List) {
+        return data;
+      } else if (data is Map && data.containsKey('barbers')) {
+        return data['barbers'] as List<dynamic>;
+      } else if (data is Map && data.containsKey('data')) {
+        return data['data'] as List<dynamic>;
+      }
+      
+      return [];
     } catch (e) {
       AppLogger.e('Error getting barbers: $e');
       rethrow;
@@ -40,7 +49,16 @@ class BarberApiService {
   Future<Map<String, dynamic>> getBarber(String barberId) async {
     try {
       final response = await _apiClient.get('/barbers/$barberId');
-      return response.data;
+      final data = response.data;
+      
+      if (data is Map<String, dynamic>) {
+        if (data.containsKey('barber')) {
+          return data['barber'] as Map<String, dynamic>;
+        }
+        return data;
+      }
+      
+      return {};
     } catch (e) {
       AppLogger.e('Error getting barber: $e');
       rethrow;
@@ -63,7 +81,14 @@ class BarberApiService {
         queryParameters: queryParams,
       );
 
-      return response.data as List<dynamic>;
+      final data = response.data;
+      if (data is List) {
+        return data;
+      } else if (data is Map && data.containsKey('reviews')) {
+        return data['reviews'] as List<dynamic>;
+      }
+      
+      return [];
     } catch (e) {
       AppLogger.e('Error getting barber reviews: $e');
       rethrow;

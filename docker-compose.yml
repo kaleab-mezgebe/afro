@@ -16,7 +16,7 @@ services:
     networks:
       - afro_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -58,7 +58,7 @@ services:
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:3001/api/v1
     ports:
-      - "3002:3000"
+      - "3002:3002"
     volumes:
       - ./admin-panel:/app
       - /app/node_modules

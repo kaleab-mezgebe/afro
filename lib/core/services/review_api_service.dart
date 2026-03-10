@@ -45,7 +45,14 @@ class ReviewApiService {
         queryParameters: queryParams,
       );
 
-      return response.data as List<dynamic>;
+      final data = response.data;
+      if (data is List) {
+        return data;
+      } else if (data is Map && data.containsKey('reviews')) {
+        return data['reviews'] as List<dynamic>;
+      }
+      
+      return [];
     } catch (e) {
       AppLogger.e('Error getting barber reviews: $e');
       rethrow;
@@ -64,7 +71,14 @@ class ReviewApiService {
         queryParameters: queryParams,
       );
 
-      return response.data as List<dynamic>;
+      final data = response.data;
+      if (data is List) {
+        return data;
+      } else if (data is Map && data.containsKey('reviews')) {
+        return data['reviews'] as List<dynamic>;
+      }
+      
+      return [];
     } catch (e) {
       AppLogger.e('Error getting my reviews: $e');
       rethrow;
@@ -75,7 +89,16 @@ class ReviewApiService {
   Future<Map<String, dynamic>> getReview(String reviewId) async {
     try {
       final response = await _apiClient.get('/reviews/$reviewId');
-      return response.data;
+      final data = response.data;
+      
+      if (data is Map<String, dynamic>) {
+        if (data.containsKey('review')) {
+          return data['review'] as Map<String, dynamic>;
+        }
+        return data;
+      }
+      
+      return {};
     } catch (e) {
       AppLogger.e('Error getting review: $e');
       rethrow;
@@ -94,7 +117,16 @@ class ReviewApiService {
       if (comment != null) data['comment'] = comment;
 
       final response = await _apiClient.put('/reviews/$reviewId', data: data);
-      return response.data;
+      final responseData = response.data;
+      
+      if (responseData is Map<String, dynamic>) {
+        if (responseData.containsKey('review')) {
+          return responseData['review'] as Map<String, dynamic>;
+        }
+        return responseData;
+      }
+      
+      return {};
     } catch (e) {
       AppLogger.e('Error updating review: $e');
       rethrow;

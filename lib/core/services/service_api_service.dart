@@ -25,7 +25,14 @@ class ServiceApiService {
         queryParameters: queryParams,
       );
 
-      return response.data as List<dynamic>;
+      final data = response.data;
+      if (data is List) {
+        return data;
+      } else if (data is Map && data.containsKey('services')) {
+        return data['services'] as List<dynamic>;
+      }
+      
+      return [];
     } catch (e) {
       AppLogger.e('Error getting services: $e');
       rethrow;
@@ -36,7 +43,15 @@ class ServiceApiService {
   Future<List<dynamic>> getServicesByCategory(String category) async {
     try {
       final response = await _apiClient.get('/services/category/$category');
-      return response.data as List<dynamic>;
+      final data = response.data;
+      
+      if (data is List) {
+        return data;
+      } else if (data is Map && data.containsKey('services')) {
+        return data['services'] as List<dynamic>;
+      }
+      
+      return [];
     } catch (e) {
       AppLogger.e('Error getting services by category: $e');
       rethrow;
@@ -47,7 +62,16 @@ class ServiceApiService {
   Future<Map<String, dynamic>> getService(String serviceId) async {
     try {
       final response = await _apiClient.get('/services/$serviceId');
-      return response.data;
+      final data = response.data;
+      
+      if (data is Map<String, dynamic>) {
+        if (data.containsKey('service')) {
+          return data['service'] as Map<String, dynamic>;
+        }
+        return data;
+      }
+      
+      return {};
     } catch (e) {
       AppLogger.e('Error getting service: $e');
       rethrow;
