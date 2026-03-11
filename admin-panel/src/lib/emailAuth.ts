@@ -1,8 +1,8 @@
-import { 
-  sendSignInLinkToEmail, 
-  isSignInWithEmailLink, 
+import {
+  sendSignInLinkToEmail,
+  isSignInWithEmailLink,
   signInWithEmailLink,
-  ActionCodeSettings 
+  ActionCodeSettings
 } from 'firebase/auth';
 import { auth } from './firebase';
 
@@ -14,8 +14,8 @@ import { auth } from './firebase';
 // Action code settings for email link authentication
 const actionCodeSettings: ActionCodeSettings = {
   // URL must be whitelisted in Firebase Console
-  url: process.env.NODE_ENV === 'production' 
-    ? 'https://your-domain.com/admin/auth/complete' 
+  url: process.env.NODE_ENV === 'production'
+    ? 'https://your-domain.com/admin/auth/complete'
     : 'http://localhost:3000/admin/auth/complete',
   handleCodeInApp: true,
   // Add your iOS and Android app info if needed
@@ -40,17 +40,17 @@ export async function sendAdminSignInLink(email: string): Promise<void> {
     }
 
     await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-    
+
     // Store email locally for completion on same device
     if (typeof window !== 'undefined') {
       window.localStorage.setItem('emailForSignIn', email);
       window.localStorage.setItem('signInTimestamp', Date.now().toString());
     }
-    
+
     console.log('Sign-in link sent successfully to:', email);
   } catch (error: any) {
     console.error('Error sending sign-in link:', error);
-    
+
     // Handle specific Firebase errors
     switch (error.code) {
       case 'auth/invalid-email':
@@ -79,14 +79,14 @@ export async function completeEmailLinkSignIn(url: string, email?: string): Prom
 
     // Get email from parameter or local storage
     let userEmail = email;
-    
+
     if (!userEmail && typeof window !== 'undefined') {
-      userEmail = window.localStorage.getItem('emailForSignIn');
+      userEmail = window.localStorage.getItem('emailForSignIn') || undefined;
     }
 
     if (!userEmail) {
       // Prompt user for email if not available (different device scenario)
-      userEmail = window.prompt('Please provide your email for confirmation');
+      userEmail = window.prompt('Please provide your email for confirmation') || undefined;
     }
 
     if (!userEmail) {
@@ -100,7 +100,7 @@ export async function completeEmailLinkSignIn(url: string, email?: string): Prom
 
     // Complete the sign-in
     const result = await signInWithEmailLink(auth, userEmail, url);
-    
+
     // Clean up local storage
     if (typeof window !== 'undefined') {
       window.localStorage.removeItem('emailForSignIn');
@@ -109,10 +109,10 @@ export async function completeEmailLinkSignIn(url: string, email?: string): Prom
 
     console.log('Email link sign-in successful:', result.user.email);
     return result;
-    
+
   } catch (error: any) {
     console.error('Error completing email link sign-in:', error);
-    
+
     switch (error.code) {
       case 'auth/invalid-action-code':
         throw new Error('Invalid or expired sign-in link');
@@ -147,14 +147,14 @@ export function getStoredEmailForSignIn(): string | null {
  */
 export function isSignInLinkExpired(): boolean {
   if (typeof window === 'undefined') return false;
-  
+
   const timestamp = window.localStorage.getItem('signInTimestamp');
   if (!timestamp) return false;
-  
+
   const signInTime = parseInt(timestamp);
   const now = Date.now();
   const twentyFourHours = 24 * 60 * 60 * 1000;
-  
+
   return (now - signInTime) > twentyFourHours;
 }
 
@@ -166,26 +166,26 @@ function isValidAdminEmail(email: string): boolean {
   // Basic email validation
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) return false;
-  
+
   // Admin email whitelist (customize as needed)
   const adminDomains = [
     'afro.com',
     'admin.afro.com',
     'yourdomain.com' // Add your admin domains
   ];
-  
+
   const adminEmails = [
     'admin@afro.com',
     'support@afro.com',
     'manager@afro.com'
     // Add specific admin emails
   ];
-  
+
   // Check if email is in whitelist
   if (adminEmails.includes(email.toLowerCase())) {
     return true;
   }
-  
+
   // Check if domain is allowed
   const domain = email.split('@')[1]?.toLowerCase();
   return adminDomains.includes(domain);
@@ -196,7 +196,7 @@ function isValidAdminEmail(email: string): boolean {
  */
 export function clearSignInData(): void {
   if (typeof window === 'undefined') return;
-  
+
   window.localStorage.removeItem('emailForSignIn');
   window.localStorage.removeItem('signInTimestamp');
 }

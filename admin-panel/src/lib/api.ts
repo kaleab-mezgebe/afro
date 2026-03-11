@@ -37,7 +37,15 @@ export const api = {
   // Admin - Users
   getAllUsers: (params?: any) => apiClient.get('/admin/users', { params }),
   getUserById: (id: string) => apiClient.get(`/admin/users/${id}`),
-  createUser: (userData: any) => apiClient.post('/admin/users', userData),
+  createUser: async (userData: any) => {
+    try {
+      const response = await apiClient.post('/admin/users', userData);
+      return response;
+    } catch (error: any) {
+      console.error('API Error in createUser:', error);
+      throw error;
+    }
+  },
   updateUser: (id: string, userData: any) => apiClient.put(`/admin/users/${id}`, userData),
   suspendUser: (id: string) => apiClient.post(`/admin/users/${id}/suspend`),
   activateUser: (id: string) => apiClient.post(`/admin/users/${id}/activate`),
@@ -84,6 +92,14 @@ export const api = {
   generateReport: (type: string, params: any) =>
     apiClient.post('/admin/reports/generate', { type, ...params }),
   downloadReport: (id: string) => apiClient.get(`/admin/reports/${id}/download`),
+
+  // Services
+  getServices: () => apiClient.get('/services'),
+  getServicesByCategory: (category: string) => apiClient.get(`/services/category/${category}`),
+  getServiceById: (id: string) => apiClient.get(`/services/${id}`),
+  createService: (data: any) => apiClient.post('/services', data),
+  updateService: (id: string, data: any) => apiClient.put(`/services/${id}`, data),
+  deleteService: (id: string) => apiClient.delete(`/services/${id}`),
 };
 
 export default apiClient;

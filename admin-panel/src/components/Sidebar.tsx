@@ -132,23 +132,25 @@ export default function Sidebar() {
           })}
         </nav>
 
-        {/* Bottom section */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700">
-          <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer">
-            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+        {/* Bottom section - Fixed */}
+        <div className="sidebar-bottom">
+          {/* User Profile */}
+          <div className="sidebar-user-profile">
+            <div className="sidebar-user-avatar">
               <User size={16} className="text-white" />
             </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-white">Admin User</p>
-              <p className="text-xs text-gray-400">admin@afro.com</p>
+            <div className="sidebar-user-info">
+              <p className="sidebar-user-name">Admin User</p>
+              <p className="sidebar-user-email">admin@afro.com</p>
             </div>
           </div>
 
+          {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="sidebar-item text-red-400 hover:text-red-300 hover:bg-gray-800 mt-2"
+            className="sidebar-logout-btn"
           >
-            <LogOut size={20} />
+            <LogOut size={18} />
             <span>Logout</span>
           </button>
         </div>
