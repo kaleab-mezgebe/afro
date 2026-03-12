@@ -72,8 +72,21 @@ export default function LoginPage() {
     }
     setLoading(true);
     try {
+      // Development bypass for mock data
+      if (process.env.NODE_ENV === 'development' && email === 'admin@test.com' && password === 'admin123') {
+        localStorage.setItem('authToken', 'dev-bypass-token');
+        toast.success('Welcome back, Admin! (Development Mode)');
+        router.push('/dashboard');
+        return;
+      }
+
       const auth = getAuth(app);
-      await signInWithEmailAndPassword(auth, email, password);
+      const result = await signInWithEmailAndPassword(auth, email, password);
+
+      // Get Firebase ID token and store it for API requests
+      const token = await result.user.getIdToken();
+      localStorage.setItem('authToken', token);
+
       toast.success('Welcome back, Admin!');
       router.push('/dashboard');
     } catch (error: any) {
@@ -111,9 +124,9 @@ export default function LoginPage() {
           100% { background-position: 200% center; }
         }
         @keyframes pulse-ring {
-          0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(212,175,55,0.4); }
-          70%  { transform: scale(1);    box-shadow: 0 0 0 15px rgba(212,175,55,0); }
-          100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(212,175,55,0); }
+          0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245,158,11,0.4); }
+          70%  { transform: scale(1);    box-shadow: 0 0 0 15px rgba(245,158,11,0); }
+          100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245,158,11,0); }
         }
         @keyframes slide-up {
           from { opacity: 0; transform: translateY(30px); }
@@ -149,8 +162,8 @@ export default function LoginPage() {
 
         .gold-shimmer {
           background: linear-gradient(90deg,
-            transparent 0%, rgba(212,175,55,0.6) 40%,
-            rgba(255,215,0,0.8) 50%, rgba(212,175,55,0.6) 60%, transparent 100%);
+            transparent 0%, rgba(245,158,11,0.6) 40%,
+            rgba(251,191,36,0.8) 50%, rgba(245,158,11,0.6) 60%, transparent 100%);
           background-size: 200% auto;
           animation: shimmer 3s linear infinite;
           -webkit-background-clip: text;
@@ -159,42 +172,42 @@ export default function LoginPage() {
         }
 
         .gradient-bg {
-          background: linear-gradient(135deg, #0a0a0a 0%, #1a1208 30%, #0d0d0d 60%, #120c04 100%);
+          background: linear-gradient(135deg, #FEF3C7 0%, #FED7AA 30%, #FFEDD5 60%, #FEE2E2 100%);
           background-size: 400% 400%;
           animation: gradient-shift 15s ease infinite;
         }
 
         .glass-card {
-          background: rgba(255, 255, 255, 0.03);
+          background: rgba(255, 255, 255, 0.85);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(212, 175, 55, 0.15);
+          border: 1px solid rgba(245, 158, 11, 0.3);
           box-shadow:
-            0 25px 50px rgba(0,0,0,0.6),
-            0 0 0 1px rgba(255,255,255,0.03),
-            inset 0 1px 0 rgba(255,255,255,0.05);
+            0 25px 50px rgba(245,158,11,0.15),
+            0 0 0 1px rgba(255,255,255,0.5),
+            inset 0 1px 0 rgba(255,255,255,0.9);
         }
 
         .input-field {
-          background: rgba(255,255,255,0.04);
-          border: 1.5px solid rgba(212,175,55,0.2);
-          color: #fff;
+          background: rgba(255,255,255,0.9);
+          border: 1.5px solid rgba(245,158,11,0.3);
+          color: #1F2937;
           transition: all 0.3s ease;
-          caret-color: #d4af37;
+          caret-color: #F59E0B;
         }
         .input-field:focus {
           outline: none;
-          background: rgba(212,175,55,0.06);
-          border-color: rgba(212,175,55,0.7);
-          box-shadow: 0 0 0 3px rgba(212,175,55,0.1), 0 0 20px rgba(212,175,55,0.05);
+          background: rgba(255,255,255,1);
+          border-color: rgba(245,158,11,0.8);
+          box-shadow: 0 0 0 3px rgba(245,158,11,0.15), 0 0 20px rgba(245,158,11,0.1);
         }
-        .input-field::placeholder { color: rgba(255,255,255,0.25); }
+        .input-field::placeholder { color: rgba(107,114,128,0.7); }
 
         .gold-btn {
-          background: linear-gradient(135deg, #c9a227 0%, #e8c84a 40%, #d4af37 60%, #b8942a 100%);
+          background: linear-gradient(135deg, #D97706 0%, #F59E0B 40%, #FBBF24 60%, #F59E0B 100%);
           background-size: 200% 100%;
           transition: all 0.4s ease;
-          box-shadow: 0 4px 20px rgba(212,175,55,0.3);
+          box-shadow: 0 4px 20px rgba(245,158,11,0.3);
           position: relative;
           overflow: hidden;
         }
@@ -209,30 +222,30 @@ export default function LoginPage() {
         .gold-btn:hover::before { left: 100%; }
         .gold-btn:hover {
           background-position: right center;
-          box-shadow: 0 6px 30px rgba(212,175,55,0.5);
+          box-shadow: 0 6px 30px rgba(245,158,11,0.5);
           transform: translateY(-1px);
         }
         .gold-btn:active { transform: translateY(0); }
         .gold-btn:disabled {
           opacity: 0.6;
           transform: none;
-          box-shadow: 0 4px 20px rgba(212,175,55,0.15);
+          box-shadow: 0 4px 20px rgba(245,158,11,0.15);
         }
 
         .stat-card {
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(212,175,55,0.1);
+          background: rgba(255,255,255,0.7);
+          border: 1px solid rgba(245,158,11,0.2);
           backdrop-filter: blur(10px);
           transition: all 0.3s ease;
         }
         .stat-card:hover {
-          background: rgba(212,175,55,0.05);
-          border-color: rgba(212,175,55,0.25);
+          background: rgba(255,255,255,0.9);
+          border-color: rgba(245,158,11,0.4);
           transform: translateY(-2px);
         }
 
         .divider-line {
-          background: linear-gradient(90deg, transparent, rgba(212,175,55,0.4), transparent);
+          background: linear-gradient(90deg, transparent, rgba(245,158,11,0.4), transparent);
         }
 
         .scroll-bar::-webkit-scrollbar { display: none; }
@@ -247,13 +260,13 @@ export default function LoginPage() {
         <div style={{
           position: 'absolute', top: '10%', left: '5%',
           width: 400, height: 400, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(212,175,55,0.08) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(245,158,11,0.08) 0%, transparent 70%)',
           filter: 'blur(40px)', pointerEvents: 'none',
         }} />
         <div style={{
           position: 'absolute', bottom: '15%', right: '8%',
           width: 350, height: 350, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(212,175,55,0.06) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(245,158,11,0.06) 0%, transparent 70%)',
           filter: 'blur(40px)', pointerEvents: 'none',
         }} />
 
@@ -268,7 +281,7 @@ export default function LoginPage() {
               width: p.size,
               height: p.size,
               borderRadius: '50%',
-              background: 'rgba(212,175,55,0.5)',
+              background: 'rgba(245,158,11,0.5)',
               pointerEvents: 'none',
               '--dur': `${p.duration}s`,
               '--delay': `${p.delay}s`,
@@ -284,7 +297,7 @@ export default function LoginPage() {
           {/* Vertical gold bar accent */}
           <div style={{
             position: 'absolute', top: 0, right: 0, width: 1, height: '100%',
-            background: 'linear-gradient(180deg, transparent, rgba(212,175,55,0.4) 30%, rgba(212,175,55,0.6) 50%, rgba(212,175,55,0.4) 70%, transparent)',
+            background: 'linear-gradient(180deg, transparent, rgba(245,158,11,0.4) 30%, rgba(245,158,11,0.6) 50%, rgba(245,158,11,0.4) 70%, transparent)',
           }} />
 
           {/* Top-left logo area */}
@@ -292,10 +305,10 @@ export default function LoginPage() {
             <div className="flex items-center gap-3">
               <div style={{
                 width: 44, height: 44,
-                background: 'linear-gradient(135deg, #d4af37, #f0d060)',
+                background: 'linear-gradient(135deg, #F59E0B, #FBBF24)',
                 borderRadius: 12,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 4px 15px rgba(212,175,55,0.4)',
+                boxShadow: '0 4px 15px rgba(245,158,11,0.4)',
                 padding: 10,
                 color: '#0a0a0a',
               }}>
@@ -306,11 +319,11 @@ export default function LoginPage() {
                   fontFamily: "'Playfair Display', serif",
                   fontWeight: 700,
                   fontSize: 20,
-                  color: '#d4af37',
+                  color: '#D97706',
                   letterSpacing: '0.05em',
                   lineHeight: 1,
                 }}>AFRO</div>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>ADMIN SYSTEM</div>
+                <div style={{ fontSize: 10, color: 'rgba(107,114,128,0.8)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>ADMIN SYSTEM</div>
               </div>
             </div>
           </div>
@@ -322,11 +335,11 @@ export default function LoginPage() {
             <div className="animate-slide-right" style={{ animationDelay: '0.2s', opacity: 0, animationFillMode: 'forwards', marginBottom: 32 }}>
               <div style={{
                 width: 90, height: 90,
-                background: 'linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05))',
+                background: 'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05))',
                 borderRadius: 24,
-                border: '1px solid rgba(212,175,55,0.25)',
+                border: '1px solid rgba(245,158,11,0.25)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#d4af37',
+                color: '#F59E0B',
                 padding: 22,
                 marginBottom: 28,
               }}
@@ -337,7 +350,7 @@ export default function LoginPage() {
             </div>
 
             <div className="animate-slide-right" style={{ animationDelay: '0.3s', opacity: 0, animationFillMode: 'forwards' }}>
-              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, color: 'rgba(212,175,55,0.7)', letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: 12 }}>
+              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, color: 'rgba(217,119,6,0.8)', letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: 12 }}>
                 Premium Management
               </div>
               <h1 style={{
@@ -347,11 +360,11 @@ export default function LoginPage() {
                 lineHeight: 1.1,
                 marginBottom: 20,
               }}>
-                <span style={{ color: '#ffffff' }}>Salon &amp;</span><br />
+                <span style={{ color: '#1F2937' }}>Salon &amp;</span><br />
                 <span className="gold-shimmer">Barber</span><br />
-                <span style={{ color: '#ffffff' }}>Admin Hub</span>
+                <span style={{ color: '#1F2937' }}>Admin Hub</span>
               </h1>
-              <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 16, lineHeight: 1.7, maxWidth: 400 }}>
+              <p style={{ color: 'rgba(107,114,128,0.8)', fontSize: 16, lineHeight: 1.7, maxWidth: 400 }}>
                 Your complete command center for managing bookings, staff, analytics, and customer experiences — all in one elegant dashboard.
               </p>
             </div>
@@ -370,8 +383,8 @@ export default function LoginPage() {
                   { label: 'Reviews', value: '4.9★' },
                 ].map(stat => (
                   <div key={stat.label} className="stat-card" style={{ padding: '14px 20px', borderRadius: 12, flex: 1, textAlign: 'center' }}>
-                    <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: '#d4af37', lineHeight: 1 }}>{stat.value}</div>
-                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 4, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{stat.label}</div>
+                    <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: '#D97706', lineHeight: 1 }}>{stat.value}</div>
+                    <div style={{ fontSize: 11, color: 'rgba(107,114,128,0.8)', marginTop: 4, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{stat.label}</div>
                   </div>
                 ))}
               </div>
@@ -385,16 +398,16 @@ export default function LoginPage() {
                 { icon: '✦', text: 'Customer insights & loyalty tracking' },
               ].map((item, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                  <span style={{ color: '#d4af37', fontSize: 10 }}>{item.icon}</span>
-                  <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14 }}>{item.text}</span>
+                  <span style={{ color: '#D97706', fontSize: 10 }}>{item.icon}</span>
+                  <span style={{ color: 'rgba(107,114,128,0.8)', fontSize: 14 }}>{item.text}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Bottom footer on left panel */}
-          <div style={{ padding: '20px 40px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.05em' }}>
+          <div style={{ padding: '20px 40px', borderTop: '1px solid rgba(107,114,128,0.2)' }}>
+            <div style={{ fontSize: 12, color: 'rgba(107,114,128,0.6)', letterSpacing: '0.05em' }}>
               © 2026 AFRO Booking Platform · All Rights Reserved
             </div>
           </div>
@@ -419,14 +432,14 @@ export default function LoginPage() {
           }}>
             <div style={{
               width: 38, height: 38,
-              background: 'linear-gradient(135deg, #d4af37, #f0d060)',
+              background: 'linear-gradient(135deg, #F59E0B, #FBBF24)',
               borderRadius: 10,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               padding: 9, color: '#0a0a0a',
             }}>
               <ScissorsIcon />
             </div>
-            <span style={{ fontFamily: "'Playfair Display', serif", color: '#d4af37', fontSize: 18, fontWeight: 700 }}>AFRO Admin</span>
+            <span style={{ fontFamily: "'Playfair Display', serif", color: '#D97706', fontSize: 18, fontWeight: 700 }}>AFRO Admin</span>
           </div>
 
           {/* Form card */}
@@ -447,12 +460,12 @@ export default function LoginPage() {
               {/* Pulsing avatar ring */}
               <div style={{
                 width: 70, height: 70,
-                background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.05))',
+                background: 'linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.05))',
                 borderRadius: '50%',
-                border: '2px solid rgba(212, 175, 55, 0.4)',
+                border: '2px solid rgba(245, 158, 11, 0.4)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 margin: '0 auto 20px',
-                color: '#d4af37',
+                color: '#F59E0B',
                 padding: 18,
                 animation: 'pulse-ring 2.5s infinite',
               }}>
@@ -463,19 +476,19 @@ export default function LoginPage() {
                 fontFamily: "'Playfair Display', serif",
                 fontSize: 28,
                 fontWeight: 700,
-                color: '#ffffff',
+                color: '#1F2937',
                 marginBottom: 6,
               }}>
                 Welcome Back
               </h2>
-              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)' }}>
+              <p style={{ fontSize: 14, color: 'rgba(107,114,128,0.8)' }}>
                 Sign in to your admin dashboard
               </p>
 
               {/* Gold underline accent */}
               <div style={{
                 width: 40, height: 2,
-                background: 'linear-gradient(90deg, transparent, #d4af37, transparent)',
+                background: 'linear-gradient(90deg, transparent, #F59E0B, transparent)',
                 margin: '16px auto 0',
                 borderRadius: 2,
               }} />
@@ -488,7 +501,7 @@ export default function LoginPage() {
               <div>
                 <label style={{
                   display: 'block', fontSize: 12, fontWeight: 500,
-                  color: focusedField === 'email' ? '#d4af37' : 'rgba(255,255,255,0.5)',
+                  color: focusedField === 'email' ? '#D97706' : 'rgba(107,114,128,0.8)',
                   marginBottom: 8, letterSpacing: '0.08em', textTransform: 'uppercase',
                   transition: 'color 0.3s ease',
                 }}>
@@ -514,7 +527,7 @@ export default function LoginPage() {
                   />
                   <div style={{
                     position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
-                    color: focusedField === 'email' ? '#d4af37' : 'rgba(255,255,255,0.25)',
+                    color: focusedField === 'email' ? '#D97706' : 'rgba(107,114,128,0.5)',
                     transition: 'color 0.3s ease',
                     pointerEvents: 'none',
                   }}>
@@ -530,7 +543,7 @@ export default function LoginPage() {
               <div>
                 <label style={{
                   display: 'block', fontSize: 12, fontWeight: 500,
-                  color: focusedField === 'password' ? '#d4af37' : 'rgba(255,255,255,0.5)',
+                  color: focusedField === 'password' ? '#D97706' : 'rgba(107,114,128,0.8)',
                   marginBottom: 8, letterSpacing: '0.08em', textTransform: 'uppercase',
                   transition: 'color 0.3s ease',
                 }}>
@@ -557,7 +570,7 @@ export default function LoginPage() {
                   {/* Lock icon */}
                   <div style={{
                     position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
-                    color: focusedField === 'password' ? '#d4af37' : 'rgba(255,255,255,0.25)',
+                    color: focusedField === 'password' ? '#D97706' : 'rgba(107,114,128,0.5)',
                     transition: 'color 0.3s ease',
                     pointerEvents: 'none',
                   }}>
@@ -575,12 +588,12 @@ export default function LoginPage() {
                     style={{
                       position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
                       background: 'none', border: 'none', cursor: 'pointer',
-                      color: 'rgba(255,255,255,0.3)',
+                      color: 'rgba(107,114,128,0.6)',
                       padding: 2,
                       transition: 'color 0.3s ease',
                     }}
-                    onMouseEnter={e => (e.currentTarget.style.color = '#d4af37')}
-                    onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.3)')}
+                    onMouseEnter={e => (e.currentTarget.style.color = '#D97706')}
+                    onMouseLeave={e => (e.currentTarget.style.color = 'rgba(107,114,128,0.6)')}
                   >
                     <EyeIcon open={showPassword} />
                   </button>
@@ -594,21 +607,21 @@ export default function LoginPage() {
                   onClick={() => router.push('/auth/email-link')}
                   style={{
                     background: 'none', border: 'none', cursor: 'pointer',
-                    fontSize: 13, color: 'rgba(212,175,55,0.7)',
+                    fontSize: 13, color: 'rgba(217,119,6,0.8)',
                     textDecoration: 'none', transition: 'color 0.2s ease',
                   }}
-                  onMouseEnter={e => (e.currentTarget.style.color = '#d4af37')}
-                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(212,175,55,0.7)')}
+                  onMouseEnter={e => (e.currentTarget.style.color = '#D97706')}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(217,119,6,0.8)')}
                 >
                   Sign in with email link
                 </button>
 
                 <a href="#" style={{
-                  fontSize: 13, color: 'rgba(212,175,55,0.7)',
+                  fontSize: 13, color: 'rgba(217,119,6,0.8)',
                   textDecoration: 'none', transition: 'color 0.2s ease',
                 }}
-                  onMouseEnter={e => (e.currentTarget.style.color = '#d4af37')}
-                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(212,175,55,0.7)')}
+                  onMouseEnter={e => (e.currentTarget.style.color = '#D97706')}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(217,119,6,0.8)')}
                 >
                   Forgot password?
                 </a>
@@ -665,16 +678,16 @@ export default function LoginPage() {
             </form>
 
             {/* Footer inside card */}
-            <div style={{ marginTop: 32, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 24 }}>
+            <div style={{ marginTop: 32, borderTop: '1px solid rgba(107,114,128,0.2)', paddingTop: 24 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 12 }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(212,175,55,0.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(217,119,6,0.6)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 </svg>
-                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>
+                <span style={{ fontSize: 12, color: 'rgba(107,114,128,0.7)' }}>
                   Secured by Firebase Authentication
                 </span>
               </div>
-              <div style={{ textAlign: 'center', fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>
+              <div style={{ textAlign: 'center', fontSize: 12, color: 'rgba(107,114,128,0.6)' }}>
                 Authorized administrators only
               </div>
             </div>

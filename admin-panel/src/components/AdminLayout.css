@@ -1,0 +1,128 @@
+/* Admin Layout Styles */
+
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--gray-50);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: 260px;
+  /* Default expanded sidebar width */
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 100vh;
+  position: relative;
+}
+
+.admin-content {
+  flex: 1;
+  padding: 24px;
+  background-color: var(--gray-50);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 100vh;
+  width: calc(100vw - 260px);
+  /* Ensure proper width calculation */
+}
+
+/* Page content wrapper */
+.page-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* When sidebar is collapsed */
+.admin-layout.sidebar-collapsed .admin-main {
+  margin-left: 70px;
+  /* Collapsed sidebar width */
+}
+
+.admin-layout.sidebar-collapsed .admin-content {
+  padding: 24px;
+  width: calc(100vw - 70px);
+  /* Adjust width when collapsed */
+}
+
+/* When sidebar is expanded */
+.admin-layout.sidebar-expanded .admin-main {
+  margin-left: 260px;
+  /* Expanded sidebar width */
+}
+
+.admin-layout.sidebar-expanded .admin-content {
+  padding: 24px;
+  width: calc(100vw - 260px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .admin-main {
+    margin-left: 240px;
+    /* Smaller expanded width on medium screens */
+  }
+
+  .admin-content {
+    width: calc(100vw - 240px);
+  }
+
+  .admin-layout.sidebar-expanded .admin-main {
+    margin-left: 240px;
+  }
+
+  .admin-layout.sidebar-expanded .admin-content {
+    width: calc(100vw - 240px);
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-layout {
+    flex-direction: column;
+  }
+
+  .admin-main {
+    margin-left: 0;
+    margin-top: 0;
+  }
+
+  .admin-content {
+    width: 100vw;
+    padding: 16px;
+  }
+
+  .admin-layout.sidebar-collapsed .admin-main,
+  .admin-layout.sidebar-expanded .admin-main {
+    margin-left: 0;
+  }
+
+  .admin-layout.sidebar-collapsed .admin-content,
+  .admin-layout.sidebar-expanded .admin-content {
+    width: 100vw;
+  }
+}
+
+/* Smooth transitions for content */
+.admin-content>* {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Ensure content doesn't overflow and is properly positioned */
+.admin-content {
+  overflow-x: auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* Fix for content going below sidebar */
+.admin-layout {
+  position: relative;
+}
+
+/* Ensure proper layering */
+.admin-content {
+  position: relative;
+  z-index: 1;
+}

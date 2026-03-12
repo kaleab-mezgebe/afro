@@ -3,20 +3,18 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  FiHome, 
-  FiUsers, 
-  FiUserCheck, 
-  FiCalendar, 
-  FiBarChart2, 
+import { useAuth } from '@/hooks/useAuth';
+import {
+  FiHome,
+  FiUsers,
+  FiUserCheck,
+  FiCalendar,
+  FiBarChart2,
   FiSettings,
   FiLogOut,
   FiMenu,
   FiX
 } from 'react-icons/fi';
-import { getAuth, signOut } from 'firebase/auth';
-import { app } from '@/lib/firebase';
-import toast from 'react-hot-toast';
 
 const menuItems = [
   { name: 'Dashboard', href: '/dashboard', icon: FiHome },
@@ -31,15 +29,11 @@ const menuItems = [
 export default function Sidebar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { logout } = useAuth();
 
   const handleLogout = async () => {
-    try {
-      const auth = getAuth(app);
-      await signOut(auth);
-      toast.success('Logged out successfully');
-    } catch (error) {
-      toast.error('Logout failed');
-    }
+    await logout();
+    setIsMobileMenuOpen(false);
   };
 
   const closeMobileMenu = () => {
@@ -85,22 +79,21 @@ export default function Sidebar() {
 
         {/* Mobile header spacer */}
         <div className="lg:hidden h-16" />
-        
+
         <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
-            
+
             return (
               <Link
                 key={item.name}
                 href={item.href}
                 onClick={closeMobileMenu}
-                className={`flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors ${
-                  isActive
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                }`}
+                className={`flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors ${isActive
+                  ? 'bg-gray-900 text-white'
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                  }`}
               >
                 <Icon className="mr-3 h-5 w-5 flex-shrink-0" />
                 <span className="truncate">{item.name}</span>

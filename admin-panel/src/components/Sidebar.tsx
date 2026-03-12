@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 import {
   LayoutDashboard,
   Users,
@@ -19,33 +20,63 @@ import {
   LogOut,
   User,
   Menu,
-  X
+  X,
+  UserPlus,
+  Crown,
+  Building,
+  Store,
+  Briefcase,
+  MessageSquare,
+  DollarSign,
+  TrendingUp,
+  Shield,
+  MapPin
 } from 'lucide-react';
 
 const menuItems = [
+  // Main Dashboard
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/users', label: 'Users', icon: Users },
-  { href: '/providers', label: 'Providers', icon: Scissors },
-  { href: '/customers', label: 'Customers', icon: User },
-  { href: '/appointments', label: 'Appointments', icon: Calendar },
-  { href: '/services', label: 'Services', icon: Scissors },
-  { href: '/payments', label: 'Payments', icon: CreditCard },
-  { href: '/reviews', label: 'Reviews', icon: Star },
-  { href: '/analytics', label: 'Analytics', icon: BarChart3 },
-  { href: '/notifications', label: 'Notifications', icon: Bell },
-  { href: '/reports', label: 'Reports', icon: FileText },
-  { href: '/support', label: 'Support Tickets', icon: Headphones },
-  { href: '/promotions', label: 'Promotions / Coupons', icon: Tag },
-  { href: '/settings', label: 'Settings', icon: Settings },
+
+  // People Management Section
+  { href: '/customers', label: 'Customers', icon: User, category: 'people' },
+  { href: '/barbers', label: 'Barbers', icon: Scissors, category: 'people' },
+  { href: '/beauty-professionals', label: 'Beauty Professionals', icon: Crown, category: 'people' },
+  { href: '/salons', label: 'Salon Owners', icon: Store, category: 'people' },
+  { href: '/employees', label: 'Employees', icon: Briefcase, category: 'people' },
+  { href: '/admins', label: 'Admins', icon: Shield, category: 'people' },
+
+  // Business Management Section
+  { href: '/barbershops', label: 'Barbershops', icon: Building, category: 'business' },
+  { href: '/beauty-salons', label: 'Beauty Salons', icon: Store, category: 'business' },
+
+  // Operations Section
+  { href: '/bookings', label: 'Bookings', icon: Calendar, category: 'operations' },
+  { href: '/services', label: 'Services', icon: Scissors, category: 'operations' },
+  { href: '/reviews', label: 'Reviews & Ratings', icon: Star, category: 'operations' },
+
+  // Finance Section
+  { href: '/transactions', label: 'Transactions', icon: CreditCard, category: 'finance' },
+  { href: '/payouts', label: 'Provider Payouts', icon: DollarSign, category: 'finance' },
+
+  // Analytics Section
+  { href: '/location-analytics', label: 'Location Analytics', icon: MapPin, category: 'analytics' },
+  { href: '/reports', label: 'Reports', icon: FileText, category: 'analytics' },
+  { href: '/analytics', label: 'Analytics', icon: BarChart3, category: 'analytics' },
+
+  // Support & Settings
+  { href: '/support', label: 'Support Tickets', icon: Headphones, category: 'support' },
+  { href: '/promotions', label: 'Promotions', icon: Tag, category: 'support' },
+  { href: '/settings', label: 'Settings', icon: Settings, category: 'support' },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { logout } = useAuth();
 
-  const handleLogout = () => {
-    console.log('Logging out...');
-    // Clear auth token, redirect to login, etc.
+  const handleLogout = async () => {
+    await logout();
+    setIsMobileMenuOpen(false);
   };
 
   return (
@@ -68,11 +99,14 @@ export default function Sidebar() {
 
         {/* Navigation */}
         <nav className="py-4">
+          {/* People Management */}
           <div className="px-4 mb-4">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Main Menu</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+              <Users size={12} />
+              People Management
+            </p>
           </div>
-
-          {menuItems.slice(0, 6).map((item) => {
+          {menuItems.filter(item => item.category === 'people').map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
 
@@ -83,17 +117,20 @@ export default function Sidebar() {
                 className={`sidebar-item ${isActive ? 'active' : ''}`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <Icon size={20} />
+                <Icon size={18} />
                 <span>{item.label}</span>
               </Link>
             );
           })}
 
+          {/* Business Management */}
           <div className="px-4 mb-4 mt-6">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Management</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+              <Building size={12} />
+              Business Management
+            </p>
           </div>
-
-          {menuItems.slice(6, 11).map((item) => {
+          {menuItems.filter(item => item.category === 'business').map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
 
@@ -104,11 +141,119 @@ export default function Sidebar() {
                 className={`sidebar-item ${isActive ? 'active' : ''}`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <Icon size={20} />
+                <Icon size={18} />
                 <span>{item.label}</span>
               </Link>
             );
           })}
+
+          {/* Operations */}
+          <div className="px-4 mb-4 mt-6">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+              <Calendar size={12} />
+              Operations
+            </p>
+          </div>
+          {menuItems.filter(item => item.category === 'operations').map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.href;
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`sidebar-item ${isActive ? 'active' : ''}`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Icon size={18} />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+
+          {/* Finance */}
+          <div className="px-4 mb-4 mt-6">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+              <DollarSign size={12} />
+              Finance
+            </p>
+          </div>
+          {menuItems.filter(item => item.category === 'finance').map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.href;
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`sidebar-item ${isActive ? 'active' : ''}`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Icon size={18} />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+
+          {/* Analytics & Reports */}
+          <div className="px-4 mb-4 mt-6">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+              <BarChart3 size={12} />
+              Analytics & Reports
+            </p>
+          </div>
+          {menuItems.filter(item => item.category === 'analytics').map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.href;
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`sidebar-item ${isActive ? 'active' : ''}`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Icon size={18} />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+
+          {/* Support & Settings */}
+          <div className="px-4 mb-4 mt-6">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+              <Headphones size={12} />
+              Support & Settings
+            </p>
+          </div>
+          {menuItems.filter(item => item.category === 'support').map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.href;
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`sidebar-item ${isActive ? 'active' : ''}`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Icon size={18} />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+
+          {/* Dashboard (always visible) */}
+          <div className="px-4 mb-4 mt-6 border-t border-gray-700 pt-4">
+            <Link
+              href="/dashboard"
+              className={`sidebar-item ${pathname === '/dashboard' ? 'active' : ''}`}
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <LayoutDashboard size={18} />
+              <span>Dashboard</span>
+            </Link>
+          </div>
 
           <div className="px-4 mb-4 mt-6">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">System</p>
@@ -135,7 +280,11 @@ export default function Sidebar() {
         {/* Bottom section - Fixed */}
         <div className="sidebar-bottom">
           {/* User Profile */}
-          <div className="sidebar-user-profile">
+          <Link
+            href="/profile"
+            className="sidebar-user-profile"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
             <div className="sidebar-user-avatar">
               <User size={16} className="text-white" />
             </div>
@@ -143,7 +292,7 @@ export default function Sidebar() {
               <p className="sidebar-user-name">Admin User</p>
               <p className="sidebar-user-email">admin@afro.com</p>
             </div>
-          </div>
+          </Link>
 
           {/* Logout Button */}
           <button

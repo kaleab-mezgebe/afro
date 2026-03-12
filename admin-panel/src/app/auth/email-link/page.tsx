@@ -34,13 +34,13 @@ export default function EmailLinkAuthPage() {
 
   useEffect(() => {
     setMounted(true);
-    
+
     // Check if this is a sign-in link completion
     if (isCurrentUrlSignInLink()) {
       router.push('/auth/complete');
       return;
     }
-    
+
     // Pre-fill email if stored
     const storedEmail = getStoredEmailForSignIn();
     if (storedEmail) {
@@ -50,14 +50,14 @@ export default function EmailLinkAuthPage() {
 
   const handleSendLink = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email) {
       toast.error('Please enter your admin email address');
       return;
     }
 
     setLoading(true);
-    
+
     try {
       await sendAdminSignInLink(email);
       setEmailSent(true);
@@ -71,7 +71,7 @@ export default function EmailLinkAuthPage() {
 
   const handleResendLink = async () => {
     setEmailSent(false);
-    await handleSendLink({ preventDefault: () => {} } as React.FormEvent);
+    await handleSendLink({ preventDefault: () => { } } as React.FormEvent);
   };
 
   if (!mounted) return null;
@@ -162,7 +162,7 @@ export default function EmailLinkAuthPage() {
       `}</style>
 
       <div className="min-h-screen gradient-bg flex items-center justify-center p-6 relative overflow-hidden">
-        
+
         {/* Background elements */}
         <div style={{
           position: 'absolute', top: '20%', left: '10%',
@@ -170,7 +170,7 @@ export default function EmailLinkAuthPage() {
           background: 'radial-gradient(circle, rgba(212,175,55,0.08) 0%, transparent 70%)',
           filter: 'blur(40px)', pointerEvents: 'none',
         }} />
-        
+
         <div style={{
           position: 'absolute', bottom: '20%', right: '10%',
           width: 250, height: 250, borderRadius: '50%',
@@ -198,11 +198,11 @@ export default function EmailLinkAuthPage() {
 
         {/* Main content */}
         <div className="w-full max-w-md">
-          
+
           {!emailSent ? (
             /* Email input form */
             <div className="glass-card animate-slide-up rounded-2xl p-8" style={{ opacity: 0, animationFillMode: 'forwards' }}>
-              
+
               {/* Header */}
               <div className="text-center mb-8">
                 <div style={{
@@ -228,11 +228,11 @@ export default function EmailLinkAuthPage() {
                 }}>
                   Admin Sign In
                 </h1>
-                
-                <p style={{ 
-                  fontSize: 16, 
+
+                <p style={{
+                  fontSize: 16,
                   color: 'rgba(255,255,255,0.6)',
-                  lineHeight: 1.5 
+                  lineHeight: 1.5
                 }}>
                   Enter your admin email to receive a secure sign-in link
                 </p>
@@ -249,18 +249,18 @@ export default function EmailLinkAuthPage() {
               <form onSubmit={handleSendLink} className="space-y-6">
                 <div>
                   <label style={{
-                    display: 'block', 
-                    fontSize: 13, 
+                    display: 'block',
+                    fontSize: 13,
                     fontWeight: 500,
                     color: focusedField ? '#d4af37' : 'rgba(255,255,255,0.5)',
-                    marginBottom: 8, 
-                    letterSpacing: '0.08em', 
+                    marginBottom: 8,
+                    letterSpacing: '0.08em',
                     textTransform: 'uppercase',
                     transition: 'color 0.3s ease',
                   }}>
                     Admin Email Address
                   </label>
-                  
+
                   <div className="relative">
                     <input
                       type="email"
@@ -272,11 +272,11 @@ export default function EmailLinkAuthPage() {
                       onBlur={() => setFocusedField(false)}
                       className="input-field w-full px-4 py-4 pl-12 rounded-xl text-sm"
                     />
-                    
+
                     <div style={{
-                      position: 'absolute', 
-                      left: 16, 
-                      top: '50%', 
+                      position: 'absolute',
+                      left: 16,
+                      top: '50%',
                       transform: 'translateY(-50%)',
                       color: focusedField ? '#d4af37' : 'rgba(255,255,255,0.25)',
                       transition: 'color 0.3s ease',
@@ -316,7 +316,7 @@ export default function EmailLinkAuthPage() {
                 <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>
                   Secure passwordless authentication powered by Firebase
                 </p>
-                
+
                 <button
                   onClick={() => router.push('/login')}
                   style={{
@@ -338,7 +338,7 @@ export default function EmailLinkAuthPage() {
           ) : (
             /* Success message */
             <div className="success-card animate-slide-up rounded-2xl p-8" style={{ opacity: 0, animationFillMode: 'forwards' }}>
-              
+
               <div className="text-center">
                 <div style={{
                   width: 80, height: 80,
@@ -361,16 +361,16 @@ export default function EmailLinkAuthPage() {
                 }}>
                   Check Your Email
                 </h2>
-                
-                <p style={{ 
-                  fontSize: 16, 
+
+                <p style={{
+                  fontSize: 16,
                   color: 'rgba(255,255,255,0.7)',
                   lineHeight: 1.6,
                   marginBottom: 8,
                 }}>
                   We've sent a secure sign-in link to:
                 </p>
-                
+
                 <p style={{
                   fontSize: 16,
                   color: '#d4af37',
@@ -387,8 +387,8 @@ export default function EmailLinkAuthPage() {
                   padding: 16,
                   marginBottom: 24,
                 }}>
-                  <p style={{ 
-                    fontSize: 14, 
+                  <p style={{
+                    fontSize: 14,
                     color: 'rgba(255,255,255,0.6)',
                     lineHeight: 1.5,
                   }}>
@@ -404,7 +404,7 @@ export default function EmailLinkAuthPage() {
                   >
                     {loading ? 'Sending...' : 'Resend Link'}
                   </button>
-                  
+
                   <button
                     onClick={() => setEmailSent(false)}
                     style={{
