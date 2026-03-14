@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { ReactNode } from 'react';
-import './AdminLayout.css';
+import { cn } from '@/styles/design-system';
 import CollapsibleSidebar from './CollapsibleSidebar';
 
 interface AdminLayoutProps {
@@ -30,13 +30,20 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   };
 
   return (
-    <div className={`admin-layout ${isSidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}`}>
+    <div className={cn(
+      'min-h-screen bg-gray-50',
+      'flex'
+    )}>
       <CollapsibleSidebar
         isCollapsed={isSidebarCollapsed}
         onToggle={handleSidebarToggle}
       />
-      <main className="admin-main">
-        <div className="admin-content">
+      <main className={cn(
+        'flex-1',
+        'transition-all duration-300 ease-in-out',
+        isSidebarCollapsed ? 'md:ml-4' : 'md:ml-4'
+      )}>
+        <div className="p-4">
           {children}
         </div>
       </main>

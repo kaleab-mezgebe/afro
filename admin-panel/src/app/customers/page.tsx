@@ -84,6 +84,18 @@ interface CustomerAnalytics {
 export default function CustomersPage() {
   const { loading: authLoading, authenticated } = useAuth();
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [showViewCustomerModal, setShowViewCustomerModal] = useState(false);
+  const [viewingCustomer, setViewingCustomer] = useState<Customer | null>(null);
+  const [showEditCustomerModal, setShowEditCustomerModal] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [editCustomerForm, setEditCustomerForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    city: '',
+    notes: '',
+    isActive: true
+  });
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [cityFilter, setCityFilter] = useState('all');
@@ -109,7 +121,7 @@ export default function CustomersPage() {
     if (authenticated) {
       loadCustomers();
     }
-  }, [authenticated]);
+  }, [authenticated, searchTerm, cityFilter]);
 
   const loadCustomers = async () => {
     try {
@@ -117,7 +129,7 @@ export default function CustomersPage() {
         page: 1,
         limit: 50,
         search: searchTerm,
-        status: cityFilter === 'all' ? undefined : cityFilter
+        city: cityFilter === 'all' ? undefined : cityFilter
       });
 
       if (response.success && response.data) {
@@ -274,6 +286,90 @@ export default function CustomersPage() {
     return matchesSearch && matchesCity;
   });
 
+  const handleViewCustomer = async (customer: Customer) => {
+    try {
+      const response = await CustomersService.getById(customer.id);
+      if (response.success) {
+        setViewingCustomer(response.data || customer);
+        setShowViewCustomerModal(true);
+      }
+    } catch (error) {
+      toast.error('Failed to load customer details');
+    }
+  };
+
+  const handleEditCustomer = async (customer: Customer) => {
+    try {
+      setEditingCustomer(customer);
+      setEditCustomerForm({
+        name: customer.name,
+        email: customer.email,
+        phone: customer.phone,
+        city: customer.city,
+        notes: customer.notes || '',
+        isActive: customer.isActive
+      });
+      setShowEditCustomerModal(true);
+    } catch (error) {
+      toast.error('Failed to load customer for editing');
+    }
+  };
+
+  const handleUpdateCustomer = async () => {
+    if (!editingCustomer || !editCustomerForm.name || !editCustomerForm.email) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      const response = await CustomersService.update(editingCustomer.id, editCustomerForm);
+
+      if (response.success) {
+        setCustomers(prev => prev.map(c =>
+          c.id === editingCustomer.id ? { ...c, ...editCustomerForm } : c
+        ));
+        toast.success('Customer updated successfully!');
+        setShowEditCustomerModal(false);
+        setEditingCustomer(null);
+        setEditCustomerForm({
+          name: '',
+          email: '',
+          phone: '',
+          city: '',
+          notes: '',
+          isActive: true
+        });
+      }
+    } catch (error) {
+      toast.error('Failed to update customer');
+    }
+  };
+
+  const handleToggleCustomerStatus = async (customer: Customer) => {
+    const action = customer.isActive ? 'suspend' : 'activate';
+    if (!window.confirm(`Are you sure you want to ${action} ${customer.name}?`)) {
+      return;
+    }
+
+    try {
+      let response;
+      if (customer.isActive) {
+        response = await CustomersService.suspend(customer.id);
+      } else {
+        response = await CustomersService.unsuspend(customer.id);
+      }
+
+      if (response.success) {
+        setCustomers(prev => prev.map(c =>
+          c.id === customer.id ? { ...c, isActive: !customer.isActive } : c
+        ));
+        toast.success(`Customer ${customer.isActive ? 'suspended' : 'activated'} successfully`);
+      }
+    } catch (error) {
+      toast.error(`Failed to ${action} customer`);
+    }
+  };
+
   if (authLoading || loading) {
     return (
       <AdminLayout>
@@ -339,171 +435,6 @@ export default function CustomersPage() {
           </div>
         </div>
 
-        {/* Creative Customer Stats with Loyalty Theme */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          {/* Total Customers - Community Style */}
-          <div className="bg-gradient-to-br from-teal-50 to-cyan-100 rounded-2xl p-6 border border-teal-200 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-16 h-16 bg-teal-500 rounded-2xl flex items-center justify-center shadow-lg">
-                <Users className="text-white" size={28} />
-              </div>
-              <div className="text-right">
-                <div className="text-3xl font-bold text-teal-800">{totalCustomers}</div>
-                <div className="text-teal-600 text-sm">Total</div>
-              </div>
-            </div>
-            <div className="bg-teal-200 rounded-xl p-3">
-              <div className="text-teal-800 text-sm font-medium">👥 Growing Family</div>
-            </div>
-          </div>
-
-          {/* Active Customers - Status Style */}
-          <div className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-2xl p-6 border border-green-200 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-16 h-16 bg-green-500 rounded-2xl flex items-center justify-center shadow-lg">
-                <Heart className="text-white" size={28} />
-              </div>
-              <div className="text-right">
-                <div className="text-3xl font-bold text-green-800">{activeCustomers}</div>
-                <div className="text-green-600 text-sm">Active</div>
-              </div>
-            </div>
-            <div className="bg-green-200 rounded-xl p-3">
-              <div className="text-green-800 text-sm font-medium">❤️ Loyal Clients</div>
-            </div>
-          </div>
-
-          {/* Total Revenue - Money Style */}
-          <div className="bg-gradient-to-br from-purple-50 to-pink-100 rounded-2xl p-6 border border-purple-200 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-16 h-16 bg-purple-500 rounded-2xl flex items-center justify-center shadow-lg">
-                <DollarSign className="text-white" size={28} />
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-purple-800">${totalRevenue.toFixed(0)}</div>
-                <div className="text-purple-600 text-sm">Revenue</div>
-              </div>
-            </div>
-            <div className="bg-purple-200 rounded-xl p-3">
-              <div className="text-purple-800 text-sm font-medium">💰 Total Spent</div>
-            </div>
-          </div>
-
-          {/* Average Rating - Star Style */}
-          <div className="bg-gradient-to-br from-yellow-50 to-amber-100 rounded-2xl p-6 border border-yellow-200 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-16 h-16 bg-yellow-500 rounded-2xl flex items-center justify-center shadow-lg">
-                <Star className="text-white" size={28} />
-              </div>
-              <div className="text-right">
-                <div className="text-3xl font-bold text-yellow-800">{avgRating.toFixed(1)}</div>
-                <div className="text-yellow-600 text-sm">Rating</div>
-              </div>
-            </div>
-            <div className="bg-yellow-200 rounded-xl p-3">
-              <div className="text-yellow-800 text-sm font-medium">⭐ Satisfaction</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Filters and Actions */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search customers..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 bg-gray-50 text-gray-900 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 w-64"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <Filter size={20} className="text-gray-400" />
-              <select
-                className="px-4 py-2 bg-white text-gray-700 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500"
-                value={cityFilter}
-                onChange={(e) => setCityFilter(e.target.value)}
-              >
-                <option value="all">All Cities</option>
-                <option value="New York">New York</option>
-                <option value="Los Angeles">Los Angeles</option>
-                <option value="Chicago">Chicago</option>
-              </select>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <button className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600">
-              <Download size={20} />
-              <span>Export</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="stat-card">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="stat-label">Total Customers</p>
-                <p className="stat-value">{totalCustomers}</p>
-                <div className="stat-change positive">
-                  <TrendingUp size={12} />
-                  18% from last month
-                </div>
-              </div>
-              <div className="p-3 rounded-lg bg-blue-100">
-                <Users size={24} className="text-blue-600" />
-              </div>
-            </div>
-          </div>
-          <div className="stat-card">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="stat-label">Active Customers</p>
-                <p className="stat-value">{activeCustomers}</p>
-                <div className="stat-change positive">
-                  <TrendingUp size={12} />
-                  12% from last week
-                </div>
-              </div>
-              <div className="p-3 rounded-lg bg-green-100">
-                <CheckCircle size={24} className="text-green-600" />
-              </div>
-            </div>
-          </div>
-          <div className="stat-card">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="stat-label">Total Revenue</p>
-                <p className="stat-value">${totalRevenue.toLocaleString()}</p>
-                <div className="stat-change positive">
-                  <TrendingUp size={12} />
-                  25% from last month
-                </div>
-              </div>
-              <div className="p-3 rounded-lg bg-purple-100">
-                <ShoppingBag size={24} className="text-purple-600" />
-              </div>
-            </div>
-          </div>
-          <div className="stat-card">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="stat-label">Avg Rating</p>
-                <p className="stat-value">{avgRating.toFixed(1)}</p>
-                <div className="stat-change positive">
-                  <TrendingUp size={12} />
-                  0.3 from last month
-                </div>
-              </div>
-              <div className="p-3 rounded-lg bg-amber-100">
-                <Star size={24} className="text-amber-600" />
-              </div>
-            </div>
-          </div>
-        </div >
 
         {/* Quick Actions */}
         <div className="mb-8">
@@ -559,127 +490,178 @@ export default function CustomersPage() {
           </div>
         </div>
 
-        {/* Customers Table */}
-        < div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden" >
-          <div className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">All Customers</h3>
-
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Customer Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Contact
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Location
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Bookings
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Total Spent
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Rating
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {filteredCustomers.map((customer) => (
-                    <tr key={customer.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                            <Users size={20} className="text-gray-500" />
-                          </div>
-                          <div className="ml-3">
-                            <div className="text-sm font-medium text-gray-900">{customer.name}</div>
-                            <div className="text-sm text-gray-500">Member since {new Date(customer.joinDate).toLocaleDateString()}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{customer.email}</div>
-                        <div className="text-sm text-gray-500">{customer.phone}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center text-sm text-gray-900">
-                          <MapPin size={16} className="mr-1" />
-                          {customer.city}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{customer.totalBookings}</div>
-                        <div className="text-sm text-gray-500">Last: {new Date(customer.lastBooking).toLocaleDateString()}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">${customer.totalSpent}</div>
-                        <div className="text-sm text-gray-500">{customer.loyaltyPoints} points</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center text-sm text-gray-900">
-                          <Star size={16} className="text-amber-400 fill-current mr-1" />
-                          {customer.rating}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${customer.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                          }`}>
-                          {customer.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => {
-                              setSelectedCustomer(customer);
-                              // View customer details
-                            }}
-                            className="text-orange-600 hover:text-orange-800 transition-colors"
-                            title="View"
-                          >
-                            <Eye size={16} />
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSelectedCustomer(customer);
-                              // Edit customer
-                            }}
-                            className="text-orange-600 hover:text-orange-800 transition-colors"
-                            title="Edit"
-                          >
-                            <Edit size={16} />
-                          </button>
-                          <button
-                            onClick={() => {
-                              // Suspend/unsuspend customer
-                              const action = customer.isActive ? 'suspend' : 'activate';
-                              if (window.confirm(`Are you sure you want to ${action} ${customer.name}?`)) {
-                                // Handle suspend/activate
-                              }
-                            }}
-                            className={`${customer.isActive ? 'text-red-600 hover:text-red-800' : 'text-green-600 hover:text-green-800'} transition-colors`}
-                            title={customer.isActive ? 'Suspend' : 'Activate'}
-                          >
-                            <Ban size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        {/* Beautiful Customers Table - One Look Design */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Customer Directory</h3>
+                <p className="text-sm text-gray-600 mt-1">Complete customer overview at a glance</p>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">{customers.length}</div>
+                  <div className="text-xs text-gray-500">Total</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">{activeCustomers}</div>
+                  <div className="text-xs text-gray-500">Active</div>
+                </div>
+              </div>
             </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-50 border-b-2 border-gray-200">
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    Customer
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    Contact Information
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    Location & Stats
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    Bookings & Revenue
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    Customer Rating
+                  </th>
+                  <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filteredCustomers.map((customer, index) => (
+                  <tr key={customer.id} className={`hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center space-x-4">
+                        <div className="relative">
+                          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg ring-4 ring-blue-100">
+                            <span className="text-white font-bold text-lg">
+                              {customer.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full ${customer.isActive ? 'bg-green-500' : 'bg-red-500'} border-2 border-white`}></div>
+                        </div>
+                        <div>
+                          <div className="font-semibold text-gray-900 text-base">{customer.name}</div>
+                          <div className="text-xs text-gray-500 flex items-center gap-1">
+                            <Calendar size={12} className="text-gray-400" />
+                            Member since {new Date(customer.joinDate).toLocaleDateString()}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-5">
+                      <div className="space-y-2">
+                        <div className="flex items-center text-sm text-gray-700">
+                          <Mail size={14} className="text-blue-500 mr-2" />
+                          <span className="font-medium">{customer.email}</span>
+                        </div>
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Phone size={14} className="text-green-500 mr-2" />
+                          <span>{customer.phone || 'No phone'}</span>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-5">
+                      <div className="space-y-2">
+                        <div className="flex items-center text-sm text-gray-700">
+                          <MapPin size={14} className="text-purple-500 mr-2" />
+                          <span className="font-medium">{customer.city}</span>
+                        </div>
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Award size={14} className="text-amber-500 mr-2" />
+                          <span>{customer.loyaltyPoints || 0} points</span>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-5">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">Bookings</span>
+                          <span className="font-semibold text-blue-600 text-base">{customer.totalBookings}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">Revenue</span>
+                          <span className="font-semibold text-green-600 text-base">${customer.totalSpent}</span>
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          Last: {new Date(customer.lastBooking).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-5">
+                      <div className="flex items-center space-x-1">
+                        <div className="flex items-center">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              size={14}
+                              className={`${i < Math.floor(customer.rating || 0) ? 'text-amber-400 fill-current' : 'text-gray-300'}`}
+                            />
+                          ))}
+                        </div>
+                        <span className="ml-2 font-semibold text-gray-700">{(customer.rating || 0).toFixed(1)}</span>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-5 text-center">
+                      <div className="flex justify-center">
+                        <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-bold ${customer.isActive
+                          ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-300'
+                          : 'bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border border-red-300'
+                          }`}>
+                          <div className={`w-2 h-2 rounded-full mr-2 animate-pulse ${customer.isActive ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                          {customer.isActive ? 'ACTIVE' : 'SUSPENDED'}
+                        </span>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-5">
+                      <div className="flex items-center justify-center space-x-2">
+                        <button
+                          onClick={() => handleViewCustomer(customer)}
+                          className="p-2 bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200 transition-all duration-200 hover:scale-110"
+                          title="View Details"
+                        >
+                          <Eye size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleEditCustomer(customer)}
+                          className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-all duration-200 hover:scale-110"
+                          title="Edit Customer"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleToggleCustomerStatus(customer)}
+                          className={`p-2 rounded-lg transition-all duration-200 hover:scale-110 ${customer.isActive
+                            ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                            : 'bg-green-100 text-green-600 hover:bg-green-200'
+                            }`}
+                          title={customer.isActive ? 'Suspend Customer' : 'Activate Customer'}
+                        >
+                          <Ban size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -1061,37 +1043,269 @@ export default function CustomersPage() {
           </div>
         </div>
       )}
+
+      {/* Edit Customer Modal */}
+      {showEditCustomerModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto animate-scale-in">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
+                    <Edit className="text-white" size={20} />
+                  </div>
+                  Edit Customer
+                </h3>
+                <button
+                  onClick={() => setShowEditCustomerModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                  <input
+                    type="text"
+                    value={editCustomerForm.name}
+                    onChange={(e) => setEditCustomerForm(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter full name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+                  <input
+                    type="email"
+                    value={editCustomerForm.email}
+                    onChange={(e) => setEditCustomerForm(prev => ({ ...prev, email: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter email address"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                  <input
+                    type="tel"
+                    value={editCustomerForm.phone}
+                    onChange={(e) => setEditCustomerForm(prev => ({ ...prev, phone: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter phone number"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
+                  <input
+                    type="text"
+                    value={editCustomerForm.city}
+                    onChange={(e) => setEditCustomerForm(prev => ({ ...prev, city: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter city"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                <textarea
+                  value={editCustomerForm.notes}
+                  onChange={(e) => setEditCustomerForm(prev => ({ ...prev, notes: e.target.value }))}
+                  rows={3}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter customer notes"
+                />
+              </div>
+
+              <div className="mt-6">
+                <label className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={editCustomerForm.isActive}
+                    onChange={(e) => setEditCustomerForm(prev => ({ ...prev, isActive: e.target.checked }))}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Active Customer</span>
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-8">
+                <button
+                  onClick={() => setShowEditCustomerModal(false)}
+                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUpdateCustomer}
+                  className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  Update Customer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Customer Modal */}
+      {showViewCustomerModal && viewingCustomer && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto animate-scale-in">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                  <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center">
+                    <Eye className="text-white" size={20} />
+                  </div>
+                  Customer Details
+                </h3>
+                <button
+                  onClick={() => setShowViewCustomerModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Profile Section */}
+                <div className="bg-gray-50 rounded-xl p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
+                      <Users className="text-purple-600" size={32} />
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900">{viewingCustomer.name}</h4>
+                      <p className="text-sm text-gray-500">Customer</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Mail className="text-gray-400" size={16} />
+                      <span className="text-sm text-gray-700">{viewingCustomer.email}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Phone className="text-gray-400" size={16} />
+                      <span className="text-sm text-gray-700">{viewingCustomer.phone}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <MapPin className="text-gray-400" size={16} />
+                      <span className="text-sm text-gray-700">{viewingCustomer.city}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Calendar className="text-gray-400" size={16} />
+                      <span className="text-sm text-gray-700">Joined {new Date(viewingCustomer.joinDate).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stats Section */}
+                <div className="bg-gray-50 rounded-xl p-6">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Customer Statistics</h4>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Total Bookings</span>
+                      <span className="text-sm font-semibold text-gray-900">{viewingCustomer.totalBookings || 0}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Total Spent</span>
+                      <span className="text-sm font-semibold text-gray-900">${(viewingCustomer.totalSpent || 0).toLocaleString()}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Loyalty Points</span>
+                      <span className="text-sm font-semibold text-gray-900">{viewingCustomer.loyaltyPoints || 0}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Account Status</span>
+                      <span className={`px-3 py-1 text-xs rounded-full ${viewingCustomer.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {viewingCustomer.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Customer ID</span>
+                      <span className="text-xs text-gray-500 font-mono">{viewingCustomer.id}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Notes Section */}
+              {viewingCustomer.notes && (
+                <div className="mt-6 bg-gray-50 rounded-xl p-6">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Notes</h4>
+                  <p className="text-sm text-gray-700 leading-relaxed">{viewingCustomer.notes}</p>
+                </div>
+              )}
+
+              {/* Last Booking */}
+              {viewingCustomer.lastBooking && (
+                <div className="mt-6 bg-gray-50 rounded-xl p-6">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Last Booking</h4>
+                  <p className="text-sm text-gray-700">{new Date(viewingCustomer.lastBooking).toLocaleDateString()}</p>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3 mt-8">
+                <button
+                  onClick={() => {
+                    setShowViewCustomerModal(false);
+                    handleEditCustomer(viewingCustomer);
+                  }}
+                  className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  Edit Customer
+                </button>
+                <button
+                  onClick={() => setShowViewCustomerModal(false)}
+                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   );
 }
 
-// Add custom animations
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  
-  @keyframes scale-in {
-    from { 
-      opacity: 0;
-      transform: scale(0.9);
-    }
-    to { 
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-  
-  .animate-fade-in {
-    animation: fade-in 0.3s ease-out;
-  }
-  
-  .animate-scale-in {
-    animation: scale-in 0.3s ease-out;
-  }
-`;
+// Add custom animations (client-side only)
 if (typeof window !== 'undefined') {
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes scale-in {
+      from { 
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to { 
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    
+    .animate-fade-in {
+      animation: fade-in 0.3s ease-out;
+    }
+    
+    .animate-scale-in {
+      animation: scale-in 0.3s ease-out;
+    }
+  `;
   document.head.appendChild(style);
 }

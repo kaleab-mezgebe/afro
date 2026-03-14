@@ -74,18 +74,68 @@ export default function AppointmentsPage() {
     }
   };
 
-  const handleConfirmAppointment = (appointmentId: string) => {
-    toast.success('Appointment confirmed successfully');
-    setAppointments(appointments.map(a =>
-      a.id === appointmentId ? { ...a, status: 'confirmed' as const } : a
-    ));
+  const handleConfirmAppointment = async (appointmentId: string) => {
+    try {
+      const response = await AppointmentsService.updateStatus(appointmentId, 'confirmed');
+      if (response.success) {
+        toast.success('Appointment confirmed successfully');
+        setAppointments(appointments.map(a =>
+          a.id === appointmentId ? { ...a, status: 'confirmed' as const } : a
+        ));
+      }
+    } catch (error) {
+      toast.error('Failed to confirm appointment');
+    }
   };
 
-  const handleCancelAppointment = (appointmentId: string) => {
-    toast.success('Appointment cancelled');
-    setAppointments(appointments.map(a =>
-      a.id === appointmentId ? { ...a, status: 'cancelled' as const } : a
-    ));
+  const handleCancelAppointment = async (appointmentId: string) => {
+    if (!window.confirm('Are you sure you want to cancel this appointment?')) {
+      return;
+    }
+
+    try {
+      const response = await AppointmentsService.updateStatus(appointmentId, 'cancelled');
+      if (response.success) {
+        toast.success('Appointment cancelled');
+        setAppointments(appointments.map(a =>
+          a.id === appointmentId ? { ...a, status: 'cancelled' as const } : a
+        ));
+      }
+    } catch (error) {
+      toast.error('Failed to cancel appointment');
+    }
+  };
+
+  const handleViewAppointment = async (appointmentId: string) => {
+    try {
+      const response = await AppointmentsService.getById(appointmentId);
+      if (response.success) {
+        console.log('Appointment details:', response.data);
+        // TODO: Show appointment details modal
+      }
+    } catch (error) {
+      toast.error('Failed to load appointment details');
+    }
+  };
+
+  const handleEditAppointment = async (appointmentId: string) => {
+    try {
+      console.log('Edit appointment:', appointmentId);
+      // TODO: Show edit appointment modal
+    } catch (error) {
+      toast.error('Failed to edit appointment');
+    }
+  };
+
+  const handleExportAppointments = async () => {
+    try {
+      await AppointmentsService.export({
+        status: statusFilter,
+        search: searchTerm
+      });
+    } catch (error) {
+      toast.error('Failed to export appointments');
+    }
   };
 
   const filteredAppointments = appointments.filter((appointment) => {
@@ -181,7 +231,10 @@ export default function AppointmentsPage() {
         </div>
       </div>
       <div className="flex items-center gap-4">
-        <button className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600">
+        <button
+          onClick={handleExportAppointments}
+          className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600"
+        >
           <Download size={20} />
           <span>Export</span>
         </button>
@@ -335,10 +388,18 @@ export default function AppointmentsPage() {
                               </button>
                             </>
                           )}
-                          <button className="text-gray-600 hover:text-gray-900" title="View">
+                          <button
+                            onClick={() => handleViewAppointment(appointment.id)}
+                            className="text-gray-600 hover:text-gray-900"
+                            title="View"
+                          >
                             <Eye size={16} />
                           </button>
-                          <button className="text-gray-600 hover:text-gray-900" title="Edit">
+                          <button
+                            onClick={() => handleEditAppointment(appointment.id)}
+                            className="text-gray-600 hover:text-gray-900"
+                            title="Edit"
+                          >
                             <Edit size={16} />
                           </button>
                         </div>

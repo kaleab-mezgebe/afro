@@ -94,6 +94,61 @@ export default function TransactionsPage() {
     return matchesSearch && matchesFilter;
   });
 
+  const handleViewTransaction = async (transactionId: string) => {
+    try {
+      const response = await TransactionsService.getById(transactionId);
+      if (response.success) {
+        console.log('Transaction details:', response.data);
+        // TODO: Show transaction details modal
+      }
+    } catch (error) {
+      toast.error('Failed to load transaction details');
+    }
+  };
+
+  const handleRefundTransaction = async (transactionId: string) => {
+    if (!window.confirm('Are you sure you want to refund this transaction?')) {
+      return;
+    }
+
+    try {
+      const response = await TransactionsService.refund(transactionId, 'Customer requested refund');
+      if (response.success) {
+        toast.success('Transaction refunded successfully');
+        // Reload transactions to get updated data
+        loadTransactions();
+      }
+    } catch (error) {
+      toast.error('Failed to refund transaction');
+    }
+  };
+
+  const handleUpdateStatus = async (transactionId: string, status: string) => {
+    try {
+      const response = await TransactionsService.updateStatus(transactionId, status);
+      if (response.success) {
+        toast.success(`Transaction status updated to ${status}`);
+        setTransactions(prev => prev.map(t =>
+          t.id === transactionId ? { ...t, status: status as any } : t
+        ));
+      }
+    } catch (error) {
+      toast.error('Failed to update transaction status');
+    }
+  };
+
+  const handleExportTransactions = async () => {
+    try {
+      await TransactionsService.export({
+        type: filter === 'all' ? undefined : filter,
+        search: searchTerm,
+        dateRange: dateRange
+      });
+    } catch (error) {
+      toast.error('Failed to export transactions');
+    }
+  };
+
   if (authLoading || loading) {
     return (
       <AdminLayout>
@@ -171,7 +226,10 @@ export default function TransactionsPage() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <button className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600">
+            <button
+              onClick={handleExportTransactions}
+              className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600"
+            >
               <Download size={20} />
               <span>Export</span>
             </button>
@@ -377,9 +435,31 @@ export default function TransactionsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center gap-2">
-                          <button className="text-gray-600 hover:text-gray-900" title="View">
+                          <button
+                            onClick={() => handleViewTransaction(transaction.id)}
+                            className="text-gray-600 hover:text-gray-900"
+                            title="View"
+                          >
                             <Eye size={16} />
                           </button>
+                          {transaction.type === 'payment' && transaction.status === 'completed' && (
+                            <button
+                              onClick={() => handleRefundTransaction(transaction.id)}
+                              className="text-red-600 hover:text-red-900"
+                              title="Refund"
+                            >
+                              <ArrowDownRight size={16} />
+                            </button>
+                          )}
+                          {transaction.status === 'pending' && (
+                            <button
+                              onClick={() => handleUpdateStatus(transaction.id, 'completed')}
+                              className="text-green-600 hover:text-green-900"
+                              title="Mark Complete"
+                            >
+                              <CheckCircle size={16} />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>

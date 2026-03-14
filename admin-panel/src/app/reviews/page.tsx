@@ -87,6 +87,86 @@ export default function ReviewsPage() {
     return matchesSearch && matchesRating && matchesStatus;
   });
 
+  const handleViewReview = async (reviewId: string) => {
+    try {
+      const response = await ReviewsService.getById(reviewId);
+      if (response.success) {
+        console.log('Review details:', response.data);
+        // TODO: Show review details modal
+      }
+    } catch (error) {
+      toast.error('Failed to load review details');
+    }
+  };
+
+  const handleApproveReview = async (reviewId: string) => {
+    try {
+      const response = await ReviewsService.approve(reviewId);
+      if (response.success) {
+        toast.success('Review approved successfully');
+        setReviews(prev => prev.map(r =>
+          r.id === reviewId ? { ...r, status: 'published' as const } : r
+        ));
+      }
+    } catch (error) {
+      toast.error('Failed to approve review');
+    }
+  };
+
+  const handleHideReview = async (reviewId: string) => {
+    try {
+      const response = await ReviewsService.hide(reviewId);
+      if (response.success) {
+        toast.success('Review hidden successfully');
+        setReviews(prev => prev.map(r =>
+          r.id === reviewId ? { ...r, status: 'hidden' as const } : r
+        ));
+      }
+    } catch (error) {
+      toast.error('Failed to hide review');
+    }
+  };
+
+  const handleDeleteReview = async (reviewId: string) => {
+    if (!window.confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await ReviewsService.delete(reviewId);
+      if (response.success) {
+        toast.success('Review deleted successfully');
+        setReviews(prev => prev.filter(r => r.id !== reviewId));
+      }
+    } catch (error) {
+      toast.error('Failed to delete review');
+    }
+  };
+
+  const handleRespondToReview = async (reviewId: string, response: string) => {
+    try {
+      const resp = await ReviewsService.respond(reviewId, response);
+      if (resp.success) {
+        toast.success('Response added successfully');
+        // TODO: Reload reviews to show response
+      }
+    } catch (error) {
+      toast.error('Failed to add response');
+    }
+  };
+
+  const handleExportReviews = async () => {
+    try {
+      await ReviewsService.export({
+        rating: ratingFilter === 'all' ? undefined : parseInt(ratingFilter),
+        status: statusFilter === 'all' ? undefined : statusFilter,
+        search: searchTerm
+      });
+    } catch (error) {
+      toast.error('Failed to export reviews');
+    }
+  };
+
   if (authLoading || loading) {
     return (
       <AdminLayout>
@@ -433,13 +513,32 @@ export default function ReviewsPage() {
                       {/* Action Buttons */}
                       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                         <div className="flex flex-col gap-1">
-                          <button className="w-8 h-8 bg-white/90 backdrop-blur rounded-lg flex items-center justify-center hover:bg-white transition-colors shadow-md">
+                          <button
+                            onClick={() => handleViewReview(review.id)}
+                            className="w-8 h-8 bg-white/90 backdrop-blur rounded-lg flex items-center justify-center hover:bg-white transition-colors shadow-md"
+                          >
                             <Eye size={14} className="text-gray-700" />
                           </button>
-                          <button className="w-8 h-8 bg-white/90 backdrop-blur rounded-lg flex items-center justify-center hover:bg-white transition-colors shadow-md">
-                            <Edit size={14} className="text-blue-600" />
-                          </button>
-                          <button className="w-8 h-8 bg-white/90 backdrop-blur rounded-lg flex items-center justify-center hover:bg-white transition-colors shadow-md">
+                          {review.status === 'pending' && (
+                            <button
+                              onClick={() => handleApproveReview(review.id)}
+                              className="w-8 h-8 bg-white/90 backdrop-blur rounded-lg flex items-center justify-center hover:bg-white transition-colors shadow-md"
+                            >
+                              <CheckCircle size={14} className="text-green-600" />
+                            </button>
+                          )}
+                          {review.status === 'published' && (
+                            <button
+                              onClick={() => handleHideReview(review.id)}
+                              className="w-8 h-8 bg-white/90 backdrop-blur rounded-lg flex items-center justify-center hover:bg-white transition-colors shadow-md"
+                            >
+                              <XCircle size={14} className="text-amber-600" />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDeleteReview(review.id)}
+                            className="w-8 h-8 bg-white/90 backdrop-blur rounded-lg flex items-center justify-center hover:bg-white transition-colors shadow-md"
+                          >
                             <Trash2 size={14} className="text-red-600" />
                           </button>
                         </div>

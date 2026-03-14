@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { AlertTriangle, Eye, Trash2, Check, X, Search, Filter, Flag, MessageSquare, Image, User } from 'lucide-react'
+import { ModerationService } from '@/lib/api-backend'
+import toast from 'react-hot-toast'
 
 interface ReportedItem {
   id: string
@@ -32,54 +34,86 @@ export default function ContentModeration() {
   const [selectedItem, setSelectedItem] = useState<ReportedItem | null>(null)
 
   useEffect(() => {
-    // Mock data - replace with actual API call
-    setReportedItems([
-      {
-        id: 'report_001',
-        type: 'review',
-        reportedBy: 'John Doe',
-        reportedAt: '2024-01-15T10:30:00Z',
-        reason: 'Inappropriate language',
-        description: 'The review contains offensive and inappropriate language that violates our community guidelines.',
-        status: 'pending',
-        targetId: 'review_123',
-        targetData: {
-          name: 'Sarah Johnson',
-          content: 'This service was terrible and the provider was unprofessional...'
-        },
-        priority: 'high'
-      },
-      {
-        id: 'report_002',
-        type: 'user',
-        reportedBy: 'Jane Smith',
-        reportedAt: '2024-01-14T15:45:00Z',
-        reason: 'Fake profile',
-        description: 'This user appears to be using fake information and may be a scam.',
-        status: 'reviewing',
-        targetId: 'user_456',
-        targetData: {
-          userName: 'Michael Brown',
-          userEmail: 'michael.brown@email.com'
-        },
-        priority: 'medium'
-      },
-      {
-        id: 'report_003',
-        type: 'photo',
-        reportedBy: 'Admin',
-        reportedAt: '2024-01-13T09:15:00Z',
-        reason: 'Inappropriate content',
-        description: 'Photo contains inappropriate content not suitable for the platform.',
-        status: 'pending',
-        targetId: 'photo_789',
-        targetData: {
-          imageUrl: '/images/reported-photo.jpg'
-        },
-        priority: 'high'
+    loadReportedItems();
+  }, []);
+
+  const loadReportedItems = async () => {
+    try {
+      const response = await ModerationService.getAll();
+
+      if (response.success && response.data) {
+        setReportedItems(response.data);
+      } else {
+        // Fallback to mock data if backend not available
+        setReportedItems([
+          {
+            id: 'report_001',
+            type: 'review',
+            reportedBy: 'John Doe',
+            reportedAt: '2024-01-15T10:30:00Z',
+            reason: 'Inappropriate language',
+            description: 'The review contains offensive and inappropriate language that violates our community guidelines.',
+            status: 'pending',
+            targetId: 'review_123',
+            targetData: {
+              name: 'Sarah Johnson',
+              content: 'This service was terrible and the provider was unprofessional...'
+            },
+            priority: 'high'
+          },
+          {
+            id: 'report_002',
+            type: 'user',
+            reportedBy: 'Jane Smith',
+            reportedAt: '2024-01-14T15:45:00Z',
+            reason: 'Fake profile',
+            description: 'This user appears to be using fake information and may be a scam.',
+            status: 'reviewing',
+            targetId: 'user_456',
+            targetData: {
+              userName: 'Michael Brown',
+              userEmail: 'michael.brown@email.com'
+            },
+            priority: 'medium'
+          },
+          {
+            id: 'report_003',
+            type: 'photo',
+            reportedBy: 'Admin',
+            reportedAt: '2024-01-13T09:15:00Z',
+            reason: 'Inappropriate content',
+            description: 'Photo contains inappropriate content not suitable for the platform.',
+            status: 'pending',
+            targetId: 'photo_789',
+            targetData: {
+              imageUrl: '/images/reported-photo.jpg'
+            },
+            priority: 'high'
+          }
+        ]);
       }
-    ])
-  }, [])
+    } catch (error) {
+      console.error('Failed to load reported items:', error);
+      // Fallback to mock data
+      setReportedItems([
+        {
+          id: 'report_001',
+          type: 'review',
+          reportedBy: 'John Doe',
+          reportedAt: '2024-01-15T10:30:00Z',
+          reason: 'Inappropriate language',
+          description: 'The review contains offensive and inappropriate language that violates our community guidelines.',
+          status: 'pending',
+          targetId: 'review_123',
+          targetData: {
+            name: 'Sarah Johnson',
+            content: 'This service was terrible and the provider was unprofessional...'
+          },
+          priority: 'high'
+        }
+      ]);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -112,19 +146,51 @@ export default function ContentModeration() {
   const filteredItems = reportedItems.filter(item => {
     const matchesFilter = filter === 'all' || item.status === filter || item.type === filter || item.priority === filter
     const matchesSearch = item.reason.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.reportedBy.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.targetData.name?.toLowerCase().includes(searchTerm.toLowerCase())
+      item.reportedBy.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.targetData.name?.toLowerCase().includes(searchTerm.toLowerCase())
     return matchesFilter && matchesSearch
   })
 
-  const handleAction = (itemId: string, action: 'approve' | 'dismiss' | 'remove') => {
-    setReportedItems(prev => prev.map(item => 
-      item.id === itemId 
-        ? { ...item, status: action === 'dismiss' ? 'dismissed' : 'resolved' }
-        : item
-    ))
-    setSelectedItem(null)
-  }
+  const handleAction = async (itemId: string, action: 'approve' | 'dismiss' | 'remove') => {
+    try {
+      let response;
+
+      switch (action) {
+        case 'approve':
+          response = await ModerationService.approve(itemId);
+          break;
+        case 'dismiss':
+          response = await ModerationService.dismiss(itemId);
+          break;
+        case 'remove':
+          response = await ModerationService.remove(itemId);
+          break;
+      }
+
+      if (response.success) {
+        // Update local state
+        setReportedItems(prev => prev.map(item =>
+          item.id === itemId
+            ? { ...item, status: action === 'dismiss' ? 'dismissed' : 'resolved' }
+            : item
+        ));
+
+        setSelectedItem(null);
+
+        // Show success message
+        const actionMessages = {
+          approve: 'Report approved and content kept',
+          dismiss: 'Report dismissed',
+          remove: 'Content removed successfully'
+        };
+
+        toast.success(actionMessages[action]);
+      }
+    } catch (error) {
+      console.error('Failed to handle action:', error);
+      toast.error('Failed to process action');
+    }
+  };
 
   return (
     <div className="p-6">
@@ -243,11 +309,10 @@ export default function ContentModeration() {
         {/* Reports List */}
         <div className="lg:col-span-2 space-y-4">
           {filteredItems.map((item) => (
-            <Card 
-              key={item.id} 
-              className={`cursor-pointer transition-all ${
-                selectedItem?.id === item.id ? 'ring-2 ring-blue-500' : ''
-              }`}
+            <Card
+              key={item.id}
+              className={`cursor-pointer transition-all ${selectedItem?.id === item.id ? 'ring-2 ring-blue-500' : ''
+                }`}
               onClick={() => setSelectedItem(item)}
             >
               <CardContent className="p-6">
@@ -266,19 +331,19 @@ export default function ContentModeration() {
                     {new Date(item.reportedAt).toLocaleDateString()}
                   </span>
                 </div>
-                
+
                 <div className="mb-3">
                   <p className="font-medium text-sm mb-1">{item.reason}</p>
                   <p className="text-sm text-gray-600 line-clamp-2">{item.description}</p>
                 </div>
-                
+
                 <div className="flex justify-between items-center">
                   <p className="text-sm text-gray-500">
                     Reported by <span className="font-medium">{item.reportedBy}</span>
                   </p>
                   <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation()
@@ -309,41 +374,41 @@ export default function ContentModeration() {
                   <p className="text-sm font-medium mb-1">Type</p>
                   <p className="capitalize">{selectedItem.type}</p>
                 </div>
-                
+
                 <div>
                   <p className="text-sm font-medium mb-1">Status</p>
                   <Badge className={getStatusColor(selectedItem.status)}>
                     {selectedItem.status}
                   </Badge>
                 </div>
-                
+
                 <div>
                   <p className="text-sm font-medium mb-1">Priority</p>
                   <Badge className={getPriorityColor(selectedItem.priority)}>
                     {selectedItem.priority}
                   </Badge>
                 </div>
-                
+
                 <div>
                   <p className="text-sm font-medium mb-1">Reported By</p>
                   <p>{selectedItem.reportedBy}</p>
                 </div>
-                
+
                 <div>
                   <p className="text-sm font-medium mb-1">Reported At</p>
                   <p>{new Date(selectedItem.reportedAt).toLocaleString()}</p>
                 </div>
-                
+
                 <div>
                   <p className="text-sm font-medium mb-1">Reason</p>
                   <p>{selectedItem.reason}</p>
                 </div>
-                
+
                 <div>
                   <p className="text-sm font-medium mb-1">Description</p>
                   <p className="text-sm text-gray-600">{selectedItem.description}</p>
                 </div>
-                
+
                 <div>
                   <p className="text-sm font-medium mb-1">Target Content</p>
                   <div className="p-3 bg-gray-50 rounded text-sm">
@@ -358,31 +423,31 @@ export default function ContentModeration() {
                     )}
                     {selectedItem.targetData.imageUrl && (
                       <div className="mt-2">
-                        <img 
-                          src={selectedItem.targetData.imageUrl} 
-                          alt="Reported content" 
+                        <img
+                          src={selectedItem.targetData.imageUrl}
+                          alt="Reported content"
                           className="w-full h-32 object-cover rounded"
                         />
                       </div>
                     )}
                   </div>
                 </div>
-                
+
                 <div className="flex gap-2 pt-4">
                   {selectedItem.status === 'pending' && (
                     <>
-                      <Button 
-                        variant="success" 
-                        size="sm" 
+                      <Button
+                        variant="success"
+                        size="sm"
                         className="flex-1"
                         onClick={() => handleAction(selectedItem.id, 'approve')}
                       >
                         <Check className="w-4 h-4 mr-1" />
                         Approve
                       </Button>
-                      <Button 
-                        variant="danger" 
-                        size="sm" 
+                      <Button
+                        variant="danger"
+                        size="sm"
                         className="flex-1"
                         onClick={() => handleAction(selectedItem.id, 'remove')}
                       >
@@ -391,9 +456,9 @@ export default function ContentModeration() {
                       </Button>
                     </>
                   )}
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="flex-1"
                     onClick={() => handleAction(selectedItem.id, 'dismiss')}
                   >

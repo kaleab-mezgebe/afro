@@ -4,7 +4,7 @@
 import { toast } from 'react-hot-toast';
 
 // API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 // Mock data for development when backend is not available
 const USE_MOCK_DATA = false; // Use real backend data
@@ -159,7 +159,7 @@ class ApiService {
   }
 
   // Mock data responses for development
-  private getMockResponse<T>(endpoint: string): Promise<ApiResponse<T>> {
+  public getMockResponse<T>(endpoint: string): Promise<ApiResponse<T>> {
     return new Promise((resolve) => {
       setTimeout(() => {
         if (endpoint.includes('/dashboard/stats')) {
@@ -257,7 +257,7 @@ class ApiService {
       }
     }
     const response = await this.request<PaginatedResponse<T>>(`${endpoint}${queryString}`);
-    
+
     // If the response is already a PaginatedResponse (has success and data)
     // we return it as is so the pages can access response.success and response.data
     if (response.success && response.data && Array.isArray(response.data)) {
@@ -267,7 +267,7 @@ class ApiService {
       }
       return response.data as any;
     }
-    
+
     return response as any;
   }
 
@@ -453,6 +453,10 @@ export class BarbersService {
   static async updateServices(id: string, services: any[]) {
     return api.patch<any>('/admin/barbers', id, { services });
   }
+
+  static async export(params?: QueryParams) {
+    return api.export('/admin/barbers', params);
+  }
 }
 
 export class ServicesService {
@@ -498,38 +502,87 @@ export class AppointmentsService {
     return api.update<any>('/admin/appointments', id, appointmentData);
   }
 
+  static async updateStatus(id: string, status: string) {
+    return api.patch<any>('/admin/appointments', id, { status });
+  }
+
   static async delete(id: string) {
     return api.delete('/admin/appointments', id);
   }
 
-  static async updateStatus(id: string, status: string) {
-    return api.patch<any>('/admin/appointments', id, { status });
+  static async export(params?: QueryParams) {
+    return api.export('/admin/appointments', params);
   }
 }
 
 export class CustomersService {
   static async getAll(params?: QueryParams) {
+    // Use real backend endpoint
     return api.getAll<any>('/admin/customers', params);
   }
 
   static async getById(id: string) {
+    // Use real backend endpoint
     return api.getById<any>('/admin/customers', id);
   }
 
   static async create(customerData: any) {
+    // Use real backend endpoint
     return api.create<any>('/admin/customers', customerData);
   }
 
   static async update(id: string, customerData: any) {
+    // Use real backend endpoint
     return api.update<any>('/admin/customers', id, customerData);
   }
 
   static async delete(id: string) {
+    // Use real backend endpoint
     return api.delete('/admin/customers', id);
   }
 
   static async toggleStatus(id: string, isActive: boolean) {
+    // Use real backend endpoint
     return api.patch<any>('/admin/customers', id, { isActive });
+  }
+
+  static async suspend(id: string) {
+    const token = localStorage.getItem('authToken');
+    const response = await fetch(`${API_BASE_URL}/admin/customers/${id}/block`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to suspend customer: ${response.status}`);
+    }
+
+    return response.json();
+  }
+
+  static async unsuspend(id: string) {
+    const token = localStorage.getItem('authToken');
+    const response = await fetch(`${API_BASE_URL}/admin/customers/${id}/unblock`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to unsuspend customer: ${response.status}`);
+    }
+
+    return response.json();
+  }
+
+  static async export(params?: any) {
+    // Use real backend endpoint
+    return api.export('/admin/customers', params);
   }
 }
 
@@ -675,6 +728,28 @@ export class AdminsService {
 
   static async delete(id: string) {
     return api.delete('/admin/admins', id);
+  }
+}
+
+export class ModerationService {
+  static async getAll(params?: QueryParams) {
+    return api.getAll<any>('/admin/moderation/reports', params);
+  }
+
+  static async getById(id: string) {
+    return api.getById<any>('/admin/moderation/reports', id);
+  }
+
+  static async approve(id: string) {
+    return api.patch<any>('/admin/moderation/reports', id, { action: 'approve' });
+  }
+
+  static async dismiss(id: string) {
+    return api.patch<any>('/admin/moderation/reports', id, { action: 'dismiss' });
+  }
+
+  static async remove(id: string) {
+    return api.patch<any>('/admin/moderation/reports', id, { action: 'remove' });
   }
 }
 

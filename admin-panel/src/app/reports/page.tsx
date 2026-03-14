@@ -20,7 +20,7 @@ import {
   AlertCircle,
   Activity,
 } from 'lucide-react';
-import { TransactionsService } from '@/lib/api-backend';
+import { ReportsService } from '@/lib/api-backend';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -52,48 +52,71 @@ export default function ReportsPage() {
 
   const loadReports = async () => {
     try {
-      const response = await TransactionsService.getAll({
-        page: 1,
-        limit: 50,
-        search: '',
-        type: undefined,
-        dateRange: undefined
+      const response = await ReportsService.getAll({
+        search: searchTerm,
+        type: typeFilter === 'all' ? undefined : typeFilter,
+        status: statusFilter === 'all' ? undefined : statusFilter
       });
 
       if (response.success && response.data) {
-        // Transform transactions data into reports format
-        const reportData = [
-          {
-            id: '1',
-            title: 'Monthly Revenue Report',
-            type: 'financial' as const,
-            description: 'Comprehensive revenue analysis from transaction data',
-            generatedDate: new Date().toISOString(),
-            period: 'Current Month',
-            status: 'completed' as const,
-            fileSize: '2.4 MB',
-            downloadUrl: '/reports/monthly-revenue.pdf'
-          },
-          {
-            id: '2',
-            title: 'Transaction Analysis Report',
-            type: 'operational' as const,
-            description: 'Detailed transaction and payment analysis',
-            generatedDate: new Date().toISOString(),
-            period: 'Current Month',
-            status: 'completed' as const,
-            fileSize: '1.8 MB',
-            downloadUrl: '/reports/transaction-analysis.pdf'
-          }
-        ];
-
-        setReports(reportData);
+        setReports(response.data);
       }
     } catch (error) {
       toast.error('Failed to load reports');
       console.error('Reports loading error:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGenerateReport = async (reportType: string, params: any) => {
+    try {
+      const response = await ReportsService.generate(reportType, params);
+      if (response.success) {
+        toast.success('Report generation started successfully');
+        loadReports(); // Reload to show new report
+      }
+    } catch (error) {
+      toast.error('Failed to generate report');
+    }
+  };
+
+  const handleDownloadReport = async (reportId: string) => {
+    try {
+      const response = await ReportsService.download(reportId);
+      if (response.success) {
+        // Create download link
+        const link = document.createElement('a');
+        link.href = response.data.downloadUrl;
+        link.download = response.data.title;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success('Report downloaded successfully');
+      }
+    } catch (error) {
+      toast.error('Failed to download report');
+    }
+  };
+
+  const handleScheduleReport = async (reportConfig: any) => {
+    try {
+      const response = await ReportsService.schedule(reportConfig);
+      if (response.success) {
+        toast.success('Report scheduled successfully');
+        loadReports();
+      }
+    } catch (error) {
+      toast.error('Failed to schedule report');
+    }
+  };
+
+  const handleViewReport = async (reportId: string) => {
+    try {
+      console.log('View report:', reportId);
+      // TODO: Show report details modal
+    } catch (error) {
+      toast.error('Failed to load report details');
     }
   };
 
@@ -184,7 +207,10 @@ export default function ReportsPage() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <button className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600">
+            <button
+              onClick={() => handleGenerateReport('financial', { period: 'monthly' })}
+              className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600"
+            >
               <FileText size={20} />
               <span>Generate Report</span>
             </button>

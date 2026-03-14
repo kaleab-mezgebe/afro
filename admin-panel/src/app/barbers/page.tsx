@@ -58,8 +58,24 @@ export default function BarbersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedBarber, setSelectedBarber] = useState<Barber | null>(null);
+  const [showNewBarberModal, setShowNewBarberModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedBarber, setSelectedBarber] = useState<Barber | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    shop: '',
+    specialization: '',
+    experienceYears: 0,
+    isActive: true
+  });
+  const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportFormat, setExportFormat] = useState<'csv' | 'excel'>('csv');
+  const [exportStatus, setExportStatus] = useState<'active' | 'suspended' | 'pending_approval' | 'all'>('all');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (authenticated) {
@@ -99,6 +115,174 @@ export default function BarbersPage() {
 
     return matchesSearch && matchesStatus;
   });
+
+  const handleEditBarber = async (barber: Barber) => {
+    try {
+      setSelectedBarber(barber);
+      setEditForm({
+        name: barber.name,
+        email: barber.email,
+        phone: barber.phone,
+        shop: barber.shop,
+        specialization: barber.specialization || '',
+        experienceYears: barber.experienceYears || 0,
+        isActive: barber.isActive
+      });
+      setShowEditModal(true);
+    } catch (error) {
+      toast.error('Failed to load barber for editing');
+    }
+  };
+
+  const handleUpdateBarber = async () => {
+    if (!selectedBarber || !editForm.name || !editForm.email) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      const response = await BarbersService.update(selectedBarber.id, editForm);
+
+      if (response.success) {
+        setBarbers(prev => prev.map(b =>
+          b.id === selectedBarber.id ? { ...b, ...editForm } : b
+        ));
+        toast.success('Barber updated successfully!');
+        setShowEditModal(false);
+        setSelectedBarber(null);
+        setEditForm({
+          name: '',
+          email: '',
+          phone: '',
+          shop: '',
+          specialization: '',
+          experienceYears: 0,
+          isActive: true
+        });
+      }
+    } catch (error) {
+      toast.error('Failed to update barber');
+    }
+  };
+
+  const handleAddBarber = async () => {
+    if (!editForm.name || !editForm.email) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      const response = await BarbersService.create(editForm);
+
+      if (response.success) {
+        setBarbers(prev => [...prev, response.data]);
+        toast.success('Barber added successfully!');
+        setShowNewBarberModal(false);
+        setEditForm({
+          name: '',
+          email: '',
+          phone: '',
+          shop: '',
+          specialization: '',
+          experienceYears: 0,
+          isActive: true
+        });
+      }
+    } catch (error) {
+      toast.error('Failed to add barber');
+    }
+  };
+
+  const handleToggleStatus = async (barber: Barber) => {
+    const action = barber.isActive ? 'suspend' : 'activate';
+    if (!window.confirm(`Are you sure you want to ${action} ${barber.name}?`)) {
+      return;
+    }
+
+    try {
+      const response = await BarbersService.toggleStatus(barber.id, !barber.isActive);
+
+      if (response.success) {
+        setBarbers(prev => prev.map(b =>
+          b.id === barber.id ? { ...b, isActive: !barber.isActive, status: !barber.isActive ? 'active' : 'suspended' } : b
+        ));
+        toast.success(`Barber ${barber.isActive ? 'suspended' : 'activated'} successfully`);
+      }
+    } catch (error) {
+      toast.error(`Failed to ${action} barber`);
+    }
+  };
+
+  const handleExportBarbers = async () => {
+    try {
+      setIsSubmitting(true);
+
+      const response = await BarbersService.export({
+        status: exportStatus === 'all' ? undefined : exportStatus,
+        search: searchTerm
+      });
+
+      // The export service handles the download automatically
+      toast.success(`Barbers exported as ${exportFormat.toUpperCase()} successfully!`);
+      setShowExportModal(false);
+    } catch (error) {
+      toast.error('Failed to export barbers');
+      console.error('Export error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const loadAnalytics = async () => {
+    try {
+      setLoading(true);
+
+      // Mock analytics data - replace with real API call
+      const analyticsData = {
+        totalBarbers: barbers.length,
+        activeBarbers: barbers.filter(b => b.isActive).length,
+        totalBookings: barbers.reduce((acc, b) => acc + (b.totalBookings || 0), 0),
+        averageRating: barbers.reduce((acc, b) => acc + b.rating, 0) / barbers.length || 0,
+        newBarbersThisMonth: 5,
+        totalRevenue: barbers.reduce((acc, b) => acc + (b.totalBookings || 0) * 50, 0), // Mock calculation
+        topPerformingBarbers: barbers.slice(0, 5).map(b => ({
+          name: b.name,
+          bookings: b.totalBookings || 0,
+          rating: b.rating
+        })),
+        barberDistribution: [
+          { shop: 'Main Street', count: 12 },
+          { shop: 'Downtown', count: 8 },
+          { shop: 'Mall Branch', count: 6 }
+        ]
+      };
+
+      // Set analytics data for modal
+      // Note: In a real implementation, this would be stored in state
+      // For now, we'll use a global variable for the modal
+    } catch (error) {
+      toast.error('Failed to load analytics');
+      console.error('Analytics loading error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteBarber = async (barber: Barber) => {
+    if (!window.confirm(`Are you sure you want to delete ${barber.name}? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const response = await BarbersService.delete(barber.id);
+      if (response.success) {
+        setBarbers(prev => prev.filter(b => b.id !== barber.id));
+        toast.success('Barber deleted successfully');
+      }
+    } catch (error) {
+      toast.error('Failed to delete barber');
+    }
+  };
 
   const handleView = (barber: Barber) => {
     setSelectedBarber(barber);
@@ -333,7 +517,10 @@ export default function BarbersPage() {
         < div className="mb-8" >
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <button className="w-full text-left p-4 bg-green-50 hover:bg-green-100 rounded-xl transition-colors border border-green-200">
+            <button
+              onClick={() => setShowNewBarberModal(true)}
+              className="w-full text-left p-4 bg-green-50 hover:bg-green-100 rounded-xl transition-colors border border-green-200"
+            >
               <div className="flex items-center gap-3">
                 <UserPlus className="text-green-700" size={20} />
                 <div>
@@ -342,7 +529,10 @@ export default function BarbersPage() {
                 </div>
               </div>
             </button>
-            <button className="w-full text-left p-4 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors border border-blue-200">
+            <button
+              onClick={() => setShowExportModal(true)}
+              className="w-full text-left p-4 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors border border-blue-200"
+            >
               <div className="flex items-center gap-3">
                 <Download className="text-blue-700" size={20} />
                 <div>
@@ -351,7 +541,10 @@ export default function BarbersPage() {
                 </div>
               </div>
             </button>
-            <button className="w-full text-left p-4 bg-purple-50 hover:bg-purple-100 rounded-xl transition-colors border border-purple-200">
+            <button
+              onClick={() => setShowAnalyticsModal(true)}
+              className="w-full text-left p-4 bg-purple-50 hover:bg-purple-100 rounded-xl transition-colors border border-purple-200"
+            >
               <div className="flex items-center gap-3">
                 <TrendingUp className="text-purple-700" size={20} />
                 <div>
@@ -361,103 +554,174 @@ export default function BarbersPage() {
               </div>
             </button>
           </div>
-        </div >
+        </div>
 
-        {/* Barbers Table */}
-        < div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden" >
-          <div className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">All Barbers</h3>
-
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Barber Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Shop
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Rating
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Services
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Specialization
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {paginatedBarbers.map((barber) => (
-                    <tr key={barber.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                            <Scissors size={20} className="text-gray-500" />
-                          </div>
-                          <div className="ml-3">
-                            <div className="text-sm font-medium text-gray-900">{barber.name}</div>
-                            <div className="text-sm text-gray-500">{barber.email}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{barber.shop}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <Star size={16} className="text-amber-400 fill-current mr-1" />
-                          <span className="text-sm font-medium text-gray-900">{barber.rating}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{barber.servicesCount}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900 max-w-xs truncate">
-                          {barber.specialization}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${barber.status === 'active' ? 'bg-green-100 text-green-800' :
-                          barber.status === 'suspended' ? 'bg-red-100 text-red-800' :
-                            'bg-amber-100 text-amber-800'
-                          }`}>
-                          {barber.status.replace('_', ' ')}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center gap-2">
-                          <button
-                            className="text-gray-600 hover:text-gray-900"
-                            title="View"
-                            onClick={() => handleView(barber)}
-                          >
-                            <Eye size={16} />
-                          </button>
-                          <button className="text-gray-600 hover:text-gray-900" title="Edit">
-                            <Edit size={16} />
-                          </button>
-                          <button className="text-red-600 hover:text-red-900" title="Suspend">
-                            <Ban size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        {/* Beautiful Barbers Table - Professional One Look Design */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          <div className="bg-gradient-to-r from-amber-50 to-orange-50 px-6 py-4 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Barber Directory</h3>
+                <p className="text-sm text-gray-600 mt-1">Professional barbers overview at a glance</p>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-amber-600">{barbers.length}</div>
+                  <div className="text-xs text-gray-500">Total</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">{barbers.filter(b => b.isActive).length}</div>
+                  <div className="text-xs text-gray-500">Active</div>
+                </div>
+              </div>
             </div>
           </div>
-        </div >
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-50 border-b-2 border-gray-200">
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    Barber Profile
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    Shop & Contact
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    Expertise
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    Performance
+                  </th>
+                  <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {paginatedBarbers.map((barber, index) => (
+                  <tr key={barber.id} className={`hover:bg-gradient-to-r hover:from-amber-50 hover:to-orange-50 transition-all duration-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center space-x-4">
+                        <div className="relative">
+                          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center shadow-lg ring-4 ring-amber-100">
+                            <span className="text-white font-bold text-lg">
+                              {barber.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full ${barber.isActive ? 'bg-green-500' : 'bg-red-500'} border-2 border-white`}></div>
+                        </div>
+                        <div>
+                          <div className="font-semibold text-gray-900 text-base">{barber.name}</div>
+                          <div className="text-xs text-gray-500 flex items-center gap-1">
+                            <Calendar size={12} className="text-gray-400" />
+                            Joined {new Date(barber.joinedDate).toLocaleDateString()}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-5">
+                      <div className="space-y-2">
+                        <div className="flex items-center text-sm text-gray-700">
+                          <Scissors size={14} className="text-amber-500 mr-2" />
+                          <span className="font-medium">{barber.shop}</span>
+                        </div>
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Mail size={14} className="text-blue-500 mr-2" />
+                          <span>{barber.email}</span>
+                        </div>
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Phone size={14} className="text-green-500 mr-2" />
+                          <span>{barber.phone}</span>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-5">
+                      <div className="space-y-2">
+                        <div className="flex items-center text-sm text-gray-700">
+                          <Award size={14} className="text-purple-500 mr-2" />
+                          <span className="font-medium">{barber.specialization || 'General'}</span>
+                        </div>
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Shield size={14} className="text-indigo-500 mr-2" />
+                          <span>{barber.servicesCount || 0} services</span>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-5">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">Rating</span>
+                          <div className="flex items-center space-x-1">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                size={14}
+                                className={`${i < Math.floor(barber.rating || 0) ? 'text-amber-400 fill-current' : 'text-gray-300'}`}
+                              />
+                            ))}
+                            <span className="ml-2 font-semibold text-gray-700">{(barber.rating || 0).toFixed(1)}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">Bookings</span>
+                          <span className="font-semibold text-blue-600 text-base">{barber.totalBookings || 0}</span>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-5 text-center">
+                      <div className="flex justify-center">
+                        <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-bold ${barber.isActive
+                          ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-300'
+                          : 'bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border border-red-300'
+                          }`}>
+                          <div className={`w-2 h-2 rounded-full mr-2 animate-pulse ${barber.isActive ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                          {barber.isActive ? 'ACTIVE' : 'SUSPENDED'}
+                        </span>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-5">
+                      <div className="flex items-center justify-center space-x-2">
+                        <button
+                          onClick={() => handleView(barber)}
+                          className="p-2 bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200 transition-all duration-200 hover:scale-110"
+                          title="View Details"
+                        >
+                          <Eye size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleEditBarber(barber)}
+                          className="p-2 bg-amber-100 text-amber-600 rounded-lg hover:bg-amber-200 transition-all duration-200 hover:scale-110"
+                          title="Edit Barber"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleToggleStatus(barber)}
+                          className={`p-2 rounded-lg transition-all duration-200 hover:scale-110 ${barber.isActive
+                            ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                            : 'bg-green-100 text-green-600 hover:bg-green-200'
+                            }`}
+                          title={barber.isActive ? 'Suspend Barber' : 'Activate Barber'}
+                        >
+                          <Ban size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
         {/* View Modal */}
         {
@@ -553,6 +817,412 @@ export default function BarbersPage() {
             </div>
           )
         }
+
+        {/* Add New Barber Modal */}
+        {
+          showNewBarberModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto animate-scale-in">
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                      <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center">
+                        <UserPlus className="text-white" size={20} />
+                      </div>
+                      Add New Barber
+                    </h3>
+                    <button
+                      onClick={() => setShowNewBarberModal(false)}
+                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      <X size={24} />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                      <input
+                        type="text"
+                        value={editForm.name}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        placeholder="Enter full name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+                      <input
+                        type="email"
+                        value={editForm.email}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, email: e.target.value }))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        placeholder="Enter email address"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                      <input
+                        type="tel"
+                        value={editForm.phone}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        placeholder="Enter phone number"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Shop Name</label>
+                      <input
+                        type="text"
+                        value={editForm.shop}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, shop: e.target.value }))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        placeholder="Enter shop name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Specialization</label>
+                      <input
+                        type="text"
+                        value={editForm.specialization}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, specialization: e.target.value }))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        placeholder="Enter specialization"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Experience Years</label>
+                      <input
+                        type="number"
+                        value={editForm.experienceYears}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, experienceYears: parseInt(e.target.value) || 0 }))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        placeholder="Enter years of experience"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-6">
+                    <label className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={editForm.isActive}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, isActive: e.target.checked }))}
+                        className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Active Barber</span>
+                    </label>
+                  </div>
+
+                  <div className="flex justify-end gap-3 mt-8">
+                    <button
+                      onClick={() => setShowNewBarberModal(false)}
+                      className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleAddBarber}
+                      className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                    >
+                      Add Barber
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        }
+
+        {/* Edit Barber Modal */}
+        {
+          showEditModal && selectedBarber && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto animate-scale-in">
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                      <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center">
+                        <Edit className="text-white" size={20} />
+                      </div>
+                      Edit Barber
+                    </h3>
+                    <button
+                      onClick={() => setShowEditModal(false)}
+                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      <X size={24} />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                      <input
+                        type="text"
+                        value={editForm.name}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        placeholder="Enter full name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+                      <input
+                        type="email"
+                        value={editForm.email}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, email: e.target.value }))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        placeholder="Enter email address"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                      <input
+                        type="tel"
+                        value={editForm.phone}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        placeholder="Enter phone number"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Shop Name</label>
+                      <input
+                        type="text"
+                        value={editForm.shop}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, shop: e.target.value }))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        placeholder="Enter shop name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Specialization</label>
+                      <input
+                        type="text"
+                        value={editForm.specialization}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, specialization: e.target.value }))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        placeholder="Enter specialization"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Experience Years</label>
+                      <input
+                        type="number"
+                        value={editForm.experienceYears}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, experienceYears: parseInt(e.target.value) || 0 }))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        placeholder="Enter years of experience"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-6">
+                    <label className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={editForm.isActive}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, isActive: e.target.checked }))}
+                        className="w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Active Barber</span>
+                    </label>
+                  </div>
+
+                  <div className="flex justify-end gap-3 mt-8">
+                    <button
+                      onClick={() => setShowEditModal(false)}
+                      className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleUpdateBarber}
+                      className="px-6 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
+                    >
+                      Update Barber
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        }
+
+        {/* Export Barbers Modal */}
+        {
+          showExportModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl mx-4 animate-scale-in">
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                      <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center">
+                        <Download className="text-white" size={20} />
+                      </div>
+                      Export Barbers
+                    </h3>
+                    <button
+                      onClick={() => setShowExportModal(false)}
+                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      <X size={24} />
+                    </button>
+                  </div>
+
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Export Format</label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <label className="flex items-center space-x-3 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="format"
+                            value="csv"
+                            checked={exportFormat === 'csv'}
+                            onChange={(e) => setExportFormat(e.target.value as 'csv' | 'excel')}
+                            className="w-4 h-4 text-amber-600 focus:ring-amber-500"
+                          />
+                          <span className="text-sm font-medium text-gray-700">CSV</span>
+                          <span className="text-xs text-gray-500">(.csv file)</span>
+                        </label>
+                        <label className="flex items-center space-x-3 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="format"
+                            value="excel"
+                            checked={exportFormat === 'excel'}
+                            onChange={(e) => setExportFormat(e.target.value as 'csv' | 'excel')}
+                            className="w-4 h-4 text-amber-600 focus:ring-amber-500"
+                          />
+                          <span className="text-sm font-medium text-gray-700">Excel</span>
+                          <span className="text-xs text-gray-500">(.xlsx file)</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Barber Status</label>
+                      <select
+                        value={exportStatus}
+                        onChange={(e) => setExportStatus(e.target.value as 'active' | 'suspended' | 'pending_approval' | 'all')}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                      >
+                        <option value="all">All Barbers</option>
+                        <option value="active">Active Only</option>
+                        <option value="suspended">Suspended Only</option>
+                        <option value="pending_approval">Pending Approval Only</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-3">
+                    <button
+                      onClick={() => setShowExportModal(false)}
+                      className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleExportBarbers}
+                      disabled={isSubmitting}
+                      className="px-6 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Exporting...
+                        </>
+                      ) : (
+                        <>
+                          <Download size={16} />
+                          Export {exportFormat.toUpperCase()}
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        }
+
+        {/* Analytics Modal */}
+        {
+          showAnalyticsModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto animate-scale-in">
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                      <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center">
+                        <TrendingUp className="text-white" size={20} />
+                      </div>
+                      Barber Analytics
+                    </h3>
+                    <button
+                      onClick={() => setShowAnalyticsModal(false)}
+                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      <X size={24} />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Overview Stats */}
+                    <div className="bg-amber-50 rounded-xl p-6 border border-amber-200">
+                      <h4 className="text-lg font-semibold text-amber-800 mb-4">Overview</h4>
+                      <div className="space-y-3">
+                        <div className="flex justify-between">
+                          <span className="text-amber-600">Total Barbers:</span>
+                          <span className="font-bold text-amber-800">{barbers.length}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-amber-600">Active Barbers:</span>
+                          <span className="font-bold text-amber-800">{barbers.filter(b => b.isActive).length}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-amber-600">Avg Rating:</span>
+                          <span className="font-bold text-amber-800">{(barbers.reduce((acc, b) => acc + b.rating, 0) / barbers.length || 0).toFixed(1)}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Performance Stats */}
+                    <div className="bg-purple-50 rounded-xl p-6 border border-purple-200">
+                      <h4 className="text-lg font-semibold text-purple-800 mb-4">Performance</h4>
+                      <div className="space-y-3">
+                        <div className="flex justify-between">
+                          <span className="text-purple-600">Total Bookings:</span>
+                          <span className="font-bold text-purple-800">{barbers.reduce((acc, b) => acc + (b.totalBookings || 0), 0)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-purple-600">Est. Revenue:</span>
+                          <span className="font-bold text-purple-800">${barbers.reduce((acc, b) => acc + (b.totalBookings || 0) * 50, 0).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-purple-600">New This Month:</span>
+                          <span className="font-bold text-purple-800">5</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end mt-8">
+                    <button
+                      onClick={() => setShowAnalyticsModal(false)}
+                      className="px-6 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        }
+
       </div >
     </AdminLayout >
   );

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import './CollapsibleSidebar.css';
+import { cn, getSidebarItemStyles } from '@/styles/design-system';
 import {
   LayoutDashboard,
   Users,
@@ -124,13 +124,21 @@ export default function CollapsibleSidebar({ isCollapsed = false, onToggle }: Co
       <Link
         key={item.href}
         href={item.href}
-        className={`sidebar-item ${isActive ? 'active' : ''}`}
+        className={cn(
+          getSidebarItemStyles(isActive),
+          'w-full'
+        )}
         onClick={() => setIsMobileMenuOpen(false)}
       >
-        <Icon size={20} className="sidebar-item-icon" />
-        <span className="sidebar-item-label">{item.label}</span>
+        <Icon size={18} className={cn(
+          'flex-shrink-0',
+          isActive ? 'text-orange-500' : 'text-gray-400'
+        )} />
+        {!isCollapsedState && (
+          <span className="ml-3">{item.label}</span>
+        )}
         {isCollapsedState && (
-          <div className="sidebar-item-tooltip">
+          <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
             {item.label}
           </div>
         )}
@@ -159,75 +167,84 @@ export default function CollapsibleSidebar({ isCollapsed = false, onToggle }: Co
       {/* Mobile menu button */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-primary text-white rounded-lg shadow-lg hover:bg-primary-dark transition-colors"
+        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-orange-500 text-white rounded-lg shadow-lg hover:bg-orange-600 transition-colors"
       >
         {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
       {/* Sidebar */}
-      <div className={`sidebar ${isCollapsedState ? 'collapsed' : 'expanded'} ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+      <div className={cn(
+        'fixed inset-y-0 left-0 z-40 bg-gray-900 transition-all duration-300 ease-in-out md:relative md:inset-0',
+        isCollapsedState ? 'w-16' : 'w-64',
+        isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+      )}>
         {/* Toggle Button */}
-        <div className="sidebar-toggle-container">
+        <div className="absolute -right-3 top-6">
           <button
             onClick={handleToggle}
-            className="sidebar-toggle-btn"
+            className="hidden md:flex items-center justify-center w-6 h-6 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-colors"
             title={isCollapsedState ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            {isCollapsedState ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+            {isCollapsedState ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           </button>
         </div>
 
         {/* Logo */}
-        <div className="sidebar-logo">
-          <div className="sidebar-logo-icon">
-            <LayoutDashboard size={24} />
+        <div className="flex items-center p-4 border-b border-gray-800">
+          <div className="flex items-center justify-center w-10 h-10 bg-orange-500 rounded-lg">
+            <LayoutDashboard size={20} className="text-white" />
           </div>
           {!isCollapsedState && (
-            <div className="sidebar-logo-text">
-              <h1 className="sidebar-logo-title">AFRO Admin</h1>
-              <p className="sidebar-logo-subtitle">Salon Management</p>
+            <div className="ml-3">
+              <h1 className="text-lg font-semibold text-white">AFRO Admin</h1>
+              <p className="text-xs text-gray-400">Salon Management</p>
             </div>
           )}
         </div>
 
         {/* Navigation */}
-        <nav className="sidebar-nav">
+        <nav className="flex-1 px-2 py-4 space-y-6 overflow-y-auto">
+          {/* Dashboard (always visible) */}
+          <div className="space-y-1">
+            {renderMenuItem(menuItems[0])}
+          </div>
+
           {categories.map((category) => {
             const categoryItems = menuItems.filter(item => item.category === category.id);
 
             return (
-              <div key={category.id} className="sidebar-section">
-                {renderCategory(category.id)}
-                <div className="sidebar-items">
+              <div key={category.id} className="space-y-1">
+                {!isCollapsedState && (
+                  <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    {category.label}
+                  </div>
+                )}
+                <div className="space-y-1">
                   {categoryItems.map(renderMenuItem)}
                 </div>
               </div>
             );
           })}
-
-          {/* Dashboard (always visible) */}
-          <div className="sidebar-section sidebar-section-dashboard">
-            <div className="sidebar-items">
-              {renderMenuItem(menuItems[0])}
-            </div>
-          </div>
         </nav>
 
         {/* Bottom section */}
-        <div className="sidebar-bottom">
+        <div className="border-t border-gray-800 p-4 space-y-2">
           {/* User Profile */}
           <Link
             href="/profile"
-            className="sidebar-user-profile"
+            className={cn(
+              'flex items-center p-2 rounded-lg transition-colors group',
+              'hover:bg-gray-800'
+            )}
             onClick={() => setIsMobileMenuOpen(false)}
           >
-            <div className="sidebar-user-avatar">
-              <User size={20} />
+            <div className="flex items-center justify-center w-8 h-8 bg-gray-700 rounded-lg">
+              <User size={16} className="text-gray-300" />
             </div>
             {!isCollapsedState && (
-              <div className="sidebar-user-info">
-                <p className="sidebar-user-name">Admin User</p>
-                <p className="sidebar-user-email">admin@afro.com</p>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-white">Admin User</p>
+                <p className="text-xs text-gray-400">admin@afro.com</p>
               </div>
             )}
           </Link>
@@ -235,11 +252,14 @@ export default function CollapsibleSidebar({ isCollapsed = false, onToggle }: Co
           {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="sidebar-logout-btn"
+            className={cn(
+              'flex items-center w-full p-2 rounded-lg transition-colors',
+              'text-gray-400 hover:bg-red-900 hover:text-white'
+            )}
             title="Logout"
           >
-            <LogOut size={20} />
-            {!isCollapsedState && <span>Logout</span>}
+            <LogOut size={18} />
+            {!isCollapsedState && <span className="ml-3">Logout</span>}
           </button>
         </div>
       </div>
@@ -247,7 +267,7 @@ export default function CollapsibleSidebar({ isCollapsed = false, onToggle }: Co
       {/* Mobile overlay */}
       {isMobileMenuOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}

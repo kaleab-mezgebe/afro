@@ -20,6 +20,7 @@ import {
   TrendingUp,
   Package,
   Grid,
+  X,
 } from 'lucide-react';
 import { ServicesService } from '@/lib/api-backend';
 import toast from 'react-hot-toast';
@@ -39,9 +40,35 @@ interface Service {
 export default function ServicesPage() {
   const { loading: authLoading, authenticated } = useAuth();
   const [services, setServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [showAddServiceModal, setShowAddServiceModal] = useState(false);
+  const [newServiceForm, setNewServiceForm] = useState({
+    name: '',
+    category: 'haircut',
+    price: '',
+    durationMinutes: '',
+    description: '',
+    isActive: true
+  });
+  const [showViewServiceModal, setShowViewServiceModal] = useState(false);
+  const [viewingService, setViewingService] = useState<Service | null>(null);
+  const [showEditServiceModal, setShowEditServiceModal] = useState(false);
+  const [editingService, setEditingService] = useState<Service | null>(null);
+  const [editServiceForm, setEditServiceForm] = useState({
+    name: '',
+    category: 'haircut',
+    price: '',
+    durationMinutes: '',
+    description: '',
+    isActive: true
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [priceRange, setPriceRange] = useState('all');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
 
   useEffect(() => {
     if (authenticated) {
@@ -49,13 +76,22 @@ export default function ServicesPage() {
     }
   }, [authenticated]);
 
+  useEffect(() => {
+    if (authenticated) {
+      loadServices();
+    }
+  }, [searchTerm, categoryFilter, sortBy, sortOrder, priceRange]);
+
   const loadServices = async () => {
     try {
       const response = await ServicesService.getAll({
         page: 1,
         limit: 50,
         search: searchTerm,
-        category: categoryFilter
+        category: categoryFilter === 'all' ? undefined : categoryFilter,
+        sortBy,
+        sortOrder,
+        priceRange: priceRange === 'all' ? undefined : priceRange
       });
 
       if (response && (response as any).success && (response as any).data) {
@@ -80,6 +116,161 @@ export default function ServicesPage() {
 
     return matchesSearch && matchesCategory;
   });
+
+  const handleViewService = async (service: Service) => {
+    try {
+      const response = await ServicesService.getById(service.id);
+      if (response.success) {
+        setViewingService(response.data || service);
+        setShowViewServiceModal(true);
+      }
+    } catch (error) {
+      toast.error('Failed to load service details');
+    }
+  };
+
+  const handleEditService = async (service: Service) => {
+    try {
+      setEditingService(service);
+      setEditServiceForm({
+        name: service.name,
+        category: service.category,
+        price: service.price.toString(),
+        durationMinutes: service.durationMinutes.toString(),
+        description: service.description,
+        isActive: service.isActive
+      });
+      setShowEditServiceModal(true);
+    } catch (error) {
+      toast.error('Failed to load service for editing');
+    }
+  };
+
+  const handleUpdateService = async () => {
+    if (!editingService || !editServiceForm.name || !editServiceForm.price || !editServiceForm.durationMinutes) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const serviceData = {
+        ...editServiceForm,
+        price: parseFloat(editServiceForm.price),
+        durationMinutes: parseInt(editServiceForm.durationMinutes)
+      };
+
+      const response = await ServicesService.update(editingService.id, serviceData);
+
+      if (response.success) {
+        setServices(prev => prev.map(s =>
+          s.id === editingService.id ? { ...s, ...serviceData } : s
+        ));
+        toast.success('Service updated successfully!');
+        setShowEditServiceModal(false);
+        setEditingService(null);
+        setEditServiceForm({
+          name: '',
+          category: 'haircut',
+          price: '',
+          durationMinutes: '',
+          description: '',
+          isActive: true
+        });
+      }
+    } catch (error) {
+      toast.error('Failed to update service');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteService = async (service: Service) => {
+    if (!window.confirm(`Are you sure you want to delete ${service.name}? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const response = await ServicesService.delete(service.id);
+      if (response.success) {
+        setServices(prev => prev.filter(s => s.id !== service.id));
+        toast.success('Service deleted successfully');
+      }
+    } catch (error) {
+      toast.error('Failed to delete service');
+    }
+  };
+
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setCategoryFilter('all');
+    setSortBy('createdAt');
+    setSortOrder('desc');
+    setPriceRange('all');
+  };
+
+  const getPriceRangeFilter = (range: string) => {
+    switch (range) {
+      case 'budget':
+        return { min: 0, max: 50 };
+      case 'mid':
+        return { min: 50, max: 150 };
+      case 'premium':
+        return { min: 150, max: 999999 };
+      default:
+        return undefined;
+    }
+  };
+
+  const handleToggleServiceStatus = async (service: Service) => {
+    try {
+      const response = await ServicesService.toggleStatus(service.id, !service.isActive);
+      if (response.success) {
+        setServices(prev => prev.map(s =>
+          s.id === service.id ? { ...s, isActive: !service.isActive } : s
+        ));
+        toast.success(`Service ${service.isActive ? 'deactivated' : 'activated'} successfully`);
+      }
+    } catch (error) {
+      toast.error('Failed to update service status');
+    }
+  };
+
+  const handleAddService = async () => {
+    if (!newServiceForm.name || !newServiceForm.price || !newServiceForm.durationMinutes) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const serviceData = {
+        ...newServiceForm,
+        price: parseFloat(newServiceForm.price),
+        durationMinutes: parseInt(newServiceForm.durationMinutes)
+      };
+
+      const response = await ServicesService.create(serviceData);
+
+      if (response.success) {
+        setServices(prev => [response.data, ...prev]);
+        toast.success('Service added successfully!');
+        setShowAddServiceModal(false);
+        setNewServiceForm({
+          name: '',
+          category: 'haircut',
+          price: '',
+          durationMinutes: '',
+          description: '',
+          isActive: true
+        });
+      }
+    } catch (error) {
+      toast.error('Failed to add service');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (authLoading || loading) {
     return (
@@ -233,6 +424,13 @@ export default function ServicesPage() {
               </div>
             </div>
             <div className="flex items-center gap-4">
+              <button
+                onClick={() => setShowAddServiceModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+              >
+                <Plus size={20} />
+                <span>Add Service</span>
+              </button>
               <button className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600">
                 <Download size={20} />
                 <span>Export</span>
@@ -403,13 +601,25 @@ export default function ServicesPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center gap-2">
-                            <button className="text-gray-600 hover:text-gray-900" title="View">
+                            <button
+                              onClick={() => handleViewService(service)}
+                              className="text-gray-600 hover:text-gray-900"
+                              title="View"
+                            >
                               <Eye size={16} />
                             </button>
-                            <button className="text-gray-600 hover:text-gray-900" title="Edit">
+                            <button
+                              onClick={() => handleEditService(service)}
+                              className="text-gray-600 hover:text-gray-900"
+                              title="Edit"
+                            >
                               <Edit size={16} />
                             </button>
-                            <button className="text-red-600 hover:text-red-900" title="Delete">
+                            <button
+                              onClick={() => handleDeleteService(service)}
+                              className="text-red-600 hover:text-red-900"
+                              title="Delete"
+                            >
                               <Trash2 size={16} />
                             </button>
                           </div>
@@ -423,6 +633,335 @@ export default function ServicesPage() {
           </div>
         </div>
       </div>
+
+      {/* Add Service Modal */}
+      {showAddServiceModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto animate-scale-in">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                  <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center">
+                    <Plus className="text-white" size={20} />
+                  </div>
+                  Add New Service
+                </h3>
+                <button
+                  onClick={() => setShowAddServiceModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Service Name *</label>
+                  <input
+                    type="text"
+                    value={newServiceForm.name}
+                    onChange={(e) => setNewServiceForm(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    placeholder="Enter service name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                  <select
+                    value={newServiceForm.category}
+                    onChange={(e) => setNewServiceForm(prev => ({ ...prev, category: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  >
+                    <option value="haircut">Haircut</option>
+                    <option value="beard">Beard</option>
+                    <option value="color">Color</option>
+                    <option value="treatment">Treatment</option>
+                    <option value="styling">Styling</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Price ($) *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={newServiceForm.price}
+                    onChange={(e) => setNewServiceForm(prev => ({ ...prev, price: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Duration (minutes) *</label>
+                  <input
+                    type="number"
+                    value={newServiceForm.durationMinutes}
+                    onChange={(e) => setNewServiceForm(prev => ({ ...prev, durationMinutes: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    placeholder="30"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea
+                  value={newServiceForm.description}
+                  onChange={(e) => setNewServiceForm(prev => ({ ...prev, description: e.target.value }))}
+                  rows={3}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  placeholder="Enter service description"
+                />
+              </div>
+
+              <div className="mt-6">
+                <label className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={newServiceForm.isActive}
+                    onChange={(e) => setNewServiceForm(prev => ({ ...prev, isActive: e.target.checked }))}
+                    className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Active Service</span>
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-8">
+                <button
+                  onClick={() => setShowAddServiceModal(false)}
+                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddService}
+                  disabled={isSubmitting}
+                  className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? 'Adding...' : 'Add Service'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Service Modal */}
+      {showEditServiceModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto animate-scale-in">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
+                    <Edit className="text-white" size={20} />
+                  </div>
+                  Edit Service
+                </h3>
+                <button
+                  onClick={() => setShowEditServiceModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Service Name *</label>
+                  <input
+                    type="text"
+                    value={editServiceForm.name}
+                    onChange={(e) => setEditServiceForm(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter service name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                  <select
+                    value={editServiceForm.category}
+                    onChange={(e) => setEditServiceForm(prev => ({ ...prev, category: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="haircut">Haircut</option>
+                    <option value="beard">Beard</option>
+                    <option value="color">Color</option>
+                    <option value="treatment">Treatment</option>
+                    <option value="styling">Styling</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Price ($) *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editServiceForm.price}
+                    onChange={(e) => setEditServiceForm(prev => ({ ...prev, price: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Duration (minutes) *</label>
+                  <input
+                    type="number"
+                    value={editServiceForm.durationMinutes}
+                    onChange={(e) => setEditServiceForm(prev => ({ ...prev, durationMinutes: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="30"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea
+                  value={editServiceForm.description}
+                  onChange={(e) => setEditServiceForm(prev => ({ ...prev, description: e.target.value }))}
+                  rows={3}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter service description"
+                />
+              </div>
+
+              <div className="mt-6">
+                <label className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={editServiceForm.isActive}
+                    onChange={(e) => setEditServiceForm(prev => ({ ...prev, isActive: e.target.checked }))}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Active Service</span>
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-8">
+                <button
+                  onClick={() => setShowEditServiceModal(false)}
+                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUpdateService}
+                  disabled={isSubmitting}
+                  className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? 'Updating...' : 'Update Service'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Service Modal */}
+      {showViewServiceModal && viewingService && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto animate-scale-in">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                  <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center">
+                    <Eye className="text-white" size={20} />
+                  </div>
+                  Service Details
+                </h3>
+                <button
+                  onClick={() => setShowViewServiceModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Service Info Section */}
+                <div className="bg-gray-50 rounded-xl p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
+                      <Scissors className="text-purple-600" size={32} />
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900">{viewingService.name}</h4>
+                      <p className="text-sm text-gray-500 capitalize">{viewingService.category}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <DollarSign className="text-gray-400" size={16} />
+                      <span className="text-sm text-gray-700">${viewingService.price.toFixed(2)}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Clock className="text-gray-400" size={16} />
+                      <span className="text-sm text-gray-700">{viewingService.durationMinutes} minutes</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Calendar className="text-gray-400" size={16} />
+                      <span className="text-sm text-gray-700">Created {new Date(viewingService.createdAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Status Section */}
+                <div className="bg-gray-50 rounded-xl p-6">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Service Status</h4>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Availability</span>
+                      <span className={`px-3 py-1 text-xs rounded-full ${viewingService.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {viewingService.isActive ? 'Available' : 'Unavailable'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Category</span>
+                      <span className="px-3 py-1 text-xs rounded-full bg-purple-100 text-purple-800 capitalize">
+                        {viewingService.category}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Service ID</span>
+                      <span className="text-xs text-gray-500 font-mono">{viewingService.id}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Description Section */}
+              {viewingService.description && (
+                <div className="mt-6 bg-gray-50 rounded-xl p-6">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Description</h4>
+                  <p className="text-sm text-gray-700 leading-relaxed">{viewingService.description}</p>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3 mt-8">
+                <button
+                  onClick={() => {
+                    setShowViewServiceModal(false);
+                    handleEditService(viewingService);
+                  }}
+                  className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  Edit Service
+                </button>
+                <button
+                  onClick={() => setShowViewServiceModal(false)}
+                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   );
 }
