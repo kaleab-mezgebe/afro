@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../features/auth/presentation/pages/auth_page.dart';
 import '../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../features/shop/presentation/pages/shop_management_page.dart';
@@ -116,7 +115,7 @@ class _MainNavigationState extends State<MainNavigation> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 30,
               offset: const Offset(0, -10),
             ),

@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../../core/services/auth_api_service.dart';
 import '../../../routes/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/afro_theme.dart';
@@ -73,6 +75,29 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
       debugPrint('Error loading preferences: $e');
     }
 
+    // Check if user is already logged in to Firebase
+    final currentUser = FirebaseAuth.instance.currentUser;
+    bool isBackendVerified = false;
+
+    debugPrint('[DEBUG] Current Firebase User: ${currentUser?.uid}');
+
+    if (currentUser != null && !showOnboarding) {
+      try {
+        debugPrint('[DEBUG] Starting backend verification for existing session');
+        // We need to ensure the user exists in our SQL backend too
+        final authApiService = Get.find<AuthApiService>();
+        final idToken = await currentUser.getIdToken(true); // force refresh
+        debugPrint('[DEBUG] ID Token obtained, verifying with backend...');
+        final result = await authApiService.verifyToken(idToken!);
+        isBackendVerified = result != null;
+        debugPrint('[DEBUG] Backend verification result: $isBackendVerified');
+      } catch (e) {
+        debugPrint('[ERROR] Backend verification failed: $e');
+        // If backend verification fails, we shouldn't proceed as verified
+        isBackendVerified = false; 
+      }
+    }
+
     // Ensure we wait at least 3 seconds total
     final remainingTime = 3000 - stopwatch.elapsedMilliseconds;
     if (remainingTime > 0) {
@@ -81,6 +106,8 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
 
     if (showOnboarding) {
       Get.offAllNamed(AppRoutes.onboarding);
+    } else if (currentUser != null && isBackendVerified) {
+      Get.offAllNamed(AppRoutes.home);
     } else {
       Get.offAllNamed(AppRoutes.phoneAuth);
     }

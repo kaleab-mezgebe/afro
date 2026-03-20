@@ -94,7 +94,7 @@ class ShegabetAnimations {
       builder: (context, scale, child) {
         return AnimatedContainer(
           duration: duration,
-          transform: Matrix4.identity()..scale(scale, scale, 1.0),
+          transform: Matrix4.diagonal3Values(scale, scale, 1.0),
           child: child,
         );
       },

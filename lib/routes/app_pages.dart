@@ -26,8 +26,7 @@ import '../features/profile/views/profile_page.dart';
 import '../features/profile/views/settings_page.dart';
 import '../features/search/bindings/search_binding.dart';
 import '../features/search/views/search_page.dart' as search;
-import '../features/splash/views/splash_page_simple.dart';
-
+import '../features/splash/views/splash_page.dart';
 import 'app_routes.dart';
 
 class AppPages {

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../network/api_client.dart';
 
 class PaymentService {
@@ -11,7 +12,7 @@ class PaymentService {
       final response = await _apiClient.get('/providers/wallet');
       return response.data;
     } catch (e) {
-      print('Error getting wallet balance: $e');
+      debugPrint('Error getting wallet balance: $e');
       rethrow;
     }
   }
@@ -35,7 +36,7 @@ class PaymentService {
 
       return response.data as List<dynamic>;
     } catch (e) {
-      print('Error getting transactions: $e');
+      debugPrint('Error getting transactions: $e');
       rethrow;
     }
   }
@@ -58,7 +59,7 @@ class PaymentService {
       final response = await _apiClient.post('/providers/withdraw', data: data);
       return response.data;
     } catch (e) {
-      print('Error requesting withdrawal: $e');
+      debugPrint('Error requesting withdrawal: $e');
       rethrow;
     }
   }
@@ -82,7 +83,7 @@ class PaymentService {
 
       return response.data as List<dynamic>;
     } catch (e) {
-      print('Error getting withdrawals: $e');
+      debugPrint('Error getting withdrawals: $e');
       rethrow;
     }
   }
@@ -108,7 +109,7 @@ class PaymentService {
 
       return response.data;
     } catch (e) {
-      print('Error getting earnings: $e');
+      debugPrint('Error getting earnings: $e');
       rethrow;
     }
   }
@@ -119,7 +120,7 @@ class PaymentService {
       final response = await _apiClient.get('/providers/payment-settings');
       return response.data;
     } catch (e) {
-      print('Error getting payment settings: $e');
+      debugPrint('Error getting payment settings: $e');
       rethrow;
     }
   }
@@ -144,7 +145,7 @@ class PaymentService {
       );
       return response.data;
     } catch (e) {
-      print('Error updating payment settings: $e');
+      debugPrint('Error updating payment settings: $e');
       rethrow;
     }
   }
@@ -155,7 +156,7 @@ class PaymentService {
       final response = await _apiClient.get('/providers/payout-schedule');
       return response.data;
     } catch (e) {
-      print('Error getting payout schedule: $e');
+      debugPrint('Error getting payout schedule: $e');
       rethrow;
     }
   }
@@ -177,7 +178,7 @@ class PaymentService {
       );
       return response.data;
     } catch (e) {
-      print('Error confirming cash payment: $e');
+      debugPrint('Error confirming cash payment: $e');
       rethrow;
     }
   }

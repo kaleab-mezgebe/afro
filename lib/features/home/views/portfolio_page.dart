@@ -173,7 +173,7 @@ class _PortfolioPageState extends State<PortfolioPage> {
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          Colors.black.withOpacity(0.7),
+                          Colors.black.withValues(alpha: 0.7),
                         ],
                       ),
                     ),
@@ -270,7 +270,7 @@ class _PortfolioPageState extends State<PortfolioPage> {
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? AppTheme.primaryYellow.withOpacity(0.1)
+                              ? AppTheme.primaryYellow.withValues(alpha: 0.1)
                               : Colors.white,
                           border: Border.all(
                             color: isSelected
@@ -457,7 +457,7 @@ class _PortfolioPageState extends State<PortfolioPage> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, -2),
             ),

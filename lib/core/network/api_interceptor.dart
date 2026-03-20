@@ -6,20 +6,35 @@ import '../utils/logger.dart';
 class ApiInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    AppLogger.d('API Request: ${options.method} ${options.uri}');
+    final timestamp = DateTime.now().toIso8601String();
+    AppLogger.d('----------------------------------------');
+    AppLogger.d('🚀 API REQUEST [$timestamp]');
+    AppLogger.d('Method:  ${options.method}');
+    AppLogger.d('URL:     ${options.uri}');
     AppLogger.d('Headers: ${options.headers}');
     if (options.data != null) {
-      AppLogger.d('Data: ${options.data}');
+      AppLogger.d('Payload: ${options.data}');
     }
+    AppLogger.d('----------------------------------------');
+    
+    options.extra['startTime'] = DateTime.now().millisecondsSinceEpoch;
     super.onRequest(options, handler);
   }
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    AppLogger.d(
-      'API Response: ${response.statusCode} ${response.requestOptions.uri}',
-    );
-    AppLogger.d('Data: ${response.data}');
+    final timestamp = DateTime.now().toIso8601String();
+    final startTime = response.requestOptions.extra['startTime'] as int?;
+    final duration = startTime != null 
+        ? '${DateTime.now().millisecondsSinceEpoch - startTime}ms' 
+        : 'unknown';
+
+    AppLogger.d('----------------------------------------');
+    AppLogger.d('✅ API RESPONSE [$timestamp] - Duration: $duration');
+    AppLogger.d('Status:  ${response.statusCode} ${response.statusMessage ?? ''}');
+    AppLogger.d('URL:     ${response.requestOptions.uri}');
+    AppLogger.d('Data:    ${response.data}');
+    AppLogger.d('----------------------------------------');
     super.onResponse(response, handler);
   }
 

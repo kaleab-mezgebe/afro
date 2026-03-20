@@ -6,20 +6,35 @@ class ApiInterceptor extends Interceptor {
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    _logger.d('API Request: ${options.method} ${options.uri}');
+    final timestamp = DateTime.now().toIso8601String();
+    _logger.d('----------------------------------------');
+    _logger.d('🚀 PROVIDER API REQUEST [$timestamp]');
+    _logger.d('Method:  ${options.method}');
+    _logger.d('URL:     ${options.uri}');
     _logger.d('Headers: ${options.headers}');
     if (options.data != null) {
-      _logger.d('Data: ${options.data}');
+      _logger.d('Payload: ${options.data}');
     }
+    _logger.d('----------------------------------------');
+    
+    options.extra['startTime'] = DateTime.now().millisecondsSinceEpoch;
     super.onRequest(options, handler);
   }
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    _logger.d(
-      'API Response: ${response.statusCode} ${response.requestOptions.uri}',
-    );
-    _logger.d('Data: ${response.data}');
+    final timestamp = DateTime.now().toIso8601String();
+    final startTime = response.requestOptions.extra['startTime'] as int?;
+    final duration = startTime != null 
+        ? '${DateTime.now().millisecondsSinceEpoch - startTime}ms' 
+        : 'unknown';
+
+    _logger.d('----------------------------------------');
+    _logger.d('✅ PROVIDER API RESPONSE [$timestamp] - Duration: $duration');
+    _logger.d('Status:  ${response.statusCode} ${response.statusMessage ?? ''}');
+    _logger.d('URL:     ${response.requestOptions.uri}');
+    _logger.d('Data:    ${response.data}');
+    _logger.d('----------------------------------------');
     super.onResponse(response, handler);
   }
 

@@ -18,27 +18,28 @@ class _OnboardingPageState extends State<OnboardingPage>
   int _currentPage = 0;
   late AnimationController _fadeController;
   late AnimationController _scaleController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
 
   final List<OnboardingData> _pages = [
     OnboardingData(
       title: "Being a Barber is about taking care of People",
       description:
           "Experience the art of grooming in a premium salon environment designed for your comfort and style.",
-      image: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=800&auto=format&fit=crop",
+      image:
+          "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=800&auto=format&fit=crop",
     ),
     OnboardingData(
       title: "Crafting the Perfect Look is an Art Form",
       description:
           "Our master barbers use precision techniques to deliver personalized results that define your unique identity.",
-      image: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=800&auto=format&fit=crop",
+      image:
+          "https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=800&auto=format&fit=crop",
     ),
     OnboardingData(
       title: "Every Cut Tells a Unique Story",
       description:
           "Your journey to a better look starts here. Book your next appointment with just a few taps.",
-      image: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=800&auto=format&fit=crop",
+      image:
+          "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=800&auto=format&fit=crop",
     ),
   ];
 
@@ -52,12 +53,6 @@ class _OnboardingPageState extends State<OnboardingPage>
     _scaleController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
-    );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
-    );
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(parent: _scaleController, curve: Curves.elasticOut),
     );
     _fadeController.forward();
     _scaleController.forward();
@@ -86,7 +81,7 @@ class _OnboardingPageState extends State<OnboardingPage>
       body: GestureDetector(
         onHorizontalDragEnd: (details) {
           if (details.primaryVelocity == null) return;
-          
+
           // Swipe Left (Go Next)
           if (details.primaryVelocity! < -500) {
             HapticFeedback.lightImpact();
@@ -98,7 +93,7 @@ class _OnboardingPageState extends State<OnboardingPage>
               });
             }
           }
-          
+
           // Swipe Right (Go Previous)
           if (details.primaryVelocity! > 500) {
             HapticFeedback.lightImpact();
@@ -126,15 +121,16 @@ class _OnboardingPageState extends State<OnboardingPage>
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 1200),
                 transitionBuilder: (child, animation) {
-                  final scaleAnimation = Tween<double>(begin: 1.1, end: 1.0).animate(
-                    CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-                  );
+                  final scaleAnimation = Tween<double>(begin: 1.1, end: 1.0)
+                      .animate(
+                        CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeOutCubic,
+                        ),
+                      );
                   return FadeTransition(
                     opacity: animation,
-                    child: ScaleTransition(
-                      scale: scaleAnimation,
-                      child: child,
-                    ),
+                    child: ScaleTransition(scale: scaleAnimation, child: child),
                   );
                 },
                 child: SizedBox(
@@ -147,14 +143,16 @@ class _OnboardingPageState extends State<OnboardingPage>
                           fit: BoxFit.cover,
                           width: double.infinity,
                           height: double.infinity,
-                          errorBuilder: (context, error, stackTrace) => _buildImagePlaceholder(),
+                          errorBuilder: (context, error, stackTrace) =>
+                              _buildImagePlaceholder(),
                         )
                       : Image.asset(
                           data.image,
                           fit: BoxFit.cover,
                           width: double.infinity,
                           height: double.infinity,
-                          errorBuilder: (context, error, stackTrace) => _buildImagePlaceholder(),
+                          errorBuilder: (context, error, stackTrace) =>
+                              _buildImagePlaceholder(),
                         ),
                 ),
               ),
@@ -225,23 +223,33 @@ class _OnboardingPageState extends State<OnboardingPage>
                           return FadeTransition(
                             opacity: animation,
                             child: SlideTransition(
-                              position: Tween<Offset>(
-                                begin: const Offset(0, 0.1),
-                                end: Offset.zero,
-                              ).animate(CurvedAnimation(
-                                parent: animation,
-                                curve: Curves.easeOutBack,
-                              )),
+                              position:
+                                  Tween<Offset>(
+                                    begin: const Offset(0, 0.1),
+                                    end: Offset.zero,
+                                  ).animate(
+                                    CurvedAnimation(
+                                      parent: animation,
+                                      curve: Curves.easeOutBack,
+                                    ),
+                                  ),
                               child: ScaleTransition(
-                                scale: Tween<double>(begin: 0.95, end: 1.0).animate(
-                                  CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
-                                ),
+                                scale: Tween<double>(begin: 0.95, end: 1.0)
+                                    .animate(
+                                      CurvedAnimation(
+                                        parent: animation,
+                                        curve: Curves.easeOutBack,
+                                      ),
+                                    ),
                                 child: child,
                               ),
                             ),
                           );
                         },
-                        child: _buildHighlightedTitle(data.title, key: ValueKey(data.title)),
+                        child: _buildHighlightedTitle(
+                          data.title,
+                          key: ValueKey(data.title),
+                        ),
                       ),
                     ),
                   ),
@@ -259,13 +267,20 @@ class _OnboardingPageState extends State<OnboardingPage>
                           return FadeTransition(
                             opacity: animation,
                             child: SlideTransition(
-                              position: Tween<Offset>(
-                                begin: const Offset(0, 0.1),
-                                end: Offset.zero,
-                              ).animate(CurvedAnimation(
-                                parent: animation,
-                                curve: const Interval(0.2, 1.0, curve: Curves.easeOut),
-                              )),
+                              position:
+                                  Tween<Offset>(
+                                    begin: const Offset(0, 0.1),
+                                    end: Offset.zero,
+                                  ).animate(
+                                    CurvedAnimation(
+                                      parent: animation,
+                                      curve: const Interval(
+                                        0.2,
+                                        1.0,
+                                        curve: Curves.easeOut,
+                                      ),
+                                    ),
+                                  ),
                               child: child,
                             ),
                           );

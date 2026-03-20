@@ -15,6 +15,14 @@ class SearchRepositoryImpl implements SearchRepository {
   SearchRepositoryImpl({required LocalStorage localStorage})
     : _localStorage = localStorage;
 
+  double _toDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
   @override
   Future<List<Provider>> searchProviders(SearchFilter filter) async {
     try {
@@ -30,11 +38,11 @@ class SearchRepositoryImpl implements SearchRepository {
           id: json['id'] ?? '',
           name: json['name'] ?? 'Unknown',
           category: json['category'] ?? 'barber',
-          rating: (json['rating'] ?? 0.0).toDouble(),
+          rating: _toDouble(json['rating']),
           location: json['address'] ?? json['location'] ?? '',
           services: List<String>.from(json['services'] ?? []),
-          minPrice: (json['minPrice'] ?? 0.0).toDouble(),
-          maxPrice: (json['maxPrice'] ?? 0.0).toDouble(),
+          minPrice: _toDouble(json['minPrice']),
+          maxPrice: _toDouble(json['maxPrice']),
           imageUrl: json['imageUrl'] ?? 'https://picsum.photos/seed/${json['id']}/200/200',
           reviewCount: json['totalReviews'] ?? 0,
           isVerified: json['isVerified'] ?? false,

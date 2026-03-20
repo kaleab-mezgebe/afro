@@ -46,6 +46,6 @@ class MapHelper {
           size.height.toInt(),
         );
     final ByteData? byteData = await markerAsImage.toByteData(format: ui.ImageByteFormat.png);
-    return BitmapDescriptor.fromBytes(byteData!.buffer.asUint8List());
+    return BitmapDescriptor.bytes(byteData!.buffer.asUint8List());
   }
 }

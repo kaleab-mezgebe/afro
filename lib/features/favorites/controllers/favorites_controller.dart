@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 
+import '../../../core/services/favorite_api_service.dart';
+import '../../../routes/app_routes.dart';
 
 class FavoritesController extends GetxController {
+  final FavoriteApiService _favoriteApiService;
+
+  FavoritesController({required FavoriteApiService favoriteApiService})
+    : _favoriteApiService = favoriteApiService;
+
   final RxList<Map<String, dynamic>> favorites = <Map<String, dynamic>>[].obs;
   final RxBool isLoading = false.obs;
 
@@ -17,34 +22,15 @@ class FavoritesController extends GetxController {
   Future<void> loadFavorites() async {
     try {
       isLoading.value = true;
-      
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        favorites.clear();
-        isLoading.value = false;
-        return;
-      }
-
-      final snapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .collection('favorites')
-          .get();
-
-      final favoritesList = snapshot.docs.map((doc) {
-        final data = doc.data();
-        return {
-          'id': doc.id,
-          ...data,
-        };
-      }).toList();
-      
-      favorites.assignAll(favoritesList);
+      final data = await _favoriteApiService.getFavorites();
+      favorites.assignAll(data.cast<Map<String, dynamic>>());
     } catch (e) {
       Get.snackbar(
         'Error',
-        'Failed to load favorites: $e',
+        'Failed to load favorites',
         snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
       );
     } finally {
       isLoading.value = false;
@@ -52,63 +38,47 @@ class FavoritesController extends GetxController {
   }
 
   Future<void> addToFavorites(Map<String, dynamic> provider) async {
+    final barberId = provider['id']?.toString();
+    if (barberId == null) return;
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
-
-      final docRef = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .collection('favorites')
-          .add({
-            ...provider,
-            'createdAt': FieldValue.serverTimestamp(),
-          });
-
-      favorites.add({
-        'id': docRef.id,
-        ...provider,
-      });
-
+      await _favoriteApiService.addFavorite(barberId);
+      await loadFavorites();
       Get.snackbar(
         'Added to Favorites',
-        '${provider['name']} has been added to your favorites',
+        '${provider['name'] ?? 'Provider'} added to favorites',
         snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
       );
     } catch (e) {
       Get.snackbar(
         'Error',
-        'Failed to add to favorites: $e',
+        'Failed to add to favorites',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
     }
   }
 
-  Future<void> removeFromFavorites(String favoriteId) async {
+  Future<void> removeFromFavorites(String barberId) async {
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
-
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .collection('favorites')
-          .doc(favoriteId)
-          .delete();
-
-      favorites.removeWhere((fav) => fav['id'] == favoriteId);
-
+      await _favoriteApiService.removeFavorite(barberId);
+      favorites.removeWhere(
+        (fav) =>
+            fav['id']?.toString() == barberId ||
+            fav['barberId']?.toString() == barberId,
+      );
       Get.snackbar(
-        'Removed from Favorites',
-        'Provider has been removed from your favorites',
+        'Removed',
+        'Removed from favorites',
+        snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.orange,
         colorText: Colors.white,
       );
     } catch (e) {
       Get.snackbar(
         'Error',
-        'Failed to remove from favorites: $e',
+        'Failed to remove from favorites',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -120,27 +90,23 @@ class FavoritesController extends GetxController {
   }
 
   void navigateToProvider(Map<String, dynamic> provider) {
-    // Navigate to provider details page
-    // This can be expanded later to show provider details
-    Get.snackbar(
-      'Provider Details',
-      'Navigating to ${provider['name']} details',
-      backgroundColor: Colors.blue,
-      colorText: Colors.white,
+    Get.toNamed(AppRoutes.portfolio, arguments: provider);
+  }
+
+  bool isFavorited(String barberId) {
+    return favorites.any(
+      (fav) =>
+          fav['id']?.toString() == barberId ||
+          fav['barberId']?.toString() == barberId,
     );
   }
 
-  bool isFavorited(String providerId) {
-    return favorites.any((fav) => (fav['id']?.toString() == providerId) || (fav['providerId']?.toString() == providerId));
-  }
-
   Future<void> toggleFavorite(Map<String, dynamic> provider) async {
-    final providerId = provider['id']?.toString();
-    if (providerId == null) return;
+    final barberId = provider['id']?.toString();
+    if (barberId == null) return;
 
-    if (isFavorited(providerId)) {
-      final favorite = favorites.firstWhere((fav) => (fav['id']?.toString() == providerId) || (fav['providerId']?.toString() == providerId));
-      await removeFromFavorites(favorite['id']);
+    if (isFavorited(barberId)) {
+      await removeFromFavorites(barberId);
     } else {
       await addToFavorites(provider);
     }

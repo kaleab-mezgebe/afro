@@ -13,6 +13,7 @@ class SearchPage extends GetView<search_ctrl.SearchController> {
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: Obx(() => FloatingActionButton.extended(
+        heroTag: 'search_map_fab',
         onPressed: controller.toggleMap,
         backgroundColor: AppTheme.primaryYellow,
         foregroundColor: AppTheme.black,
@@ -447,48 +448,6 @@ class SearchPage extends GetView<search_ctrl.SearchController> {
     );
   }
 
-  Widget _buildActionItem(
-    String title,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-  ) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          decoration: BoxDecoration(
-            color: AppTheme.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.grey200),
-            boxShadow: [
-              BoxShadow(
-                color: color.withValues(alpha: 0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              Icon(icon, color: color, size: 28),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.black,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildNearbyPreview() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
@@ -691,7 +650,7 @@ class SearchPage extends GetView<search_ctrl.SearchController> {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
@@ -714,7 +673,7 @@ class SearchPage extends GetView<search_ctrl.SearchController> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: AppTheme.primaryYellow.withOpacity(0.1),
+                              color: AppTheme.primaryYellow.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(

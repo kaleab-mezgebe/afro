@@ -1,34 +1,19 @@
-import 'dart:convert';
+import 'package:firebase_auth/firebase_auth.dart';
 
+import '../../core/services/customer_api_service.dart';
 import '../../domain/entities/profile.dart';
 import '../../domain/repositories/profile_repository.dart';
-import '../datasources/local/local_storage.dart';
 
 class ProfileRepositoryImpl implements ProfileRepository {
-  final LocalStorage _localStorage;
+  final CustomerApiService _customerApiService;
 
-  ProfileRepositoryImpl({required LocalStorage localStorage})
-    : _localStorage = localStorage;
+  ProfileRepositoryImpl({required CustomerApiService customerApiService})
+    : _customerApiService = customerApiService;
 
   @override
   Future<Profile> getCurrentProfile() async {
-    final profileJson = await _localStorage.get('current_profile');
-    if (profileJson != null) {
-      return Profile.fromJson(jsonDecode(profileJson));
-    }
-    
-    // Return default profile if none exists
-    final defaultProfile = Profile(
-      id: 'default_profile',
-      name: 'Kaleab Mezgebe',
-      email: 'john.doe@example.com',
-      phoneNumber: '+1234567890',
-      bio: 'Welcome to my profile!',
-      preferences: ['haircut', 'beard_trim'],
-    );
-    
-    await _localStorage.save('current_profile', jsonEncode(defaultProfile.toJson()));
-    return defaultProfile;
+    final data = await _customerApiService.getProfile();
+    return _mapToProfile(data);
   }
 
   @override
@@ -40,18 +25,13 @@ class ProfileRepositoryImpl implements ProfileRepository {
     String? gender,
     DateTime? dateOfBirth,
   }) async {
-    final currentProfile = await getCurrentProfile();
-    final updatedProfile = currentProfile.copyWith(
-      name: name,
-      phoneNumber: phoneNumber,
-      avatar: avatar,
-      bio: bio,
-      gender: gender,
-      dateOfBirth: dateOfBirth,
-    );
-
-    await _localStorage.save('current_profile', jsonEncode(updatedProfile.toJson()));
-    return updatedProfile;
+    final data = await _customerApiService.updateProfile(gender: gender);
+    // Also update the user name via Firebase if needed
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null && name != user.displayName) {
+      await user.updateDisplayName(name);
+    }
+    return _mapToProfile(data);
   }
 
   @override
@@ -59,28 +39,53 @@ class ProfileRepositoryImpl implements ProfileRepository {
     required String currentPassword,
     required String newPassword,
   }) async {
-    // Mock implementation - in real app, this would call an API
-    await Future.delayed(const Duration(seconds: 1));
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) throw Exception('Not authenticated');
+
+    // Re-authenticate then update password
+    final credential = EmailAuthProvider.credential(
+      email: user.email!,
+      password: currentPassword,
+    );
+    await user.reauthenticateWithCredential(credential);
+    await user.updatePassword(newPassword);
   }
 
   @override
   Future<void> updatePreferences(List<String> preferences) async {
-    final currentProfile = await getCurrentProfile();
-    final updatedProfile = currentProfile.copyWith(preferences: preferences);
-    
-    await _localStorage.save('current_profile', jsonEncode(updatedProfile.toJson()));
+    await _customerApiService.updatePreferences({
+      'preferredServices': preferences,
+    });
   }
 
   @override
   Stream<Profile?> get profileChanges async* {
-    // In a real implementation, this would listen to profile changes
-    // For now, yield current profile and then listen for changes
-    while (true) {
-      await Future.delayed(const Duration(seconds: 1));
-      final profileJson = await _localStorage.get('current_profile');
-      if (profileJson != null) {
-        yield Profile.fromJson(jsonDecode(profileJson));
-      }
+    // Emit current profile once; real-time updates can be added later
+    try {
+      final profile = await getCurrentProfile();
+      yield profile;
+    } catch (_) {
+      yield null;
     }
+  }
+
+  Profile _mapToProfile(Map<String, dynamic> data) {
+    // Backend may nest under 'profile' or 'customer' key
+    final d =
+        (data['profile'] ?? data['customer'] ?? data) as Map<String, dynamic>;
+    final user = d['user'] as Map<String, dynamic>? ?? {};
+
+    return Profile(
+      id: d['id']?.toString() ?? user['id']?.toString() ?? '',
+      name: user['name']?.toString() ?? d['name']?.toString() ?? '',
+      email: user['email']?.toString() ?? d['email']?.toString() ?? '',
+      phoneNumber: user['phone']?.toString() ?? d['phone']?.toString(),
+      avatar: d['avatar']?.toString() ?? user['avatar']?.toString(),
+      gender: d['gender']?.toString(),
+      dateOfBirth: d['dateOfBirth'] != null
+          ? DateTime.tryParse(d['dateOfBirth'].toString())
+          : null,
+      preferences: List<String>.from(d['preferredServices'] ?? []),
+    );
   }
 }

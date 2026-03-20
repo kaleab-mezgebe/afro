@@ -35,11 +35,12 @@ class FavoriteApiService {
       if (limit != null) queryParams['limit'] = limit;
 
       final response = await _apiClient.get(
-        '/favorites',
+        '/favorites/my',
         queryParameters: queryParams,
       );
 
-      return response.data as List<dynamic>;
+      final data = response.data['data'];
+      return (data is List) ? data : [];
     } catch (e) {
       AppLogger.e('Error getting favorites: $e');
       rethrow;
@@ -50,7 +51,7 @@ class FavoriteApiService {
   Future<bool> isFavorite(String barberId) async {
     try {
       final response = await _apiClient.get(
-        '/favorites/barber/$barberId/check',
+        '/favorites/check/$barberId',
       );
       return response.data['isFavorite'] ?? false;
     } catch (e) {

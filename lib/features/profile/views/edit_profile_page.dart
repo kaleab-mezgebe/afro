@@ -4,27 +4,36 @@ import 'package:get/get.dart';
 import '../controllers/profile_controller.dart';
 import '../../../core/theme/afro_theme.dart';
 
-class EditProfilePage extends GetView<ProfileController> {
-  EditProfilePage({super.key});
+class EditProfilePage extends StatefulWidget {
+  const EditProfilePage({super.key});
 
+  @override
+  State<EditProfilePage> createState() => _EditProfilePageState();
+}
+
+class _EditProfilePageState extends State<EditProfilePage> {
+  final ProfileController controller = Get.find<ProfileController>();
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _bioController = TextEditingController();
-  final _dateOfBirthController = TextEditingController();
+  
+  late final TextEditingController _nameController;
+  late final TextEditingController _phoneController;
+  late final TextEditingController _bioController;
+  late final TextEditingController _dateOfBirthController;
   
   String? _selectedGender;
   List<String> _selectedPreferences = [];
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
+    super.initState();
     final profile = controller.profile;
     
-    // Initialize controllers with current profile data
+    _nameController = TextEditingController(text: profile?.name ?? '');
+    _phoneController = TextEditingController(text: profile?.phoneNumber ?? '');
+    _bioController = TextEditingController(text: profile?.bio ?? '');
+    _dateOfBirthController = TextEditingController();
+    
     if (profile != null) {
-      _nameController.text = profile.name;
-      _phoneController.text = profile.phoneNumber ?? '';
-      _bioController.text = profile.bio ?? '';
       _selectedGender = profile.gender;
       _selectedPreferences = List.from(profile.preferences);
       
@@ -33,7 +42,19 @@ class EditProfilePage extends GetView<ProfileController> {
             '${profile.dateOfBirth!.day}/${profile.dateOfBirth!.month}/${profile.dateOfBirth!.year}';
       }
     }
+  }
 
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    _bioController.dispose();
+    _dateOfBirthController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Profile'),
@@ -85,7 +106,7 @@ class EditProfilePage extends GetView<ProfileController> {
                 
                 // Email Field (Read-only)
                 TextFormField(
-                  initialValue: profile?.email,
+                  initialValue: controller.profile?.email,
                   decoration: const InputDecoration(
                     labelText: 'Email',
                     hintText: 'Your email address',
@@ -122,7 +143,9 @@ class EditProfilePage extends GetView<ProfileController> {
                     DropdownMenuItem(value: 'Prefer not to say', child: Text('Prefer not to say')),
                   ],
                   onChanged: (value) {
-                    _selectedGender = value;
+                    setState(() {
+                      _selectedGender = value;
+                    });
                   },
                 ),
                 
@@ -248,11 +271,13 @@ class EditProfilePage extends GetView<ProfileController> {
           label: Text(preference),
           selected: isSelected,
           onSelected: (selected) {
-            if (selected) {
-              _selectedPreferences.add(preference);
-            } else {
-              _selectedPreferences.remove(preference);
-            }
+            setState(() {
+              if (selected) {
+                _selectedPreferences.add(preference);
+              } else {
+                _selectedPreferences.remove(preference);
+              }
+            });
           },
           backgroundColor: AfroTheme.cardColor,
           selectedColor: AfroTheme.primaryColor.withValues(alpha: 0.2),
@@ -264,15 +289,17 @@ class EditProfilePage extends GetView<ProfileController> {
 
   void _selectDateOfBirth() async {
     final DateTime? picked = await showDatePicker(
-      context: Get.context!,
+      context: context,
       initialDate: controller.profile?.dateOfBirth ?? DateTime.now(),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
     );
     
     if (picked != null) {
-      _dateOfBirthController.text = 
-          '${picked.day}/${picked.month}/${picked.year}';
+      setState(() {
+        _dateOfBirthController.text = 
+            '${picked.day}/${picked.month}/${picked.year}';
+      });
     }
   }
 

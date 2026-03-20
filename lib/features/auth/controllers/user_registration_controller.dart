@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -13,7 +15,6 @@ import '../../../data/datasources/local/local_storage.dart';
 class UserRegistrationController extends GetxController {
   final ImagePicker _imagePicker = ImagePicker();
   final FirebaseUserService _firebaseUserService = FirebaseUserService();
-  final LocalStorageImpl _localStorage = LocalStorageImpl();
 
   // Form fields
   final RxString firstName = ''.obs;

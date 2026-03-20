@@ -41,19 +41,17 @@ class FirebaseAuthRepositoryImpl implements AuthRepository {
       // Get profile from Firestore
       User? userProfile = await _firebaseUserService.getUserProfile(firebaseUser.uid);
 
-      if (userProfile == null) {
-        userProfile = await _firebaseUserService.saveUserProfile(
+      userProfile ??= await _firebaseUserService.saveUserProfile(
           uid: firebaseUser.uid,
           name: firebaseUser.displayName ?? 'User',
           email: firebaseUser.email!,
           phoneNumber: firebaseUser.phoneNumber,
           avatar: firebaseUser.photoURL,
         );
-      }
 
       // Sync with backend /auth/me to keep sync with Admin Panel
       final backendUser = await _authApiService.getCurrentUser();
-      if (backendUser != null) {
+      if (backendUser.isNotEmpty) {
         userProfile = userProfile.copyWith(
           name: backendUser['name'] ?? userProfile.name,
           phoneNumber: backendUser['phone'] ?? userProfile.phoneNumber,
@@ -103,7 +101,6 @@ class FirebaseAuthRepositoryImpl implements AuthRepository {
     }
   }
 
-  @override
   Future<User> registerWithFullProfile({
     required String name,
     required String email,

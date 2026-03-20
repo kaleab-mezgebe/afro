@@ -46,7 +46,8 @@ class AppointmentApiService {
         queryParameters: queryParams,
       );
 
-      return response.data as List<dynamic>;
+      final data = response.data['data'];
+      return (data is List) ? data : [];
     } catch (e) {
       AppLogger.e('Error getting my appointments: $e');
       rethrow;

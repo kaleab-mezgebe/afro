@@ -1,0 +1,155 @@
+﻿Analyzing customer_app...                                       
+
+warning - Unused import: 'package:google_fonts/google_fonts.dart' - afro_provider\lib\app\router.dart:3:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\app\router.dart:119:35 - deprecated_member_use
+   info - 'textScaleFactor' is deprecated and shouldn't be used. Use textScaler instead. Use of textScaleFactor was deprecated in preparation for the upcoming nonlinear text scaling support. This feature was deprecated after v3.12.0-2.0.pre - afro_provider\lib\core\utils\responsive_utils.dart:190:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\core\widgets\app_empty_state.dart:33:60 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\core\widgets\app_empty_state.dart:50:26 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\core\widgets\app_loading.dart:40:26 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\auth\presentation\pages\auth_page.dart:34:47 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\auth\presentation\pages\auth_page.dart:59:53 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\auth\presentation\pages\auth_page.dart:121:47 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\auth\presentation\pages\auth_page.dart:123:66 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\auth\presentation\pages\auth_page.dart:148:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\auth\widgets\login_form.dart:117:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\auth\widgets\register_form.dart:111:51 - deprecated_member_use
+   info - The variable name '_CustomerStatsCard' isn't a lowerCamelCase identifier - afro_provider\lib\features\customers\presentation\pages\customer_crm_page.dart:105:10 - non_constant_identifier_names
+   info - The variable name '_CustomerListCard' isn't a lowerCamelCase identifier - afro_provider\lib\features\customers\presentation\pages\customer_crm_page.dart:155:10 - non_constant_identifier_names
+   info - The variable name '_QuickActionsCard' isn't a lowerCamelCase identifier - afro_provider\lib\features\customers\presentation\pages\customer_crm_page.dart:183:10 - non_constant_identifier_names
+   info - The variable name '_StatItem' isn't a lowerCamelCase identifier - afro_provider\lib\features\customers\presentation\pages\customer_crm_page.dart:228:10 - non_constant_identifier_names
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\dashboard\presentation\pages\dashboard_page.dart:101:47 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\dashboard\presentation\pages\dashboard_page.dart:171:45 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\dashboard\presentation\pages\dashboard_page.dart:183:28 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\dashboard\presentation\pages\dashboard_page.dart:277:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\dashboard\presentation\pages\dashboard_page.dart:278:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\dashboard\presentation\pages\dashboard_page.dart:365:58 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\dashboard\presentation\widgets\quick_actions.dart:79:24 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\dashboard\presentation\widgets\quick_actions.dart:81:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\dashboard\presentation\widgets\quick_stats_grid.dart:105:40 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\dashboard\presentation\widgets\quick_stats_grid.dart:106:38 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\dashboard\presentation\widgets\recent_appointments.dart:71:56 - deprecated_member_use
+   info - Unnecessary escape in string literal - afro_provider\lib\features\dashboard\presentation\widgets\revenue_chart.dart:35:30 - unnecessary_string_escapes
+   info - Unnecessary escape in string literal - afro_provider\lib\features\dashboard\presentation\widgets\revenue_chart.dart:68:37 - unnecessary_string_escapes
+   info - Unnecessary escape in string literal - afro_provider\lib\features\dashboard\presentation\widgets\revenue_chart.dart:69:37 - unnecessary_string_escapes
+   info - Unnecessary escape in string literal - afro_provider\lib\features\dashboard\presentation\widgets\revenue_chart.dart:70:37 - unnecessary_string_escapes
+   info - Unnecessary escape in string literal - afro_provider\lib\features\dashboard\presentation\widgets\revenue_chart.dart:71:37 - unnecessary_string_escapes
+   info - Unnecessary escape in string literal - afro_provider\lib\features\dashboard\presentation\widgets\revenue_chart.dart:72:37 - unnecessary_string_escapes
+   info - Unnecessary escape in string literal - afro_provider\lib\features\dashboard\presentation\widgets\revenue_chart.dart:73:37 - unnecessary_string_escapes
+   info - Unnecessary escape in string literal - afro_provider\lib\features\dashboard\presentation\widgets\revenue_chart.dart:74:37 - unnecessary_string_escapes
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\dashboard\presentation\widgets\welcome_section.dart:14:44 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\dashboard\presentation\widgets\welcome_section.dart:38:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\dashboard\presentation\widgets\welcome_section.dart:45:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\dashboard\presentation\widgets\welcome_section.dart:55:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\portfolio\presentation\widgets\photo_grid.dart:105:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\portfolio\presentation\widgets\portfolio_stats_card.dart:76:22 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\shop\presentation\pages\shop_management_page.dart:64:79 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\shop\presentation\pages\shop_management_page.dart:97:55 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\shop\presentation\pages\shop_management_page.dart:100:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\shop\presentation\pages\shop_management_page.dart:136:58 - deprecated_member_use
+   info - Constructors for public widgets should have a named 'key' parameter - afro_provider\lib\features\shop\presentation\widgets\services_management_card.dart:79:9 - use_key_in_widget_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\shop\presentation\widgets\settings_card.dart:93:55 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\shop\presentation\widgets\shop_overview_card.dart:20:59 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\shop\presentation\widgets\shop_overview_card.dart:55:51 - deprecated_member_use
+   info - Constructors for public widgets should have a named 'key' parameter - afro_provider\lib\features\shop\presentation\widgets\staff_management_card.dart:77:9 - use_key_in_widget_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\shop\presentation\widgets\staff_management_card.dart:97:61 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\shop\presentation\widgets\working_hours_card.dart:72:51 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\shop\presentation\widgets\working_hours_card.dart:89:49 - deprecated_member_use
+   info - Unnecessary use of 'toList' in a spread - afro_provider\lib\features\shop\presentation\widgets\working_hours_card.dart:106:16 - unnecessary_to_list_in_spreads
+   info - The variable name '_StaffStatsCard' isn't a lowerCamelCase identifier - afro_provider\lib\features\staff\presentation\pages\staff_management_page.dart:54:10 - non_constant_identifier_names
+   info - The variable name '_StaffListCard' isn't a lowerCamelCase identifier - afro_provider\lib\features\staff\presentation\pages\staff_management_page.dart:85:10 - non_constant_identifier_names
+   info - The variable name '_QuickActionsCard' isn't a lowerCamelCase identifier - afro_provider\lib\features\staff\presentation\pages\staff_management_page.dart:109:10 - non_constant_identifier_names
+   info - The variable name '_StatItem' isn't a lowerCamelCase identifier - afro_provider\lib\features\staff\presentation\pages\staff_management_page.dart:150:10 - non_constant_identifier_names
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - afro_provider\lib\features\staff\presentation\widgets\staff_stats_card.dart:98:22 - deprecated_member_use
+   info - The imported package 'get' isn't a dependency of the importing package - afro_provider\lib\main.dart:6:8 - depend_on_referenced_packages
+   info - 'textScaleFactor' is deprecated and shouldn't be used. Use textScaler instead. Use of textScaleFactor was deprecated in preparation for the upcoming nonlinear text scaling support. This feature was deprecated after v3.12.0-2.0.pre - afro_provider\lib\main.dart:45:17 - deprecated_member_use
+   info - 'textScaleFactor' is deprecated and shouldn't be used. Use textScaler instead. Use of textScaleFactor was deprecated in preparation for the upcoming nonlinear text scaling support. This feature was deprecated after v3.12.0-2.0.pre - afro_provider\lib\main.dart:46:44 - deprecated_member_use
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:10:5 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:11:5 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:15:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:16:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:39:7 - avoid_print
+warning - The value of the local variable 'certBytes' isn't used - generate_key_hash.dart:42:13 - unused_local_variable
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:47:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:48:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:62:9 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:65:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:66:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:67:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:68:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:69:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:70:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:73:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:80:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:81:7 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:84:5 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:85:5 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:86:5 - avoid_print
+   info - Don't invoke 'print' in production code - generate_key_hash.dart:89:5 - avoid_print
+   info - 'scale' is deprecated and shouldn't be used. Use scaleByVector3, scaleByVector4, or scaleByDouble instead - lib\core\animations\shegabet_animations.dart:97:42 - deprecated_member_use
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\appointment_api_service.dart:21:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\appointment_api_service.dart:73:21 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\backend_api_service.dart:92:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:139:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:194:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:195:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:196:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:197:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:198:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:199:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:253:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:414:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:415:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:416:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:417:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:418:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\payment_api_service.dart:45:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\payment_api_service.dart:46:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\payment_api_service.dart:68:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\payment_api_service.dart:130:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\review_api_service.dart:19:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\review_api_service.dart:21:9 - use_null_aware_elements
+   info - 'fromBytes' is deprecated and shouldn't be used. Use BitmapDescriptor.bytes method instead - lib\core\utils\map_helper.dart:49:29 - deprecated_member_use
+   info - 'textScaleFactor' is deprecated and shouldn't be used. Use textScaler instead. Use of textScaleFactor was deprecated in preparation for the upcoming nonlinear text scaling support. This feature was deprecated after v3.12.0-2.0.pre - lib\core\utils\responsive_utils.dart:190:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\core\widgets\app_empty_state.dart:33:60 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\core\widgets\app_empty_state.dart:47:64 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\core\widgets\app_loading.dart:32:64 - deprecated_member_use
+warning - Unnecessary cast - lib\data\repositories\booking_repository_impl.dart:79:25 - unnecessary_cast
+warning - The operand can't be 'null', so the condition is always 'true' - lib\data\repositories\firebase_auth_repository_impl.dart:54:23 - unnecessary_null_comparison
+   info - Don't invoke 'print' in production code - lib\data\repositories\search_repository_impl.dart:44:7 - avoid_print
+   info - Unnecessary use of 'toList' in a spread - lib\features\appointments\views\booking_service_page.dart:53:91 - unnecessary_to_list_in_spreads
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\appointments\views\booking_service_page.dart:71:74 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\appointments\views\booking_service_page.dart:105:87 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\appointments\views\booking_service_page.dart:140:69 - deprecated_member_use
+   info - Missing type annotation - lib\features\appointments\views\booking_service_page.dart:147:29 - strict_top_level_inference
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\appointments\views\booking_service_page.dart:176:56 - deprecated_member_use
+   info - Missing type annotation - lib\features\appointments\views\booking_service_page.dart:197:28 - strict_top_level_inference
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\appointments\views\booking_service_page.dart:209:76 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\appointments\views\booking_service_page.dart:248:93 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\appointments\views\booking_service_page.dart:265:53 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\appointments\views\booking_service_page.dart:292:66 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\home\views\nearby_page.dart:229:36 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\home\views\nearby_page.dart:352:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\home\views\nearby_page.dart:396:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\home\views\portfolio_page.dart:176:40 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\home\views\portfolio_page.dart:273:56 - deprecated_member_use
+   info - Unnecessary use of 'toList' in a spread - lib\features\home\views\portfolio_page.dart:345:22 - unnecessary_to_list_in_spreads
+   info - Unnecessary use of 'toList' in a spread - lib\features\home\views\portfolio_page.dart:442:24 - unnecessary_to_list_in_spreads
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\home\views\portfolio_page.dart:460:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\home\widgets\home_header.dart:99:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\main\views\main_layout_page.dart:74:33 - deprecated_member_use
+   info - Unnecessary use of multiple underscores - lib\features\profile\views\profile_page.dart:211:48 - unnecessary_underscores
+
+flutter : 138 issues found. (ran 
+in 206.6s)
+At line:1 char:1
++ flutter analyze . 2>&1 | 
+Out-File -FilePath 
+"d:\customer_app\full_ana ...
++ ~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : Not 
+   Specified: (138 issues found.  
+   (ran in 206.6s):String) [],    
+ RemoteException
+    + FullyQualifiedErrorId : Nat 
+   iveCommandError
+ 

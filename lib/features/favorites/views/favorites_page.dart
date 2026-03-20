@@ -35,6 +35,7 @@ class FavoritesPage extends GetView<FavoritesController> {
       ),
       floatingActionButton: Obx(
         () => FloatingActionButton(
+          heroTag: 'favorites_refresh_fab',
           onPressed: controller.favorites.isNotEmpty
               ? controller.refreshFavorites
               : null,

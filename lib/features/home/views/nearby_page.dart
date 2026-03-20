@@ -226,7 +226,7 @@ class _NearByPageState extends State<NearByPage> {
                             (service) => Chip(
                               label: Text(service),
                               backgroundColor: AppTheme.primaryYellow
-                                  .withOpacity(0.1),
+                                  .withValues(alpha: 0.1),
                               labelStyle: const TextStyle(
                                 color: AppTheme.primaryYellow,
                                 fontSize: 12,
@@ -349,7 +349,7 @@ class _NearByPageState extends State<NearByPage> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -393,7 +393,7 @@ class _NearByPageState extends State<NearByPage> {
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 10,
                       offset: const Offset(0, -2),
                     ),

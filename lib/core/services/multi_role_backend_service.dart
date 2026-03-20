@@ -11,7 +11,7 @@ class MultiRoleBackendService {
   factory MultiRoleBackendService() => _instance;
   MultiRoleBackendService._internal();
 
-  final String _baseUrl = 'http://localhost:3001/api/v1';
+  final String _baseUrl = 'http://192.168.0.201:3001/api/v1';
   final Logger _logger = Logger();
 
   // Get current Firebase token
@@ -32,6 +32,7 @@ class MultiRoleBackendService {
     final token = await _getCurrentToken();
     final headers = {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
     };
     
     if (token != null) {
@@ -46,12 +47,13 @@ class MultiRoleBackendService {
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/auth/verify-token'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
         body: jsonEncode({'token': token}),
       );
 
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final Map<String, dynamic> body = jsonDecode(response.body);
+        return body.containsKey('data') ? body['data'] : body;
       } else {
         _logger.e('Token verification failed: ${response.body}');
         return null;
@@ -72,7 +74,8 @@ class MultiRoleBackendService {
       );
 
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+        final Map<String, dynamic> body = jsonDecode(response.body);
+        return body.containsKey('data') ? body['data'] : body;
       } else {
         _logger.e('Get current user failed: ${response.body}');
         return null;
@@ -145,11 +148,17 @@ class MultiRoleBackendService {
       };
 
       final uri = Uri.parse('$_baseUrl/barbers').replace(queryParameters: queryParams);
-      final response = await http.get(uri);
+      final headers = await _getHeaders();
+      final response = await http.get(uri, headers: headers);
       
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        return data.cast<Map<String, dynamic>>();
+        final Map<String, dynamic> body = jsonDecode(response.body);
+        final dynamic dataField = body.containsKey('data') ? body['data'] : body;
+        
+        if (dataField is List) {
+          return dataField.cast<Map<String, dynamic>>();
+        }
+        return [];
       } else {
         _logger.e('Get barbers failed: ${response.body}');
         return [];
@@ -220,11 +229,17 @@ class MultiRoleBackendService {
       };
 
       final uri = Uri.parse('$_baseUrl/services').replace(queryParameters: queryParams);
-      final response = await http.get(uri);
+      final headers = await _getHeaders();
+      final response = await http.get(uri, headers: headers);
       
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        return data.cast<Map<String, dynamic>>();
+        final Map<String, dynamic> body = jsonDecode(response.body);
+        final dynamic dataField = body.containsKey('data') ? body['data'] : body;
+        
+        if (dataField is List) {
+          return dataField.cast<Map<String, dynamic>>();
+        }
+        return [];
       } else {
         _logger.e('Get services failed: ${response.body}');
         return [];
@@ -260,7 +275,8 @@ class MultiRoleBackendService {
       );
 
       if (response.statusCode == 201) {
-        return jsonDecode(response.body);
+        final Map<String, dynamic> bodyJson = jsonDecode(response.body);
+        return bodyJson.containsKey('data') ? bodyJson['data'] : bodyJson;
       } else {
         _logger.e('Create appointment failed: ${response.body}');
         return null;
@@ -281,8 +297,13 @@ class MultiRoleBackendService {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        return data.cast<Map<String, dynamic>>();
+        final Map<String, dynamic> body = jsonDecode(response.body);
+        final dynamic dataField = body.containsKey('data') ? body['data'] : body;
+        
+        if (dataField is List) {
+          return dataField.cast<Map<String, dynamic>>();
+        }
+        return [];
       } else {
         _logger.e('Get appointments failed: ${response.body}');
         return [];
@@ -303,8 +324,13 @@ class MultiRoleBackendService {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        return data.cast<Map<String, dynamic>>();
+        final Map<String, dynamic> body = jsonDecode(response.body);
+        final dynamic dataField = body.containsKey('data') ? body['data'] : body;
+        
+        if (dataField is List) {
+          return dataField.cast<Map<String, dynamic>>();
+        }
+        return [];
       } else {
         _logger.e('Get barber appointments failed: ${response.body}');
         return [];
@@ -327,8 +353,13 @@ class MultiRoleBackendService {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        return data.cast<Map<String, dynamic>>();
+        final Map<String, dynamic> body = jsonDecode(response.body);
+        final dynamic dataField = body.containsKey('data') ? body['data'] : body;
+        
+        if (dataField is List) {
+          return dataField.cast<Map<String, dynamic>>();
+        }
+        return [];
       } else {
         _logger.e('Get users failed: ${response.body}');
         return [];
@@ -349,7 +380,8 @@ class MultiRoleBackendService {
       );
 
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+        final Map<String, dynamic> body = jsonDecode(response.body);
+        return body.containsKey('data') ? body['data'] : body;
       } else {
         _logger.e('Get analytics failed: ${response.body}');
         return null;
@@ -371,7 +403,7 @@ class MultiRoleBackendService {
         headers: headers,
       );
 
-      return response.statusCode == 200;
+      return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
       _logger.e('Error adding to favorites: $e');
       return false;

@@ -1,0 +1,69 @@
+﻿Analyzing lib...                                                
+
+   info - 'scale' is deprecated and shouldn't be used. Use scaleByVector3, scaleByVector4, or scaleByDouble instead - lib\core\animations\shegabet_animations.dart:97:42 - deprecated_member_use
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\appointment_api_service.dart:21:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\appointment_api_service.dart:73:21 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\backend_api_service.dart:92:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:139:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:194:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:195:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:196:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:197:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:198:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:199:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:253:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:414:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:415:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:416:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:417:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\multi_role_backend_service.dart:418:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\payment_api_service.dart:45:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\payment_api_service.dart:46:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\payment_api_service.dart:68:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\payment_api_service.dart:130:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\review_api_service.dart:19:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\core\services\review_api_service.dart:21:9 - use_null_aware_elements
+   info - 'fromBytes' is deprecated and shouldn't be used. Use BitmapDescriptor.bytes method instead - lib\core\utils\map_helper.dart:49:29 - deprecated_member_use
+   info - 'textScaleFactor' is deprecated and shouldn't be used. Use textScaler instead. Use of textScaleFactor was deprecated in preparation for the upcoming nonlinear text scaling support. This feature was deprecated after v3.12.0-2.0.pre - lib\core\utils\responsive_utils.dart:190:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\core\widgets\app_empty_state.dart:33:60 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\core\widgets\app_empty_state.dart:47:64 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\core\widgets\app_loading.dart:32:64 - deprecated_member_use
+warning - Unnecessary cast - lib\data\repositories\booking_repository_impl.dart:79:117 - unnecessary_cast
+   info - The 'if' statement could be replaced by a null-aware assignment - lib\data\repositories\firebase_auth_repository_impl.dart:44:7 - prefer_conditional_assignment
+warning - The operand can't be 'null', so the condition is always 'true' - lib\data\repositories\firebase_auth_repository_impl.dart:56:23 - unnecessary_null_comparison
+   info - Don't invoke 'print' in production code - lib\data\repositories\search_repository_impl.dart:44:7 - avoid_print
+   info - Unnecessary use of 'toList' in a spread - lib\features\appointments\views\booking_service_page.dart:53:91 - unnecessary_to_list_in_spreads
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\appointments\views\booking_service_page.dart:71:74 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\appointments\views\booking_service_page.dart:105:87 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\appointments\views\booking_service_page.dart:140:69 - deprecated_member_use
+   info - Missing type annotation - lib\features\appointments\views\booking_service_page.dart:147:29 - strict_top_level_inference
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\appointments\views\booking_service_page.dart:176:56 - deprecated_member_use
+   info - Missing type annotation - lib\features\appointments\views\booking_service_page.dart:197:28 - strict_top_level_inference
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\appointments\views\booking_service_page.dart:209:76 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\appointments\views\booking_service_page.dart:248:93 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\appointments\views\booking_service_page.dart:265:53 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\appointments\views\booking_service_page.dart:292:66 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\home\views\nearby_page.dart:229:36 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\home\views\nearby_page.dart:352:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\home\views\nearby_page.dart:396:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\home\views\portfolio_page.dart:176:40 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\home\views\portfolio_page.dart:273:56 - deprecated_member_use
+   info - Unnecessary use of 'toList' in a spread - lib\features\home\views\portfolio_page.dart:345:22 - unnecessary_to_list_in_spreads
+   info - Unnecessary use of 'toList' in a spread - lib\features\home\views\portfolio_page.dart:442:24 - unnecessary_to_list_in_spreads
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\home\views\portfolio_page.dart:460:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\home\widgets\home_header.dart:99:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\main\views\main_layout_page.dart:74:33 - deprecated_member_use
+   info - Unnecessary use of multiple underscores - lib\features\profile\views\profile_page.dart:211:45 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\profile\views\profile_page.dart:211:49 - unnecessary_underscores
+
+flutter : 55 issues found. (ran in 13.2s)
+At line:1 char:1
++ flutter analyze lib/ 2>&1 | Out-File 
+-FilePath "d:\customer_app\analy ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : Not    Specified: 
+(55 issues found.     (ran in 13.2s):String) 
+[], Re    moteException
+    + FullyQualifiedErrorId : Nat    
+iveCommandError
+ 

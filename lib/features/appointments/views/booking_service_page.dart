@@ -68,7 +68,7 @@ class BookingServicePage extends GetView<AppointmentsController> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.store_rounded, size: 64, color: AppTheme.greyMedium.withOpacity(0.3)),
+          Icon(Icons.store_rounded, size: 64, color: AppTheme.greyMedium.withValues(alpha: 0.3)),
           const SizedBox(height: 16),
           const Text('Please select a specialist first'),
           const SizedBox(height: 16),
@@ -102,7 +102,7 @@ class BookingServicePage extends GetView<AppointmentsController> {
           decoration: BoxDecoration(
             color: isActive ? AppTheme.black : Colors.white,
             shape: BoxShape.circle,
-            border: Border.all(color: isActive ? AppTheme.black : AppTheme.greyMedium.withOpacity(0.3), width: 2),
+            border: Border.all(color: isActive ? AppTheme.black : AppTheme.greyMedium.withValues(alpha: 0.3), width: 2),
           ),
           child: Center(
             child: isCompleted
@@ -137,7 +137,7 @@ class BookingServicePage extends GetView<AppointmentsController> {
         height: 2,
         margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         decoration: BoxDecoration(
-          color: isCompleted ? AppTheme.black : AppTheme.greyMedium.withOpacity(0.1),
+          color: isCompleted ? AppTheme.black : AppTheme.greyMedium.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(1),
         ),
       ),
@@ -173,7 +173,7 @@ class BookingServicePage extends GetView<AppointmentsController> {
                 ),
                 Text(
                   provider.category.toUpperCase(),
-                  style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 10, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 10, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -206,7 +206,7 @@ class BookingServicePage extends GetView<AppointmentsController> {
           color: isSelected ? AppTheme.primaryYellow : Colors.white,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(color: isSelected ? AppTheme.primaryYellow : const Color(0xFFEEEEEE), width: 2),
-          boxShadow: isSelected ? [BoxShadow(color: AppTheme.primaryYellow.withOpacity(0.2), blurRadius: 15, offset: const Offset(0, 8))] : null,
+          boxShadow: isSelected ? [BoxShadow(color: AppTheme.primaryYellow.withValues(alpha: 0.2), blurRadius: 15, offset: const Offset(0, 8))] : null,
         ),
         child: Row(
           children: [
@@ -245,7 +245,7 @@ class BookingServicePage extends GetView<AppointmentsController> {
         padding: const EdgeInsets.symmetric(vertical: 40),
         child: Column(
           children: [
-            Icon(Icons.sentiment_dissatisfied_rounded, size: 48, color: AppTheme.greyMedium.withOpacity(0.3)),
+            Icon(Icons.sentiment_dissatisfied_rounded, size: 48, color: AppTheme.greyMedium.withValues(alpha: 0.3)),
             const SizedBox(height: 16),
             const Text('No individual services listed yet.'),
           ],
@@ -262,7 +262,7 @@ class BookingServicePage extends GetView<AppointmentsController> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, -10))],
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, -10))],
         ),
         child: SafeArea(
           child: Column(
@@ -289,7 +289,7 @@ class BookingServicePage extends GetView<AppointmentsController> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.black,
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor: AppTheme.greyMedium.withOpacity(0.1),
+                    disabledBackgroundColor: AppTheme.greyMedium.withValues(alpha: 0.1),
                     padding: const EdgeInsets.symmetric(vertical: 20),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                   ),

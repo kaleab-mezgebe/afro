@@ -76,7 +76,11 @@ class BookingRepositoryImpl implements BookingRepository {
       'status': 'pending',
     });
 
-    final booking = BookingModel.fromJson(response is Map<String, dynamic> && response.containsKey('data') ? response['data'] : response);
+    final booking = BookingModel.fromJson(
+      response.containsKey('data')
+          ? response['data'] as Map<String, dynamic>
+          : response,
+    );
 
     // Save to local storage
     await _saveBookingToLocalStorage(booking);
@@ -96,7 +100,7 @@ class BookingRepositoryImpl implements BookingRepository {
 
       // Update local storage with latest data
       for (var booking in bookings) {
-        await _saveBookingToLocalStorage(booking as BookingModel);
+        await _saveBookingToLocalStorage(booking);
       }
 
       return bookings;

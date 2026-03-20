@@ -7,6 +7,8 @@ import '../../profile/controllers/profile_controller.dart';
 import '../../search/controllers/search_controller.dart';
 import '../../favorites/controllers/favorites_controller.dart';
 
+import '../../../core/services/customer_api_service.dart';
+import '../../../core/services/favorite_api_service.dart';
 import '../../../data/repositories/profile_repository_impl.dart';
 import '../../../data/repositories/search_repository_impl.dart';
 import '../../../domain/repositories/profile_repository.dart';
@@ -36,10 +38,12 @@ class MainBinding extends Bindings {
       () => NotificationsListController(),
     );
 
-    // Repositories (if not already in InitialBinding)
+    // Repositories
     if (!Get.isRegistered<ProfileRepository>()) {
       Get.lazyPut<ProfileRepository>(
-        () => ProfileRepositoryImpl(localStorage: Get.find<LocalStorage>()),
+        () => ProfileRepositoryImpl(
+          customerApiService: Get.find<CustomerApiService>(),
+        ),
       );
     }
     if (!Get.isRegistered<SearchRepository>()) {
@@ -92,6 +96,10 @@ class MainBinding extends Bindings {
       ),
     );
 
-    Get.lazyPut<FavoritesController>(() => FavoritesController());
+    Get.lazyPut<FavoritesController>(
+      () => FavoritesController(
+        favoriteApiService: Get.find<FavoriteApiService>(),
+      ),
+    );
   }
 }
