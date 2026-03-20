@@ -70,6 +70,10 @@ class AuthService {
         email: email,
         password: password,
       );
+      final token = await getIdToken();
+      if (token != null) {
+        await verifyToken(token);
+      }
       await setAuthToken();
       return credential;
     } catch (e) {
@@ -88,6 +92,10 @@ class AuthService {
         email: email,
         password: password,
       );
+      final token = await getIdToken();
+      if (token != null) {
+        await verifyToken(token);
+      }
       await setAuthToken();
       return credential;
     } catch (e) {

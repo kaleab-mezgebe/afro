@@ -1,4 +1,4 @@
-﻿import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 
 import '../services/enhanced_api_client.dart';
@@ -9,6 +9,7 @@ import '../services/favorite_api_service.dart';
 import '../services/payment_api_service.dart';
 import '../services/review_api_service.dart';
 import '../services/service_api_service.dart';
+import '../services/auth_api_service.dart';
 
 import '../../data/datasources/local/local_storage.dart';
 import '../../data/datasources/remote/api_client.dart';
@@ -104,6 +105,11 @@ class InitialBindingEnhanced extends Bindings {
     );
 
     // API Services - Lazy loading for better performance
+    Get.lazyPut<AuthApiService>(
+      () => AuthApiService(Get.find<EnhancedApiClient>()),
+      fenix: true,
+    );
+
     Get.lazyPut<BarberApiService>(
       () => BarberApiService(Get.find<EnhancedApiClient>()),
       fenix: true,
@@ -140,4 +146,3 @@ class InitialBindingEnhanced extends Bindings {
     );
   }
 }
-

@@ -44,74 +44,11 @@ export default function ContentModeration() {
       if (response.success && response.data) {
         setReportedItems(response.data);
       } else {
-        // Fallback to mock data if backend not available
-        setReportedItems([
-          {
-            id: 'report_001',
-            type: 'review',
-            reportedBy: 'John Doe',
-            reportedAt: '2024-01-15T10:30:00Z',
-            reason: 'Inappropriate language',
-            description: 'The review contains offensive and inappropriate language that violates our community guidelines.',
-            status: 'pending',
-            targetId: 'review_123',
-            targetData: {
-              name: 'Sarah Johnson',
-              content: 'This service was terrible and the provider was unprofessional...'
-            },
-            priority: 'high'
-          },
-          {
-            id: 'report_002',
-            type: 'user',
-            reportedBy: 'Jane Smith',
-            reportedAt: '2024-01-14T15:45:00Z',
-            reason: 'Fake profile',
-            description: 'This user appears to be using fake information and may be a scam.',
-            status: 'reviewing',
-            targetId: 'user_456',
-            targetData: {
-              userName: 'Michael Brown',
-              userEmail: 'michael.brown@email.com'
-            },
-            priority: 'medium'
-          },
-          {
-            id: 'report_003',
-            type: 'photo',
-            reportedBy: 'Admin',
-            reportedAt: '2024-01-13T09:15:00Z',
-            reason: 'Inappropriate content',
-            description: 'Photo contains inappropriate content not suitable for the platform.',
-            status: 'pending',
-            targetId: 'photo_789',
-            targetData: {
-              imageUrl: '/images/reported-photo.jpg'
-            },
-            priority: 'high'
-          }
-        ]);
+        setReportedItems([]);
       }
     } catch (error) {
       console.error('Failed to load reported items:', error);
-      // Fallback to mock data
-      setReportedItems([
-        {
-          id: 'report_001',
-          type: 'review',
-          reportedBy: 'John Doe',
-          reportedAt: '2024-01-15T10:30:00Z',
-          reason: 'Inappropriate language',
-          description: 'The review contains offensive and inappropriate language that violates our community guidelines.',
-          status: 'pending',
-          targetId: 'review_123',
-          targetData: {
-            name: 'Sarah Johnson',
-            content: 'This service was terrible and the provider was unprofessional...'
-          },
-          priority: 'high'
-        }
-      ]);
+      setReportedItems([]);
     }
   };
 

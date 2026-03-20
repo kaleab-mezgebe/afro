@@ -9,101 +9,100 @@ class HomeHeader extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'Good Morning!',
-              style: TextStyle(
-                color: AppTheme.textSecondary,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Good Morning,',
+                  style: TextStyle(
+                    color: AppTheme.greyMedium,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Kaleab Mezgebe',
+                  style: const TextStyle(
+                    color: AppTheme.black,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 4),
-            const Text(
-              'Kaleab Mezgebe',
-              style: TextStyle(
-                color: AppTheme.primaryYellow,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              children: [
+                _buildCircularButton(Icons.notifications_none_rounded, () => Get.toNamed(AppRoutes.notifications)),
+                const SizedBox(width: 12),
+                _buildCircularButton(Icons.favorite_outline_rounded, () => Get.toNamed(AppRoutes.favorites)),
+              ],
             ),
           ],
         ),
-        Row(
-          children: [
-            _buildFavoritesButton(),
-            const SizedBox(width: 12),
-            Obx(() => _buildNotificationBell()),
-            const SizedBox(width: 12),
-          ],
+        const SizedBox(height: 24),
+        
+        // Modern Premium Search Bar
+        GestureDetector(
+          onTap: () => Get.toNamed(AppRoutes.search),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F5F5),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFFE0E0E0)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.search_rounded, color: AppTheme.black, size: 24),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text(
+                    'Search for salons, barbers...',
+                    style: TextStyle(color: AppTheme.greyMedium, fontSize: 15),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryYellow,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.tune_rounded, color: AppTheme.black, size: 18),
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildNotificationBell() {
+  Widget _buildCircularButton(IconData icon, VoidCallback onTap) {
     return InkWell(
-      onTap: () => Get.toNamed(AppRoutes.notifications),
-      borderRadius: BorderRadius.circular(22),
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(15),
       child: Container(
-        width: 44,
-        height: 44,
+        width: 48,
+        height: 48,
         decoration: BoxDecoration(
-          color: AppTheme.grey100,
-          borderRadius: BorderRadius.circular(22),
-        ),
-        child: Stack(
-          children: [
-            const Center(
-              child: Icon(
-                Icons.notifications_none_rounded,
-                color: AppTheme.black,
-                size: 24,
-              ),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: const Color(0xFFEEEEEE)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-            if (controller.notificationCount > 0)
-              Positioned(
-                top: 10,
-                right: 10,
-                child: Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    color: Colors.redAccent,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                  ),
-                ),
-              ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildFavoritesButton() {
-    return InkWell(
-      onTap: () => Get.toNamed(AppRoutes.favorites),
-      borderRadius: BorderRadius.circular(22),
-      child: Container(
-        width: 44,
-        height: 44,
-        decoration: BoxDecoration(
-          color: AppTheme.grey100,
-          borderRadius: BorderRadius.circular(22),
-        ),
-        child: const Center(
-          child: Icon(
-            Icons.favorite_outline_rounded,
-            color: AppTheme.black,
-            size: 24,
-          ),
-        ),
+        child: Icon(icon, color: AppTheme.black, size: 24),
       ),
     );
   }

@@ -687,12 +687,12 @@ class SearchPage extends GetView<search_ctrl.SearchController> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
-          color: AppTheme.white,
-          borderRadius: BorderRadius.circular(20),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: AppTheme.black.withValues(alpha: 0.05),
-              blurRadius: 15,
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 20,
               offset: const Offset(0, 8),
             ),
           ],
@@ -712,89 +712,82 @@ class SearchPage extends GetView<search_ctrl.SearchController> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: AppTheme.primaryYellow.withValues(
-                                alpha: 0.1,
-                              ),
+                              color: AppTheme.primaryYellow.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              provider.category.capitalizeFirst!,
+                              provider.category.toUpperCase(),
                               style: const TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w900,
                                 color: AppTheme.black,
+                                letterSpacing: 0.5,
                               ),
                             ),
                           ),
                           Row(
                             children: [
-                              const Icon(
-                                Icons.star_rounded,
-                                color: Colors.amber,
-                                size: 16,
-                              ),
+                              const Icon(Icons.star_rounded, color: AppTheme.primaryYellow, size: 16),
                               const SizedBox(width: 2),
                               Text(
                                 provider.rating.toStringAsFixed(1),
                                 style: const TextStyle(
                                   fontSize: 12,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppTheme.black,
                                 ),
                               ),
                             ],
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
                       Text(
                         provider.name,
                         style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w900,
                           color: AppTheme.black,
+                          letterSpacing: -0.5,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(
-                            Icons.location_on_rounded,
-                            color: AppTheme.grey400,
-                            size: 14,
-                          ),
+                          const Icon(Icons.location_on_rounded, color: AppTheme.greyMedium, size: 14),
                           const SizedBox(width: 4),
-                          Text(
-                            provider.location,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: AppTheme.grey500,
+                          Expanded(
+                            child: Text(
+                              provider.location,
+                              style: const TextStyle(fontSize: 12, color: AppTheme.greyMedium, fontWeight: FontWeight.w500),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 14),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            provider.minPrice > 0
-                                ? 'From \$${provider.minPrice.toInt()}'
-                                : 'Variable pricing',
+                            provider.minPrice > 0 ? 'FROM \$${provider.minPrice.toInt()}' : 'VIEW PRICING',
                             style: const TextStyle(
                               fontSize: 13,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w900,
                               color: AppTheme.black,
+                              letterSpacing: 0.5,
                             ),
                           ),
-                          const Icon(
-                            Icons.arrow_forward_ios_rounded,
-                            size: 12,
-                            color: AppTheme.black,
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: AppTheme.black,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.arrow_forward_ios_rounded, size: 10, color: Colors.white),
                           ),
                         ],
                       ),
@@ -851,16 +844,16 @@ class SearchPage extends GetView<search_ctrl.SearchController> {
 
   Widget _buildProviderImage(Provider provider) {
     return Container(
-      width: 100,
+      width: 110,
       decoration: BoxDecoration(
+        color: const Color(0xFFF0F0F0),
         borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          bottomLeft: Radius.circular(20),
+          topLeft: Radius.circular(24),
+          bottomLeft: Radius.circular(24),
         ),
         image: DecorationImage(
           image: NetworkImage(
-            provider.imageUrl ??
-                'https://picsum.photos/seed/${provider.id}/200/200',
+            provider.imageUrl ?? 'https://picsum.photos/seed/${provider.id}/300/300',
           ),
           fit: BoxFit.cover,
         ),

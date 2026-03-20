@@ -217,7 +217,7 @@ export default function BarbersPage() {
     try {
       setIsSubmitting(true);
 
-      const response = await BarbersService.export({
+      const response = await BarbersService.export(exportFormat, {
         status: exportStatus === 'all' ? undefined : exportStatus,
         search: searchTerm
       });
@@ -233,40 +233,7 @@ export default function BarbersPage() {
     }
   };
 
-  const loadAnalytics = async () => {
-    try {
-      setLoading(true);
 
-      // Mock analytics data - replace with real API call
-      const analyticsData = {
-        totalBarbers: barbers.length,
-        activeBarbers: barbers.filter(b => b.isActive).length,
-        totalBookings: barbers.reduce((acc, b) => acc + (b.totalBookings || 0), 0),
-        averageRating: barbers.reduce((acc, b) => acc + b.rating, 0) / barbers.length || 0,
-        newBarbersThisMonth: 5,
-        totalRevenue: barbers.reduce((acc, b) => acc + (b.totalBookings || 0) * 50, 0), // Mock calculation
-        topPerformingBarbers: barbers.slice(0, 5).map(b => ({
-          name: b.name,
-          bookings: b.totalBookings || 0,
-          rating: b.rating
-        })),
-        barberDistribution: [
-          { shop: 'Main Street', count: 12 },
-          { shop: 'Downtown', count: 8 },
-          { shop: 'Mall Branch', count: 6 }
-        ]
-      };
-
-      // Set analytics data for modal
-      // Note: In a real implementation, this would be stored in state
-      // For now, we'll use a global variable for the modal
-    } catch (error) {
-      toast.error('Failed to load analytics');
-      console.error('Analytics loading error:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleDeleteBarber = async (barber: Barber) => {
     if (!window.confirm(`Are you sure you want to delete ${barber.name}? This action cannot be undone.`)) {

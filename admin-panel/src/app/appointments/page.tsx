@@ -129,7 +129,7 @@ export default function AppointmentsPage() {
 
   const handleExportAppointments = async () => {
     try {
-      await AppointmentsService.export({
+      await AppointmentsService.export('csv', {
         status: statusFilter,
         search: searchTerm
       });

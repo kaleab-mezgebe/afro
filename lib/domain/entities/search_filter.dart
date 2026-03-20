@@ -7,6 +7,9 @@ class SearchFilter extends Equatable {
   final double? maxPrice;
   final double? minPrice;
   final String? location;
+  final double? latitude;
+  final double? longitude;
+  final double? radius;
   final DateTime? date;
   final List<String> services;
 
@@ -17,6 +20,9 @@ class SearchFilter extends Equatable {
     this.maxPrice,
     this.minPrice,
     this.location,
+    this.latitude,
+    this.longitude,
+    this.radius,
     this.date,
     this.services = const [],
   });
@@ -29,6 +35,9 @@ class SearchFilter extends Equatable {
         maxPrice,
         minPrice,
         location,
+        latitude,
+        longitude,
+        radius,
         date,
         services,
       ];
@@ -40,6 +49,9 @@ class SearchFilter extends Equatable {
     double? maxPrice,
     double? minPrice,
     String? location,
+    double? latitude,
+    double? longitude,
+    double? radius,
     DateTime? date,
     List<String>? services,
   }) {
@@ -50,6 +62,9 @@ class SearchFilter extends Equatable {
       maxPrice: maxPrice ?? this.maxPrice,
       minPrice: minPrice ?? this.minPrice,
       location: location ?? this.location,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      radius: radius ?? this.radius,
       date: date ?? this.date,
       services: services ?? this.services,
     );
@@ -63,6 +78,9 @@ class SearchFilter extends Equatable {
       'maxPrice': maxPrice,
       'minPrice': minPrice,
       'location': location,
+      'latitude': latitude,
+      'longitude': longitude,
+      'radius': radius,
       'date': date?.toIso8601String(),
       'services': services,
     };
@@ -75,6 +93,9 @@ class SearchFilter extends Equatable {
       maxPrice == null &&
       minPrice == null &&
       location == null &&
+      latitude == null &&
+      longitude == null &&
+      radius == null &&
       date == null &&
       services.isEmpty;
 
@@ -85,6 +106,9 @@ class SearchFilter extends Equatable {
       maxPrice != null ||
       minPrice != null ||
       location != null ||
+      latitude != null ||
+      longitude != null ||
+      radius != null ||
       date != null ||
       services.isNotEmpty;
 }

@@ -20,8 +20,8 @@ class BookingRepositoryImpl implements BookingRepository {
 
   @override
   Future<List<Provider>> getProviders() async {
-    final response = await _apiClient.get('/providers');
-    final List<dynamic> data = response['providers'] ?? [];
+    final response = await _apiClient.get('/barbers');
+    final List<dynamic> data = response is List ? response : (response['data'] ?? response['barbers'] ?? []);
 
     return data
         .map((json) => ProviderModel.fromJson(json as Map<String, dynamic>))
@@ -30,8 +30,9 @@ class BookingRepositoryImpl implements BookingRepository {
 
   @override
   Future<List<Service>> getServices({required String providerId}) async {
-    final response = await _apiClient.get('/providers/$providerId/services');
-    final List<dynamic> data = response['services'] ?? [];
+    // In our backend, services might be part of the barber profile or a separate endpoint
+    final response = await _apiClient.get('/services?barberId=$providerId');
+    final List<dynamic> data = response is List ? response : (response['data'] ?? response['services'] ?? []);
 
     return data
         .map((json) => ServiceModel.fromJson(json as Map<String, dynamic>))
@@ -45,15 +46,12 @@ class BookingRepositoryImpl implements BookingRepository {
     required DateTime date,
   }) async {
     final response = await _apiClient.get(
-      '/providers/$providerId/availability?date=${date.toIso8601String()}',
+      '/appointments/availability?barberId=$providerId&serviceId=$serviceId&date=${date.toIso8601String().split('T')[0]}',
     );
-    final List<dynamic> data = response['timeSlots'] ?? [];
+    final List<dynamic> data = response is List ? response : (response['data'] ?? response['timeSlots'] ?? []);
 
-    final timeSlotModels = data
+    return data
         .map((json) => TimeSlotModel.fromJson(json as Map<String, dynamic>))
-        .toList();
-
-    return timeSlotModels
         .map(
           (model) => TimeSlot(
             start: model.start,
@@ -71,16 +69,16 @@ class BookingRepositoryImpl implements BookingRepository {
     required DateTime start,
     required DateTime end,
   }) async {
-    final response = await _apiClient.post('/bookings', {
-      'providerId': provider.id,
+    final response = await _apiClient.post('/appointments', {
+      'barberId': provider.id,
       'serviceId': service.id,
-      'start': start.toIso8601String(),
-      'end': end.toIso8601String(),
+      'appointmentDate': start.toIso8601String(),
+      'status': 'pending',
     });
 
-    final booking = BookingModel.fromJson(response);
+    final booking = BookingModel.fromJson(response is Map<String, dynamic> && response.containsKey('data') ? response['data'] : response);
 
-    // Save to local storage for offline access
+    // Save to local storage
     await _saveBookingToLocalStorage(booking);
 
     return booking;
@@ -89,8 +87,8 @@ class BookingRepositoryImpl implements BookingRepository {
   @override
   Future<List<Booking>> getMyBookings() async {
     try {
-      final response = await _apiClient.get('/my-bookings');
-      final List<dynamic> data = response['bookings'] ?? [];
+      final response = await _apiClient.get('/appointments/my');
+      final List<dynamic> data = response is List ? response : (response['data'] ?? response['appointments'] ?? []);
 
       final bookings = data
           .map((json) => BookingModel.fromJson(json as Map<String, dynamic>))

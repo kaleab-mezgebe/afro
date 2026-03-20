@@ -1,22 +1,25 @@
 import 'dart:convert';
-
 import 'package:firebase_auth/firebase_auth.dart' as auth;
+import 'package:get/get.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/local/local_storage.dart';
 import '../../core/services/firebase_user_service.dart';
+import '../../core/services/auth_api_service.dart';
 
 class FirebaseAuthRepositoryImpl implements AuthRepository {
   final LocalStorage _localStorage;
   final FirebaseUserService _firebaseUserService;
   final auth.FirebaseAuth _firebaseAuth;
+  final AuthApiService _authApiService;
 
   FirebaseAuthRepositoryImpl({
     required LocalStorage localStorage,
     required FirebaseUserService firebaseUserService,
-  }) : _localStorage = localStorage,
-       _firebaseUserService = firebaseUserService,
-       _firebaseAuth = auth.FirebaseAuth.instance;
+  })  : _localStorage = localStorage,
+        _firebaseUserService = firebaseUserService,
+        _firebaseAuth = auth.FirebaseAuth.instance,
+        _authApiService = Get.find<AuthApiService>();
 
   @override
   Future<User> login({required String email, required String password}) async {
@@ -28,12 +31,17 @@ class FirebaseAuthRepositoryImpl implements AuthRepository {
       );
 
       final firebaseUser = userCredential.user!;
-      
-      // Get or create user profile in Firestore
+      final token = await firebaseUser.getIdToken();
+
+      // Verify with backend REST API
+      if (token != null) {
+        await _authApiService.verifyToken(token);
+      }
+
+      // Get profile from Firestore
       User? userProfile = await _firebaseUserService.getUserProfile(firebaseUser.uid);
-      
+
       if (userProfile == null) {
-        // Create profile if it doesn't exist
         userProfile = await _firebaseUserService.saveUserProfile(
           uid: firebaseUser.uid,
           name: firebaseUser.displayName ?? 'User',
@@ -43,9 +51,16 @@ class FirebaseAuthRepositoryImpl implements AuthRepository {
         );
       }
 
-      // Save to local storage for offline access
-      await _localStorage.save('current_user', jsonEncode(userProfile.toJson()));
+      // Sync with backend /auth/me to keep sync with Admin Panel
+      final backendUser = await _authApiService.getCurrentUser();
+      if (backendUser != null) {
+        userProfile = userProfile.copyWith(
+          name: backendUser['name'] ?? userProfile.name,
+          phoneNumber: backendUser['phone'] ?? userProfile.phoneNumber,
+        );
+      }
 
+      await _localStorage.save('current_user', jsonEncode(userProfile.toJson()));
       return userProfile;
     } catch (e) {
       throw Exception('Login failed: $e');
@@ -60,15 +75,19 @@ class FirebaseAuthRepositoryImpl implements AuthRepository {
     String? phoneNumber,
   }) async {
     try {
-      // Create user with Firebase Auth
       final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
       final firebaseUser = userCredential.user!;
-      
-      // Save user profile to Firestore
+      final token = await firebaseUser.getIdToken();
+
+      // Ensure the backend also creates the user record
+      if (token != null) {
+        await _authApiService.verifyToken(token);
+      }
+
       final userProfile = await _firebaseUserService.saveUserProfile(
         uid: firebaseUser.uid,
         name: name,
@@ -77,9 +96,7 @@ class FirebaseAuthRepositoryImpl implements AuthRepository {
         avatar: firebaseUser.photoURL,
       );
 
-      // Save to local storage for offline access
       await _localStorage.save('current_user', jsonEncode(userProfile.toJson()));
-
       return userProfile;
     } catch (e) {
       throw Exception('Registration failed: $e');
@@ -103,11 +120,8 @@ class FirebaseAuthRepositoryImpl implements AuthRepository {
   }) async {
     try {
       final currentUser = _firebaseAuth.currentUser;
-      if (currentUser == null) {
-        throw Exception('No authenticated user found');
-      }
+      if (currentUser == null) throw Exception('No authenticated user found');
 
-      // Save complete user registration data to Firestore
       final userProfile = await _firebaseUserService.saveUserRegistration(
         uid: currentUser.uid,
         name: name,
@@ -124,9 +138,7 @@ class FirebaseAuthRepositoryImpl implements AuthRepository {
         preferredServices: preferredServices,
       );
 
-      // Save to local storage for offline access
       await _localStorage.save('current_user', jsonEncode(userProfile.toJson()));
-
       return userProfile;
     } catch (e) {
       throw Exception('Full registration failed: $e');
@@ -136,23 +148,14 @@ class FirebaseAuthRepositoryImpl implements AuthRepository {
   @override
   Future<User> refreshToken(String token) async {
     try {
-      // Refresh Firebase Auth token
       await _firebaseAuth.currentUser?.reload();
-      
       final currentUser = _firebaseAuth.currentUser;
-      if (currentUser == null) {
-        throw Exception('No authenticated user found');
-      }
+      if (currentUser == null) throw Exception('No authenticated user found');
 
-      // Get updated user profile from Firestore
       final userProfile = await _firebaseUserService.getUserProfile(currentUser.uid);
-      if (userProfile == null) {
-        throw Exception('User profile not found');
-      }
+      if (userProfile == null) throw Exception('User profile not found');
 
-      // Update local storage
       await _localStorage.save('current_user', jsonEncode(userProfile.toJson()));
-
       return userProfile;
     } catch (e) {
       throw Exception('Token refresh failed: $e');
@@ -182,14 +185,9 @@ class FirebaseAuthRepositoryImpl implements AuthRepository {
   Future<User> getCurrentUser() async {
     try {
       final currentUser = _firebaseAuth.currentUser;
-      if (currentUser == null) {
-        throw Exception('No authenticated user found');
-      }
+      if (currentUser == null) throw Exception('No authenticated user found');
 
-      // Try to get from Firestore first
       User? userProfile = await _firebaseUserService.getUserProfile(currentUser.uid);
-      
-      // If not found in Firestore, try local storage
       if (userProfile == null) {
         final currentUserJson = await _localStorage.get('current_user');
         if (currentUserJson != null) {
@@ -197,10 +195,7 @@ class FirebaseAuthRepositoryImpl implements AuthRepository {
         }
       }
 
-      if (userProfile == null) {
-        throw Exception('User profile not found');
-      }
-
+      if (userProfile == null) throw Exception('User profile not found');
       return userProfile;
     } catch (e) {
       throw Exception('Failed to get current user: $e');
@@ -215,11 +210,8 @@ class FirebaseAuthRepositoryImpl implements AuthRepository {
   }) async {
     try {
       final currentUser = _firebaseAuth.currentUser;
-      if (currentUser == null) {
-        throw Exception('No authenticated user found');
-      }
+      if (currentUser == null) throw Exception('No authenticated user found');
 
-      // Update profile in Firestore
       final updatedUser = await _firebaseUserService.updateUserProfile(
         uid: currentUser.uid,
         name: name,
@@ -227,9 +219,7 @@ class FirebaseAuthRepositoryImpl implements AuthRepository {
         avatar: avatar,
       );
 
-      // Update local storage
       await _localStorage.save('current_user', jsonEncode(updatedUser.toJson()));
-
       return updatedUser;
     } catch (e) {
       throw Exception('Profile update failed: $e');
@@ -243,19 +233,14 @@ class FirebaseAuthRepositoryImpl implements AuthRepository {
   }) async {
     try {
       final currentUser = _firebaseAuth.currentUser;
-      if (currentUser == null) {
-        throw Exception('No authenticated user found');
-      }
+      if (currentUser == null) throw Exception('No authenticated user found');
 
-      // Re-authenticate user first
       final credential = auth.EmailAuthProvider.credential(
         email: currentUser.email!,
         password: currentPassword,
       );
 
       await currentUser.reauthenticateWithCredential(credential);
-
-      // Update password
       await currentUser.updatePassword(newPassword);
     } catch (e) {
       throw Exception('Password change failed: $e');
@@ -272,16 +257,12 @@ class FirebaseAuthRepositoryImpl implements AuthRepository {
           final userProfile = await _firebaseUserService.getUserProfile(authUser.uid);
           yield userProfile;
         } catch (e) {
-          // If we can't get the profile, yield null
           yield null;
         }
       }
     }
   }
 
-  /// Get current Firebase user
   auth.User? get currentFirebaseUser => _firebaseAuth.currentUser;
-
-  /// Check if user is authenticated
   bool get isAuthenticated => _firebaseAuth.currentUser != null;
 }

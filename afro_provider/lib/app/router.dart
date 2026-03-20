@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../features/auth/presentation/pages/auth_page.dart';
 import '../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../features/shop/presentation/pages/shop_management_page.dart';
@@ -8,6 +9,7 @@ import '../features/appointments/presentation/pages/appointments_page.dart';
 import '../features/services/presentation/pages/service_management_page.dart';
 import '../features/analytics/presentation/pages/analytics_page.dart';
 import '../features/profile/presentation/pages/provider_profile_page.dart';
+import '../core/utils/app_theme.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -19,7 +21,7 @@ class AppRouter {
         builder: (context, state) => const AuthPage(),
       ),
 
-      // Main App Routes (Bottom Navigation)
+      // Main App Routes (Shell Navigation)
       ShellRoute(
         builder: (context, state, child) {
           return MainNavigation(child: child);
@@ -74,43 +76,31 @@ class _MainNavigationState extends State<MainNavigation> {
     NavigationItem(
       icon: Icons.dashboard_outlined,
       selectedIcon: Icons.dashboard,
-      label: 'Dashboard',
+      label: 'Home',
       route: '/dashboard',
     ),
     NavigationItem(
-      icon: Icons.calendar_month_outlined,
-      selectedIcon: Icons.calendar_month,
-      label: 'Appointments',
+      icon: Icons.event_note_outlined,
+      selectedIcon: Icons.event_note,
+      label: 'Calendar',
       route: '/appointments',
     ),
     NavigationItem(
       icon: Icons.store_outlined,
-      selectedIcon: Icons.store,
-      label: 'Shop',
+      selectedIcon: Icons.store_mall_directory_rounded,
+      label: 'Salon',
       route: '/shop',
     ),
     NavigationItem(
-      icon: Icons.people_outline,
-      selectedIcon: Icons.people,
-      label: 'Staff',
-      route: '/staff',
-    ),
-    NavigationItem(
       icon: Icons.content_cut_outlined,
-      selectedIcon: Icons.content_cut,
-      label: 'Services',
+      selectedIcon: Icons.content_cut_rounded,
+      label: 'Salon Tools',
       route: '/services',
     ),
     NavigationItem(
-      icon: Icons.analytics_outlined,
-      selectedIcon: Icons.analytics,
-      label: 'Analytics',
-      route: '/analytics',
-    ),
-    NavigationItem(
-      icon: Icons.person_outline,
-      selectedIcon: Icons.person,
-      label: 'Profile',
+      icon: Icons.person_outline_rounded,
+      selectedIcon: Icons.person_rounded,
+      label: 'Admin',
       route: '/profile',
     ),
   ];
@@ -118,68 +108,64 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: widget.child,
       bottomNavigationBar: Container(
+        height: 100,
         decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
+          color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 30,
+              offset: const Offset(0, -10),
             ),
           ],
         ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: _navigationItems.asMap().entries.map((entry) {
-                final index = entry.key;
-                final item = entry.value;
-                final isSelected = _currentIndex == index;
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: _navigationItems.asMap().entries.map((entry) {
+              final index = entry.key;
+              final item = entry.value;
+              final isSelected = _currentIndex == index;
 
-                return Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _currentIndex = index;
-                      });
-                      context.go(item.route);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            isSelected ? item.selectedIcon : item.icon,
-                            color: isSelected
-                                ? Theme.of(context).primaryColor
-                                : Colors.grey[600],
-                            size: 24,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            item.label,
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: isSelected
-                                  ? Theme.of(context).primaryColor
-                                  : Colors.grey[600],
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.normal,
-                            ),
-                          ),
-                        ],
+              return InkWell(
+                onTap: () {
+                  setState(() => _currentIndex = index);
+                  context.go(item.route);
+                },
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isSelected ? AppTheme.primaryYellow : Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Icon(
+                        isSelected ? item.selectedIcon : item.icon,
+                        color: isSelected ? AppTheme.black : AppTheme.greyMedium,
+                        size: 24,
                       ),
                     ),
-                  ),
-                );
-              }).toList(),
-            ),
+                    const SizedBox(height: 4),
+                    Text(
+                      item.label,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        color: isSelected ? AppTheme.black : AppTheme.greyMedium,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
           ),
         ),
       ),

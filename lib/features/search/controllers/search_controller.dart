@@ -96,6 +96,7 @@ class SearchController extends GetxController {
         maxPrice: maxPrice.value == 500.0 ? null : maxPrice.value,
         minPrice: minPrice.value == 0.0 ? null : minPrice.value,
         location: location.value.isEmpty ? null : location.value,
+        radius: maxDistance.value == 50.0 ? null : maxDistance.value,
         services: selectedServices,
       );
 

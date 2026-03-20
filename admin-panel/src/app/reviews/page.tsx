@@ -157,7 +157,7 @@ export default function ReviewsPage() {
 
   const handleExportReviews = async () => {
     try {
-      await ReviewsService.export({
+      await ReviewsService.export('csv', {
         rating: ratingFilter === 'all' ? undefined : parseInt(ratingFilter),
         status: statusFilter === 'all' ? undefined : statusFilter,
         search: searchTerm

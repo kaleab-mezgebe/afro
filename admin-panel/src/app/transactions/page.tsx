@@ -139,7 +139,7 @@ export default function TransactionsPage() {
 
   const handleExportTransactions = async () => {
     try {
-      await TransactionsService.export({
+      await TransactionsService.export('csv', {
         type: filter === 'all' ? undefined : filter,
         search: searchTerm,
         dateRange: dateRange

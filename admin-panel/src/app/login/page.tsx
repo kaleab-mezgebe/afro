@@ -28,14 +28,6 @@ export default function LoginPage() {
     }
     setLoading(true);
     try {
-      // Development bypass for mock data
-      if (process.env.NODE_ENV === 'development' && email === 'admin@test.com' && password === 'admin123') {
-        localStorage.setItem('authToken', 'dev-bypass-token');
-        toast.success('Welcome back, Admin! (Development Mode)');
-        router.push('/dashboard');
-        return;
-      }
-
       const auth = getAuth(app);
       const result = await signInWithEmailAndPassword(auth, email, password);
 

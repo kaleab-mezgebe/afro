@@ -30,6 +30,8 @@ interface AnalyticsData {
   }
 }
 
+import { DashboardService } from '@/lib/api-backend'
+
 export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('30d')
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null)
@@ -37,75 +39,21 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Mock data - replace with actual API call
-    setTimeout(() => {
-      setAnalyticsData({
-        overview: {
-          totalUsers: 15420,
-          totalProviders: 342,
-          totalBookings: 8934,
-          totalRevenue: 234567.89,
-          userGrowth: 12.5,
-          revenueGrowth: 18.3,
-          bookingGrowth: 15.7
-        },
-        chartData: {
-          daily: [
-            { date: '2024-01-01', bookings: 45, revenue: 2340, users: 12 },
-            { date: '2024-01-02', bookings: 52, revenue: 2680, users: 15 },
-            { date: '2024-01-03', bookings: 38, revenue: 1950, users: 8 },
-            { date: '2024-01-04', bookings: 61, revenue: 3150, users: 18 },
-            { date: '2024-01-05', bookings: 55, revenue: 2840, users: 14 },
-            { date: '2024-01-06', bookings: 48, revenue: 2480, users: 11 },
-            { date: '2024-01-07', bookings: 67, revenue: 3460, users: 20 }
-          ],
-          monthly: [
-            { month: 'Jan', bookings: 2340, revenue: 120000, users: 450 },
-            { month: 'Feb', bookings: 2456, revenue: 128000, users: 480 },
-            { month: 'Mar', bookings: 2678, revenue: 142000, users: 520 },
-            { month: 'Apr', bookings: 2890, revenue: 156000, users: 580 },
-            { month: 'May', bookings: 3123, revenue: 168000, users: 620 },
-            { month: 'Jun', bookings: 3345, revenue: 182000, users: 680 }
-          ]
-        },
-        topServices: [
-          { name: 'Haircut & Styling', bookings: 1234, revenue: 45670, rating: 4.8 },
-          { name: 'Manicure & Pedicure', bookings: 987, revenue: 34230, rating: 4.7 },
-          { name: 'Facial Treatment', bookings: 756, revenue: 28940, rating: 4.9 },
-          { name: 'Massage Therapy', bookings: 623, revenue: 31200, rating: 4.6 },
-          { name: 'Beard Trim', bookings: 543, revenue: 15430, rating: 4.5 }
-        ],
-        topProviders: [
-          { name: 'Michael Brown', bookings: 234, revenue: 12340, rating: 4.9 },
-          { name: 'Lisa Anderson', bookings: 198, revenue: 10560, rating: 4.8 },
-          { name: 'Sarah Johnson', bookings: 176, revenue: 9230, rating: 4.7 },
-          { name: 'James Wilson', bookings: 154, revenue: 8450, rating: 4.8 },
-          { name: 'Emma Davis', bookings: 143, revenue: 7230, rating: 4.6 }
-        ],
-        demographics: {
-          ageGroups: [
-            { range: '18-24', count: 2340, percentage: 15.2 },
-            { range: '25-34', count: 5432, percentage: 35.2 },
-            { range: '35-44', count: 4123, percentage: 26.7 },
-            { range: '45-54', count: 2345, percentage: 15.2 },
-            { range: '55+', count: 1180, percentage: 7.7 }
-          ],
-          locations: [
-            { city: 'New York', count: 3421, percentage: 22.2 },
-            { city: 'Los Angeles', count: 2876, percentage: 18.7 },
-            { city: 'Chicago', count: 1987, percentage: 12.9 },
-            { city: 'Houston', count: 1654, percentage: 10.7 },
-            { city: 'Phoenix', count: 1234, percentage: 8.0 }
-          ],
-          devices: [
-            { device: 'Mobile', count: 12340, percentage: 80.0 },
-            { device: 'Desktop', count: 2340, percentage: 15.2 },
-            { device: 'Tablet', count: 740, percentage: 4.8 }
-          ]
+    const fetchAnalytics = async () => {
+      try {
+        const response = await DashboardService.getAdvancedAnalytics()
+        if (response.success && response.data) {
+          setAnalyticsData(response.data)
+        } else {
+          setAnalyticsData(response.data || null)
         }
-      })
-      setLoading(false)
-    }, 1000)
+      } catch (e) {
+        console.error('Failed to fetch analytics', e)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchAnalytics()
   }, [])
 
   if (loading) {

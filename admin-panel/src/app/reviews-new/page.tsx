@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import {
   Star,
@@ -18,7 +18,11 @@ import {
   ChevronRight,
   X,
   Scissors,
-  Sparkles
+  Sparkles,
+  AlertTriangle,
+  TrendingUp,
+  Calendar,
+  TrendingDown
 } from 'lucide-react';
 import { ReviewsService } from '@/lib/api-backend';
 import toast from 'react-hot-toast';
@@ -33,11 +37,39 @@ interface Review {
   shopName: string;
   rating: number;
   comment: string;
-  status: 'published' | 'flagged' | 'removed';
+  status: 'published' | 'flagged' | 'removed' | 'pending' | 'approved';
   isVerified: boolean;
   createdAt: string;
   flaggedReason?: string;
 }
+
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: any;
+  trend?: { value: number; isPositive: boolean };
+  color?: 'primary' | 'blue' | 'amber' | 'green' | 'red' | 'purple';
+}
+
+const StatCard: React.FC<StatCardProps> = ({ title, value, icon: Icon, trend, color = 'primary' }) => (
+  <div className="stat-card bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="stat-label text-gray-500 text-sm">{title}</p>
+        <p className="stat-value text-2xl font-bold mt-1">{value}</p>
+        {trend && (
+          <div className={`text-xs mt-2 flex items-center gap-1 ${trend.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+            {trend.isPositive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+            {trend.value}% from last month
+          </div>
+        )}
+      </div>
+      <div className={`p-3 rounded-lg bg-${color}-100`}>
+        <Icon size={24} className={`text-${color}-600`} />
+      </div>
+    </div>
+  </div>
+);
 
 export default function ReviewsPage() {
   const { loading: authLoading, authenticated } = useAuth();
@@ -77,19 +109,19 @@ export default function ReviewsPage() {
     }
   };
 
-  const handleApproveReview = (reviewId: number) => {
+  const handleApproveReview = (reviewId: string) => {
     toast.success('Review approved successfully');
-    setReviews(reviews.map(r => r.id === reviewId ? { ...r, status: 'approved' as const } : r));
+    setReviews(reviews.map(r => r.id === reviewId ? { ...r, status: 'approved' } : r));
   };
 
-  const handleFlagReview = (reviewId: number) => {
+  const handleFlagReview = (reviewId: string) => {
     toast.success('Review flagged for review');
-    setReviews(reviews.map(r => r.id === reviewId ? { ...r, status: 'flagged' as const } : r));
+    setReviews(reviews.map(r => r.id === reviewId ? { ...r, status: 'flagged' } : r));
   };
 
   const filteredReviews = reviews.filter(review =>
     review.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    review.barberName.toLowerCase().includes(searchTerm.toLowerCase())
+    review.providerName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const stats = [
@@ -123,32 +155,8 @@ export default function ReviewsPage() {
     }
   ];
 
-  const quickActions = [
-    {
-      title: 'Approve Pending',
-      description: 'Review and approve pending reviews',
-      icon: CheckCircle,
-      onClick: () => toast('Approve pending reviews feature coming soon'),
-      color: 'green' as const
-    },
-    {
-      title: 'Export Reviews',
-      description: 'Download reviews data as CSV',
-      icon: Download,
-      onClick: () => toast('Export feature coming soon'),
-      color: 'blue' as const
-    },
-    {
-      title: 'Review Analytics',
-      description: 'View detailed review analytics',
-      icon: TrendingUp,
-      onClick: () => toast('Analytics feature coming soon'),
-      color: 'purple' as const
-    }
-  ];
-
   const actionsBar = (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex flex-wrap items-center justify-between gap-4">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex flex-wrap items-center justify-between gap-4 mb-6">
       <div className="flex items-center gap-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -176,10 +184,11 @@ export default function ReviewsPage() {
 
   if (authLoading || loading) {
     return (
-      <DashboardTemplate
-        title="Reviews & Ratings"
-        description="Loading reviews data..."
-      />
+      <AdminLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      </AdminLayout>
     );
   }
 
@@ -199,21 +208,7 @@ export default function ReviewsPage() {
         </div>
 
         {/* Actions Bar */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          {actionsBar.map((action, index) => (
-            <button
-              key={index}
-              onClick={action.onClick}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${action.primary
-                ? 'bg-blue-600 text-white hover:bg-blue-700'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-            >
-              {React.createElement(action.icon, { size: 16 })}
-              {action.label}
-            </button>
-          ))}
-        </div>
+        {actionsBar}
 
         {/* Reviews Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -242,15 +237,15 @@ export default function ReviewsPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           <Calendar size={14} className="text-gray-400" />
-                          <span className="text-sm text-gray-500">{review.date}</span>
+                          <span className="text-sm text-gray-500">{new Date(review.createdAt).toLocaleDateString()}</span>
                         </div>
                       </div>
 
                       <div className="text-gray-700 mb-2">{review.comment}</div>
 
                       <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <span>Barber: {review.barberName}</span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${review.status === 'approved' ? 'bg-green-100 text-green-700' :
+                        <span>Provider: {review.providerName}</span>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${review.status === 'approved' || review.status === 'published' ? 'bg-green-100 text-green-700' :
                           review.status === 'pending' ? 'bg-amber-100 text-amber-700' :
                             'bg-red-100 text-red-700'
                           }`}>

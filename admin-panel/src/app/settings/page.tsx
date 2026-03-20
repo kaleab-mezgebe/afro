@@ -97,7 +97,7 @@ export default function SettingsPage() {
 
   const loadSettings = async () => {
     try {
-      const response = await SettingsService.getAll();
+      const response = await SettingsService.get();
 
       if (response.success && response.data) {
         setSettings(response.data);

@@ -146,40 +146,23 @@ export default function CustomersPage() {
   const loadAnalytics = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3001/api/v1/admin/customers/stats', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      const data = await response.json();
+      const response = await CustomersService.getStats();
 
-      if (response.ok) {
+      if (response.success) {
+        const stats = response.data;
         setAnalyticsData({
-          totalCustomers: customers.length,
-          activeCustomers: customers.filter(c => c.isActive).length,
-          newCustomers: Math.floor(customers.length * 0.15), // Mock new customers
-          retentionRate: 85.5,
-          averageRating: customers.reduce((acc, c) => acc + c.rating, 0) / customers.length || 0,
-          totalRevenue: customers.reduce((acc, c) => acc + c.totalSpent, 0),
-          bookingsByMonth: [
-            { month: 'Jan', bookings: 45, revenue: 12500 },
-            { month: 'Feb', bookings: 38, revenue: 10200 },
-            { month: 'Mar', bookings: 52, revenue: 15600 },
-            { month: 'Apr', bookings: 41, revenue: 9800 },
-            { month: 'May', bookings: 63, revenue: 18700 },
-            { month: 'Jun', bookings: 48, revenue: 14400 }
-          ],
-          customerDistribution: [
-            { city: 'New York', count: 45 },
-            { city: 'Los Angeles', count: 32 },
-            { city: 'Chicago', count: 28 },
-            { city: 'Houston', count: 19 }
-          ],
+          totalCustomers: stats?.totalCustomers || customers.length,
+          activeCustomers: stats?.activeCustomers || customers.filter(c => c.isActive).length,
+          newCustomers: stats?.newThisMonth || 0,
+          retentionRate: 0,
+          averageRating: customers.reduce((acc, c) => acc + (c.rating || 0), 0) / (customers.length || 1),
+          totalRevenue: customers.reduce((acc, c) => acc + (c.totalSpent || 0), 0),
+          bookingsByMonth: [],
+          customerDistribution: [],
           topCustomers: customers.slice(0, 5).map(c => ({
             name: c.name,
-            spent: c.totalSpent,
-            bookings: c.totalBookings
+            spent: c.totalSpent || 0,
+            bookings: c.totalBookings || 0
           }))
         });
       }
@@ -200,19 +183,10 @@ export default function CustomersPage() {
     try {
       setIsSubmitting(true);
 
-      // Simulate API call to create customer
-      const response = await fetch('http://localhost:3001/api/v1/admin/customers', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(newCustomerForm)
-      });
+      const response = await CustomersService.create(newCustomerForm);
 
-      if (response.ok) {
-        const newCustomer = await response.json();
-        setCustomers([...customers, newCustomer.data]);
+      if (response.success) {
+        setCustomers([...customers, response.data]);
         toast.success('Customer added successfully!');
         setShowNewCustomerModal(false);
         setNewCustomerForm({
@@ -239,20 +213,16 @@ export default function CustomersPage() {
     try {
       setIsSubmitting(true);
 
-      const response = await fetch('http://localhost:3001/api/v1/admin/customers/export', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          format: exportFormat,
-          status: exportStatus
-        })
-      });
+      const response = await CustomersService.export(exportFormat, { status: exportStatus });
 
-      if (response.ok) {
-        const blob = await response.blob();
+      if (response.success) {
+        // Handle response as blob if possible, otherwise use base64 or download link
+        const data = response.data;
+        // In a real app we'd get a Blob, but our helper returns ApiResponse<any>
+        // If data is a string (CSV/JSON), we can create a Blob
+        const blob = new Blob([typeof data === 'string' ? data : JSON.stringify(data)], { 
+          type: exportFormat === 'csv' ? 'text/csv' : 'application/json' 
+        });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -261,7 +231,6 @@ export default function CustomersPage() {
         a.click();
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
-
         toast.success(`Customers exported as ${exportFormat.toUpperCase()} successfully!`);
         setShowExportModal(false);
       } else {
@@ -352,12 +321,7 @@ export default function CustomersPage() {
     }
 
     try {
-      let response;
-      if (customer.isActive) {
-        response = await CustomersService.suspend(customer.id);
-      } else {
-        response = await CustomersService.unsuspend(customer.id);
-      }
+      const response = await CustomersService.toggleStatus(customer.id, !customer.isActive);
 
       if (response.success) {
         setCustomers(prev => prev.map(c =>

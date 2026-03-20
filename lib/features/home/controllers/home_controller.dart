@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import '../models/specialist_model.dart';
 import '../models/category_model.dart';
 import '../../../routes/app_routes.dart';
-import '../../notifications/controllers/notifications_list_controller.dart';
+import '../../../core/services/barber_api_service.dart';
 
 class HomeController extends GetxController {
   final RxString selectedCategory = 'Hairdressing'.obs;
@@ -14,13 +14,35 @@ class HomeController extends GetxController {
   final RxDouble minRating = 0.0.obs;
   final RxBool filtersApplied = false.obs;
 
-  // Get notification count from NotificationsListController
-  int get notificationCount {
+  final BarberApiService _barberApiService = Get.find<BarberApiService>();
+  final RxBool isLoading = false.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    fetchSpecialists();
+  }
+
+  Future<void> fetchSpecialists() async {
     try {
-      final notifController = Get.find<NotificationsListController>();
-      return notifController.unreadCount;
+      isLoading.value = true;
+      final specialistsJson = await _barberApiService.getBarbers();
+      
+      final mappedSpecialists = specialistsJson.map((json) => Specialist(
+        id: json['id'] ?? '',
+        name: json['name'] ?? 'Unknown',
+        price: '\$${json['minPrice'] ?? '0.00'}',
+        image: json['imageUrl'] ?? 'https://picsum.photos/seed/${json['id']}/200/200.jpg',
+        categories: List<String>.from(json['services']?.map((s) => s.toString()) ?? ['Hairdressing']),
+        gender: json['gender'] ?? 'male',
+        rating: (json['rating'] ?? 0.0).toDouble(),
+      )).toList();
+
+      allSpecialists.assignAll(mappedSpecialists);
     } catch (e) {
-      return 0;
+      Get.snackbar('Error', 'Failed to fetch specialists from backend');
+    } finally {
+      isLoading.value = false;
     }
   }
 
@@ -41,80 +63,7 @@ class HomeController extends GetxController {
     HomeCategory(name: 'Facial', icon: Icons.face, gender: 'all'),
   ].obs;
 
-  final RxList<Specialist> allSpecialists = <Specialist>[
-    Specialist(
-      id: '1',
-      name: 'David Marcomin',
-      price: '\$49.32',
-      image: 'https://picsum.photos/seed/david/200/200.jpg',
-      categories: ['Hairdressing', 'Beard & Mustache'],
-      gender: 'male',
-      rating: 4.8,
-    ),
-    Specialist(
-      id: '2',
-      name: 'Richard Anderson',
-      price: '\$28.48',
-      image: 'https://picsum.photos/seed/richard/200/200.jpg',
-      categories: ['Hairdressing', 'Styling'],
-      gender: 'male',
-      rating: 4.6,
-    ),
-    Specialist(
-      id: '3',
-      name: 'Sarah Johnson',
-      price: '\$65.00',
-      image: 'https://picsum.photos/seed/sarah/200/200.jpg',
-      categories: ['Hairdressing', 'Hair Color', 'Styling'],
-      gender: 'female',
-      rating: 4.9,
-    ),
-    Specialist(
-      id: '4',
-      name: 'Emma Wilson',
-      price: '\$55.75',
-      image: 'https://picsum.photos/seed/emma/200/200.jpg',
-      categories: ['Hair Color', 'Hair Treatment'],
-      gender: 'female',
-      rating: 4.7,
-    ),
-    Specialist(
-      id: '5',
-      name: 'Michael Brown',
-      price: '\$35.50',
-      image: 'https://picsum.photos/seed/michael/200/200.jpg',
-      categories: ['Beard & Mustache', 'Shaving'],
-      gender: 'male',
-      rating: 4.5,
-    ),
-    Specialist(
-      id: '6',
-      name: 'Lisa Davis',
-      price: '\$75.00',
-      image: 'https://picsum.photos/seed/lisa/200/200.jpg',
-      categories: ['Makeup', 'Facial'],
-      gender: 'female',
-      rating: 4.8,
-    ),
-    Specialist(
-      id: '7',
-      name: 'Jennifer Martinez',
-      price: '\$45.25',
-      image: 'https://picsum.photos/seed/jennifer/200/200.jpg',
-      categories: ['Nail Care', 'Waxing'],
-      gender: 'female',
-      rating: 4.6,
-    ),
-    Specialist(
-      id: '8',
-      name: 'Robert Taylor',
-      price: '\$40.00',
-      image: 'https://picsum.photos/seed/robert/200/200.jpg',
-      categories: ['Hairdressing', 'Hair Treatment'],
-      gender: 'male',
-      rating: 4.4,
-    ),
-  ].obs;
+  final RxList<Specialist> allSpecialists = <Specialist>[].obs;
 
   List<Specialist> get filteredSpecialists {
     return allSpecialists.where((specialist) {

@@ -21,6 +21,7 @@ import {
   Package,
   Grid,
   X,
+  Calendar,
 } from 'lucide-react';
 import { ServicesService } from '@/lib/api-backend';
 import toast from 'react-hot-toast';
@@ -40,6 +41,7 @@ interface Service {
 export default function ServicesPage() {
   const { loading: authLoading, authenticated } = useAuth();
   const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showAddServiceModal, setShowAddServiceModal] = useState(false);
   const [newServiceForm, setNewServiceForm] = useState({
     name: '',

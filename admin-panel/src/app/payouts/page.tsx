@@ -207,7 +207,27 @@ export default function PayoutsPage() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <button className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600">
+            <button 
+              onClick={async () => {
+                const pending = payouts.filter(p => p.status === 'pending');
+                if (pending.length === 0) {
+                  toast.error('No pending payouts to process');
+                  return;
+                }
+                if (!window.confirm(`Process ${pending.length} pending payouts?`)) return;
+                
+                try {
+                  for (const payout of pending) {
+                    await PayoutsService.process(payout.id);
+                  }
+                  toast.success('Payouts processing started');
+                  loadPayouts();
+                } catch (error) {
+                  toast.error('Failed to process some payouts');
+                }
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600"
+            >
               <Send size={20} />
               <span>Process Payouts</span>
             </button>

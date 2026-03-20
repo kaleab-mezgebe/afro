@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import '../../../core/controllers/auth_controller.dart' as core_auth;
 
 import '../../../domain/entities/profile.dart';
 import '../../../domain/usecases/profile/get_profile.dart';
@@ -120,5 +121,10 @@ class ProfileController extends GetxController {
 
   void clearError() {
     _error.value = '';
+  }
+
+  Future<void> logout() async {
+    final authController = Get.find<core_auth.AuthController>();
+    await authController.logout();
   }
 }

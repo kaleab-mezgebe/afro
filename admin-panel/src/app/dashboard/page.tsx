@@ -83,15 +83,26 @@ export default function DashboardPage() {
       // Load real data from backend API
       const [statsData, activitiesData] = await Promise.all([
         DashboardService.getStats(),
-        DashboardService.getRecentActivities(10)
+        DashboardService.getActivities()
       ]);
 
       if (statsData.success && statsData.data) {
-        setStats(statsData.data);
+        setStats(prev => ({
+          ...prev,
+          ...statsData.data
+        }));
       }
 
-      if (activitiesData.success && activitiesData.data) {
-        setRecentActivity(activitiesData.data);
+      if (activitiesData.success && Array.isArray(activitiesData.data)) {
+        const mappedActivities = activitiesData.data.map((act: any, idx: number) => ({
+          id: act.id || idx,
+          type: act.type || 'Activity',
+          message: act.description || act.message || 'New activity recorded',
+          time: new Date(act.timestamp || act.time).toLocaleString(),
+          icon: Activity,
+          color: 'blue'
+        }));
+        setRecentActivity(mappedActivities);
       }
     } catch (error) {
       toast.error('Failed to load dashboard data');
