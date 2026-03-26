@@ -4,18 +4,19 @@ import '../network/api_client.dart';
 
 class AuthService {
   final ApiClient _apiClient;
-  final FirebaseAuth _firebaseAuth;
+  final FirebaseAuth? _firebaseAuth;
   final Logger _logger = Logger();
 
   AuthService(this._apiClient, this._firebaseAuth);
 
   // Get current Firebase user
-  User? get currentUser => _firebaseAuth.currentUser;
+  User? get currentUser => _firebaseAuth?.currentUser;
 
   // Get Firebase ID token
   Future<String?> getIdToken() async {
     try {
-      final user = _firebaseAuth.currentUser;
+      if (_firebaseAuth == null) return null;
+      final user = _firebaseAuth!.currentUser;
       if (user != null) {
         return await user.getIdToken();
       }
@@ -65,8 +66,11 @@ class AuthService {
     String email,
     String password,
   ) async {
+    if (_firebaseAuth == null) {
+      throw Exception('Firebase Auth is not available');
+    }
     try {
-      final credential = await _firebaseAuth.signInWithEmailAndPassword(
+      final credential = await _firebaseAuth!.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -87,8 +91,11 @@ class AuthService {
     String email,
     String password,
   ) async {
+    if (_firebaseAuth == null) {
+      throw Exception('Firebase Auth is not available');
+    }
     try {
-      final credential = await _firebaseAuth.createUserWithEmailAndPassword(
+      final credential = await _firebaseAuth!.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -107,7 +114,9 @@ class AuthService {
   // Sign out
   Future<void> signOut() async {
     try {
-      await _firebaseAuth.signOut();
+      if (_firebaseAuth != null) {
+        await _firebaseAuth!.signOut();
+      }
       _apiClient.clearAuthToken();
     } catch (e) {
       _logger.e('Error signing out', error: e);
@@ -117,8 +126,11 @@ class AuthService {
 
   // Send password reset email
   Future<void> sendPasswordResetEmail(String email) async {
+    if (_firebaseAuth == null) {
+      throw Exception('Firebase Auth is not available');
+    }
     try {
-      await _firebaseAuth.sendPasswordResetEmail(email: email);
+      await _firebaseAuth!.sendPasswordResetEmail(email: email);
     } catch (e) {
       _logger.e('Error sending password reset email', error: e);
       rethrow;

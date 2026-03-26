@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Firebase Configuration - Replace with your actual config -->
+    <string name="firebase_database_url">https://afro-provider-default.firebaseio.com</string>
+    <string name="firebase_api_key">AIzaSyDummyKeyForDevelopment</string>
+    <string name="firebase_application_id">1:123456789:android:abcdef</string>
+    <string name="firebase_project_id">afro-provider</string>
+    <string name="google_app_id">1:123456789:android:abcdef</string>
+    <string name="google_storage_bucket">afro-provider.appspot.com</string>
+</resources>

@@ -7,45 +7,98 @@ import 'package:get/get.dart';
 import 'app/app.dart';
 import 'core/di/injection_container.dart';
 import 'core/utils/app_theme.dart';
+import 'core/screens/splash_screen.dart';
 
-void main() async {
+Future<void> initializeApp() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
-  await Firebase.initializeApp();
+  print('Starting app initialization...');
+
+  // Minimum splash screen display time (1 second)
+  await Future.delayed(const Duration(seconds: 1));
+
+  // Initialize Firebase with error handling
+  try {
+    await Firebase.initializeApp();
+    print('✅ Firebase initialized successfully');
+  } catch (e) {
+    print('⚠️ Firebase initialization failed: $e');
+    print('App will continue without Firebase features');
+  }
 
   // Initialize GetX and GetStorage
-  await GetStorage.init();
-  Get.put(GetStorage()); // Initialize LocalStorage
-  // Note: GetProviders will be initialized when needed
+  try {
+    await GetStorage.init();
+    Get.put(GetStorage()); // Initialize LocalStorage
+    print('✅ GetStorage initialized');
+  } catch (e) {
+    print('⚠️ GetStorage initialization failed: $e');
+  }
 
-  // Initialize dependencies
-  await initializeDependencies();
+  // Initialize dependencies with error handling
+  try {
+    await initializeDependencies();
+    print('✅ Dependencies initialized');
+  } catch (e) {
+    print('⚠️ Dependencies initialization failed: $e');
+    print('App will continue with limited functionality');
+  }
 
+  print('🚀 App initialization complete');
+}
+
+void main() {
   runApp(const ProviderScope(child: AfroProviderApp()));
 }
 
-class AfroProviderApp extends ConsumerWidget {
+class AfroProviderApp extends ConsumerStatefulWidget {
   const AfroProviderApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Sizer(
-      builder: (context, orientation, deviceType) {
-        return MaterialApp.router(
-          title: 'AFRO Provider',
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: ThemeMode.light,
-          routerConfig: AppRouter.router,
-          builder: (context, child) {
-            return MediaQuery(
-              data: MediaQuery.of(context).copyWith(
-                textScaleFactor:
-                    MediaQuery.of(context).textScaleFactor.clamp(0.8, 1.3),
-              ),
-              child: child!,
+  ConsumerState<AfroProviderApp> createState() => _AfroProviderAppState();
+}
+
+class _AfroProviderAppState extends ConsumerState<AfroProviderApp> {
+  late Future<void> _initializationFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializationFuture = initializeApp();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<void>(
+      future: _initializationFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SplashScreen();
+        }
+
+        if (snapshot.hasError) {
+          print('Initialization error: ${snapshot.error}');
+          // Still show the app even if initialization failed
+        }
+
+        return Sizer(
+          builder: (context, orientation, deviceType) {
+            return MaterialApp.router(
+              title: 'AFRO Provider',
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.lightTheme,
+              darkTheme: AppTheme.darkTheme,
+              themeMode: ThemeMode.light,
+              routerConfig: AppRouter.router,
+              builder: (context, child) {
+                return MediaQuery(
+                  data: MediaQuery.of(context).copyWith(
+                    textScaleFactor:
+                        MediaQuery.of(context).textScaleFactor.clamp(0.8, 1.3),
+                  ),
+                  child: child!,
+                );
+              },
             );
           },
         );
