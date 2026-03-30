@@ -113,7 +113,23 @@ class AnalyticsApiService {
         '/providers/revenue/trends',
         queryParameters: {'period': period},
       );
-      return response.data;
+
+      // Handle different response formats
+      if (response.data is Map<String, dynamic>) {
+        final data = response.data as Map<String, dynamic>;
+        if (data['trends'] != null && data['trends'] is List) {
+          return data['trends'] as List<dynamic>;
+        } else if (data['data'] != null && data['data'] is List) {
+          return data['data'] as List<dynamic>;
+        } else {
+          // Return empty list if no trends found
+          return [];
+        }
+      } else if (response.data is List) {
+        return response.data as List<dynamic>;
+      } else {
+        return [];
+      }
     } catch (e) {
       _logger.e('Error getting revenue trends: $e');
       rethrow;

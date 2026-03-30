@@ -39,7 +39,7 @@ class ShopNotifier extends StateNotifier<ShopState> {
     state = const ShopState(isLoading: true);
 
     try {
-      // Fetch shops from API
+      // Use the global shopService from injection_container.dart
       final response = await shopService.getShops();
 
       // Convert API response to Shop models
@@ -52,8 +52,10 @@ class ShopNotifier extends StateNotifier<ShopState> {
           rating: (json['rating'] ?? 0).toDouble(),
           totalReviews: json['totalReviews'] ?? 0,
           isActive: json['isActive'] ?? true,
-          createdAt: DateTime.parse(json['createdAt']),
-          updatedAt: DateTime.parse(json['updatedAt']),
+          createdAt: DateTime.parse(
+              json['createdAt'] ?? DateTime.now().toIso8601String()),
+          updatedAt: DateTime.parse(
+              json['updatedAt'] ?? DateTime.now().toIso8601String()),
         );
       }).toList();
 
@@ -66,6 +68,60 @@ class ShopNotifier extends StateNotifier<ShopState> {
       state = ShopState(
         isLoading: false,
         error: e.toString(),
+      );
+    }
+  }
+
+  Future<void> createShop(Shop shop) async {
+    try {
+      state = state.copyWith(isLoading: true);
+
+      final shopData = {
+        'name': shop.name,
+        'category': shop.category.value,
+        'isActive': shop.isActive,
+        'providerId': shop.providerId,
+      };
+
+      await shopService.createShop(shopData);
+      await loadShops(); // Reload shops after creation
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Failed to create shop: ${e.toString()}',
+      );
+    }
+  }
+
+  Future<void> updateShop(Shop shop) async {
+    try {
+      state = state.copyWith(isLoading: true);
+
+      final shopData = {
+        'name': shop.name,
+        'category': shop.category.value,
+        'isActive': shop.isActive,
+      };
+
+      await shopService.updateShop(shop.id, shopData);
+      await loadShops(); // Reload shops after update
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Failed to update shop: ${e.toString()}',
+      );
+    }
+  }
+
+  Future<void> deleteShop(String shopId) async {
+    try {
+      state = state.copyWith(isLoading: true);
+      await shopService.deleteShop(shopId);
+      await loadShops(); // Reload shops after deletion
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Failed to delete shop: ${e.toString()}',
       );
     }
   }
@@ -95,23 +151,6 @@ class ShopNotifier extends StateNotifier<ShopState> {
   void addShop(Shop shop) {
     final currentShops = List<Shop>.from(state.shops);
     currentShops.add(shop);
-    state = state.copyWith(shops: currentShops);
-  }
-
-  void updateShop(Shop shop) {
-    final currentShops = List<Shop>.from(state.shops);
-    final index = currentShops.indexWhere((s) => s.id == shop.id);
-
-    if (index != -1) {
-      currentShops[index] = shop;
-    }
-
-    state = state.copyWith(shops: currentShops);
-  }
-
-  void deleteShop(String shopId) {
-    final currentShops =
-        state.shops.where((shop) => shop.id != shopId).toList();
     state = state.copyWith(shops: currentShops);
   }
 

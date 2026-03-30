@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:sizer/sizer.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:get/get.dart';
@@ -8,6 +7,7 @@ import 'app/app.dart';
 import 'core/di/injection_container.dart';
 import 'core/utils/app_theme.dart';
 import 'core/screens/splash_screen.dart';
+import 'core/services/notification_service.dart';
 
 Future<void> initializeApp() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,15 +16,6 @@ Future<void> initializeApp() async {
 
   // Minimum splash screen display time (1 second)
   await Future.delayed(const Duration(seconds: 1));
-
-  // Initialize Firebase with error handling
-  try {
-    await Firebase.initializeApp();
-    print('✅ Firebase initialized successfully');
-  } catch (e) {
-    print('⚠️ Firebase initialization failed: $e');
-    print('App will continue without Firebase features');
-  }
 
   // Initialize GetX and GetStorage
   try {
@@ -91,6 +82,8 @@ class _AfroProviderAppState extends ConsumerState<AfroProviderApp> {
               themeMode: ThemeMode.light,
               routerConfig: AppRouter.router,
               builder: (context, child) {
+                // Store context globally for notifications
+                NotificationService.setContext(context);
                 return MediaQuery(
                   data: MediaQuery.of(context).copyWith(
                     textScaleFactor:

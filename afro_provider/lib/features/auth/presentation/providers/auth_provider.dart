@@ -61,44 +61,53 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true);
 
     try {
-      // Check if Firebase Auth is available
-      if (authService.currentUser == null) {
-        // Fallback to mock authentication for development
-        await Future.delayed(const Duration(seconds: 1));
+      print('🔧 Using backend authentication only');
+      await _directBackendLogin(email, password);
+    } catch (e) {
+      print('❌ Login error: $e');
+      state = AuthState(
+        isLoading: false,
+        error: e.toString(),
+      );
+    }
+  }
 
-        // Try to get provider data from backend using mock auth
-        try {
-          final providerData = await providerService.getProfile();
-          state = AuthState(
-            isLoading: false,
-            isAuthenticated: true,
-            provider: _parseProviderData(providerData),
-          );
-        } catch (e) {
-          // If backend fails, create mock provider data
-          state = AuthState(
-            isLoading: false,
-            isAuthenticated: true,
-            provider: models.Provider(
-              id: '1',
-              email: email,
-              phoneNumber: '+1234567890',
-              firstName: 'John',
-              lastName: 'Doe',
-              status: ProviderStatus.approved,
-              isVerified: true,
-              createdAt: DateTime.now(),
-              updatedAt: DateTime.now(),
-            ),
-          );
+  Future<void> _directBackendLogin(String email, String password) async {
+    try {
+      // Authenticate directly with backend using email/password
+      final loginData = {
+        'email': email,
+        'password': password,
+      };
+
+      final response = await providerService.loginProvider(loginData);
+
+      print('🔍 Backend login response: $response');
+
+      // Extract JWT from response - the token is nested under data.access_token
+      final jwt = response['data']?['access_token'] ??
+          response['data']?['jwt'] ??
+          response['data']?['token'] ??
+          response['data']?['accessToken'] ??
+          response['access_token'] ??
+          response['jwt'] ??
+          response['token'] ??
+          response['accessToken'];
+
+      if (jwt != null) {
+        apiClient.setAuthToken(jwt);
+        print(
+            '✅ Backend login successful, JWT token set: ${jwt.substring(0, 20)}...');
+      } else {
+        print(
+            '❌ No JWT token found in response. Available keys: ${response.keys.toList()}');
+        if (response.containsKey('data')) {
+          print('❌ Data keys available: ${response['data'].keys.toList()}');
         }
-        return;
+        throw Exception('No authentication token received from backend');
       }
 
-      // Real Firebase authentication
-      await authService.signInWithEmailPassword(email, password);
-
-      // Get provider token and fetch data from backend
+      // Get provider data from backend
       final providerData = await providerService.getProfile();
 
       state = AuthState(
@@ -106,11 +115,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
         isAuthenticated: true,
         provider: _parseProviderData(providerData),
       );
-    } catch (e) {
-      state = AuthState(
-        isLoading: false,
-        error: e.toString(),
-      );
+      print('✅ Backend authentication successful');
+    } catch (backendError) {
+      print('❌ Backend authentication failed: $backendError');
+      throw Exception(
+          'Authentication failed. Please check your credentials and try again.');
     }
   }
 
@@ -169,17 +178,33 @@ class AuthNotifier extends StateNotifier<AuthState> {
       };
 
       // Register with backend
-      final response = await providerService.registerProvider(registrationData);
+      await providerService.registerProvider(registrationData);
+
+      // After successful registration, login directly with backend
+      print('✅ Provider registered, logging in with backend...');
+      await _directBackendLogin(email, password);
+    } catch (e) {
+      String errorMessage = e.toString();
+
+      // Handle specific database constraint errors
+      if (errorMessage.contains('duplicate key') ||
+          errorMessage.contains('unique constraint')) {
+        if (errorMessage.contains('email')) {
+          errorMessage =
+              'An account with this email already exists. Please use a different email or try signing in.';
+        } else if (errorMessage.contains('phoneNumber') ||
+            errorMessage.contains('phone')) {
+          errorMessage =
+              'An account with this phone number already exists. Please use a different phone number.';
+        } else {
+          errorMessage =
+              'An account with this information already exists. Please check your details and try again.';
+        }
+      }
 
       state = AuthState(
         isLoading: false,
-        isAuthenticated: true,
-        provider: _parseProviderData(response),
-      );
-    } catch (e) {
-      state = AuthState(
-        isLoading: false,
-        error: e.toString(),
+        error: errorMessage,
       );
     }
   }
@@ -188,8 +213,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true);
 
     try {
-      // TODO: Implement logout logic
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Clear auth token from API client
+      apiClient.clearAuthToken();
 
       state = const AuthState(
         isLoading: false,

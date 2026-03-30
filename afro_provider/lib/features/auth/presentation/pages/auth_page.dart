@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
 import '../../widgets/login_form.dart';
 import '../../widgets/register_form.dart';
@@ -19,6 +20,13 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
 
+    // Navigate to dashboard if authenticated
+    if (authState.isAuthenticated) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.go('/dashboard');
+      });
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -36,7 +44,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
               ),
             ),
           ),
-          
+
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
@@ -95,9 +103,11 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                   // Auth Switcher Header
                   Row(
                     children: [
-                      _buildAuthTab('SIGN IN', _isLogin, () => setState(() => _isLogin = true)),
+                      _buildAuthTab('SIGN IN', _isLogin,
+                          () => setState(() => _isLogin = true)),
                       const SizedBox(width: 30),
-                      _buildAuthTab('CREATE ACCOUNT', !_isLogin, () => setState(() => _isLogin = false)),
+                      _buildAuthTab('CREATE ACCOUNT', !_isLogin,
+                          () => setState(() => _isLogin = false)),
                     ],
                   ),
 
@@ -120,16 +130,20 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                       decoration: BoxDecoration(
                         color: AppTheme.error.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppTheme.error.withOpacity(0.2)),
+                        border:
+                            Border.all(color: AppTheme.error.withOpacity(0.2)),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.error_outline, color: AppTheme.error, size: 20),
+                          const Icon(Icons.error_outline,
+                              color: AppTheme.error, size: 20),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               authState.error!,
-                              style: const TextStyle(color: AppTheme.error, fontWeight: FontWeight.w500),
+                              style: const TextStyle(
+                                  color: AppTheme.error,
+                                  fontWeight: FontWeight.w500),
                             ),
                           ),
                         ],
@@ -141,7 +155,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
               ),
             ),
           ),
-          
+
           // Global Loading Overlay
           if (authState.isLoading)
             Container(

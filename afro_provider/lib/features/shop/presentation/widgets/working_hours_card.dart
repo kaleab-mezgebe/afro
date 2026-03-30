@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../pages/shop_settings_page.dart';
 
 class WorkingHoursCard extends StatefulWidget {
   const WorkingHoursCard({super.key});
@@ -32,12 +33,17 @@ class _WorkingHoursCardState extends State<WorkingHoursCard> {
                 Text(
                   'Working Hours',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
                 TextButton.icon(
                   onPressed: () {
-                    // TODO: Edit working hours
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ShopSettingsPage(),
+                      ),
+                    );
                   },
                   icon: const Icon(Icons.edit),
                   label: const Text('Edit'),
@@ -48,7 +54,7 @@ class _WorkingHoursCardState extends State<WorkingHoursCard> {
             ...workingHours.entries.map((entry) {
               final day = entry.key;
               final hours = entry.value;
-              
+
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Row(
@@ -57,9 +63,10 @@ class _WorkingHoursCardState extends State<WorkingHoursCard> {
                       width: 80,
                       child: Text(
                         day,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -67,7 +74,8 @@ class _WorkingHoursCardState extends State<WorkingHoursCard> {
                       child: Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.green.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
@@ -84,7 +92,8 @@ class _WorkingHoursCardState extends State<WorkingHoursCard> {
                           const Text(' - '),
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.red.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),

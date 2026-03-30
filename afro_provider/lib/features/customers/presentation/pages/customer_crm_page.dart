@@ -23,7 +23,7 @@ class CustomerCRMPage extends ConsumerWidget {
             icon: const Icon(Icons.download),
             onPressed: () {
               // Load customers manually
-              ref.read(customerProvider.notifier).loadCustomers();
+              ref.read(customerProvider.notifier).refresh();
             },
           ),
           IconButton(
@@ -75,7 +75,7 @@ class CustomerCRMPage extends ConsumerWidget {
                           onPressed: () {
                             // Clear error and retry
                             ref.read(customerProvider.notifier).clearError();
-                            ref.read(customerProvider.notifier).loadCustomers();
+                            ref.read(customerProvider.notifier).refresh();
                           },
                           child: const Text('Retry'),
                         ),

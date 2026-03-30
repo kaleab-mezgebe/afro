@@ -12,7 +12,23 @@ class CustomerService {
     try {
       final response =
           await _apiClient.get('/providers/shops/$shopId/customers');
-      return response.data as List<dynamic>;
+
+      // Handle different response formats
+      if (response.data is Map<String, dynamic>) {
+        final data = response.data as Map<String, dynamic>;
+        if (data['customers'] != null && data['customers'] is List) {
+          return data['customers'] as List<dynamic>;
+        } else if (data['data'] != null && data['data'] is List) {
+          return data['data'] as List<dynamic>;
+        } else {
+          // Return empty list if no customers found
+          return [];
+        }
+      } else if (response.data is List) {
+        return response.data as List<dynamic>;
+      } else {
+        return [];
+      }
     } catch (e) {
       _logger.e('Error getting shop customers', error: e);
       rethrow;
@@ -35,7 +51,22 @@ class CustomerService {
     try {
       final response =
           await _apiClient.get('/providers/customers/$customerId/appointments');
-      return response.data as List<dynamic>;
+
+      // Handle different response formats
+      if (response.data is Map<String, dynamic>) {
+        final data = response.data as Map<String, dynamic>;
+        if (data['appointments'] != null && data['appointments'] is List) {
+          return data['appointments'] as List<dynamic>;
+        } else if (data['data'] != null && data['data'] is List) {
+          return data['data'] as List<dynamic>;
+        } else {
+          return [];
+        }
+      } else if (response.data is List) {
+        return response.data as List<dynamic>;
+      } else {
+        return [];
+      }
     } catch (e) {
       _logger.e('Error getting customer appointments', error: e);
       rethrow;

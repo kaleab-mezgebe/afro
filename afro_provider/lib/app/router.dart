@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../features/auth/presentation/pages/auth_page.dart';
+import '../features/customers/presentation/pages/customer_management_page.dart';
 import '../features/dashboard/presentation/pages/dashboard_page.dart';
+import '../features/auth/presentation/pages/auth_page.dart';
 import '../features/shop/presentation/pages/shop_management_page.dart';
 import '../features/staff/presentation/pages/staff_management_page.dart';
 import '../features/appointments/presentation/pages/appointments_page.dart';
@@ -29,6 +30,10 @@ class AppRouter {
           GoRoute(
             path: '/dashboard',
             builder: (context, state) => const DashboardPage(),
+          ),
+          GoRoute(
+            path: '/customers',
+            builder: (context, state) => const CustomerManagementPage(),
           ),
           GoRoute(
             path: '/appointments',
@@ -142,12 +147,14 @@ class _MainNavigationState extends State<MainNavigation> {
                       duration: const Duration(milliseconds: 200),
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: isSelected ? AppTheme.primaryYellow : Colors.white,
+                        color:
+                            isSelected ? AppTheme.primaryYellow : Colors.white,
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Icon(
                         isSelected ? item.selectedIcon : item.icon,
-                        color: isSelected ? AppTheme.black : AppTheme.greyMedium,
+                        color:
+                            isSelected ? AppTheme.black : AppTheme.greyMedium,
                         size: 24,
                       ),
                     ),
@@ -157,7 +164,8 @@ class _MainNavigationState extends State<MainNavigation> {
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
-                        color: isSelected ? AppTheme.black : AppTheme.greyMedium,
+                        color:
+                            isSelected ? AppTheme.black : AppTheme.greyMedium,
                         letterSpacing: 0.5,
                       ),
                     ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../pages/shop_settings_page.dart';
 
 class SettingsCard extends StatelessWidget {
   const SettingsCard({super.key});
@@ -14,8 +15,8 @@ class SettingsCard extends StatelessWidget {
             Text(
               'Shop Settings',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 16),
             _SettingItem(
@@ -26,6 +27,11 @@ class SettingsCard extends StatelessWidget {
                 value: true,
                 onChanged: (value) {
                   // TODO: Toggle notifications
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content: Text(
+                            'Notifications ${value ? "enabled" : "disabled"}')),
+                  );
                 },
               ),
             ),
@@ -35,7 +41,12 @@ class SettingsCard extends StatelessWidget {
               subtitle: 'Configure payment options',
               trailing: const Icon(Icons.arrow_forward_ios),
               onTap: () {
-                // TODO: Navigate to payment settings
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ShopSettingsPage(),
+                  ),
+                );
               },
             ),
             _SettingItem(
@@ -44,7 +55,10 @@ class SettingsCard extends StatelessWidget {
               subtitle: 'Share shop with customers',
               trailing: const Icon(Icons.arrow_forward_ios),
               onTap: () {
-                // TODO: Share shop
+                // TODO: Implement shop sharing
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Shop sharing coming soon')),
+                );
               },
             ),
             _SettingItem(
@@ -54,6 +68,9 @@ class SettingsCard extends StatelessWidget {
               trailing: const Icon(Icons.arrow_forward_ios),
               onTap: () {
                 // TODO: Navigate to analytics
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Analytics coming soon')),
+                );
               },
             ),
           ],
@@ -107,14 +124,14 @@ class _SettingItem extends StatelessWidget {
                   Text(
                     title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
                   Text(
                     subtitle,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                          color: Colors.grey[600],
+                        ),
                   ),
                 ],
               ),

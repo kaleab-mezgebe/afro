@@ -18,7 +18,22 @@ class AppointmentService {
         '/providers/shops/$shopId/appointments',
         queryParameters: queryParams,
       );
-      return response.data as List<dynamic>;
+
+      // Handle different response formats
+      if (response.data is Map<String, dynamic>) {
+        final data = response.data as Map<String, dynamic>;
+        if (data['appointments'] != null && data['appointments'] is List) {
+          return data['appointments'] as List<dynamic>;
+        } else if (data['data'] != null && data['data'] is List) {
+          return data['data'] as List<dynamic>;
+        } else {
+          return [];
+        }
+      } else if (response.data is List) {
+        return response.data as List<dynamic>;
+      } else {
+        return [];
+      }
     } catch (e) {
       _logger.e('Error getting shop appointments', error: e);
       rethrow;

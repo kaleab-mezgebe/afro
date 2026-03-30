@@ -31,6 +31,19 @@ class ProviderService {
     }
   }
 
+  // Login provider
+  Future<Map<String, dynamic>> loginProvider(
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      final response = await _apiClient.post('/providers/login', data: data);
+      return response.data;
+    } catch (e) {
+      _logger.e('Error logging in provider', error: e);
+      rethrow;
+    }
+  }
+
   // Update provider profile
   Future<Map<String, dynamic>> updateProfile(
     Map<String, dynamic> data,

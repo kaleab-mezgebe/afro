@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../providers/dashboard_provider.dart';
 import '../../../../core/utils/app_theme.dart';
@@ -37,19 +38,36 @@ class DashboardPage extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Welcome & Profile Section
-                    _WelcomeSection(),
+                    if (dashboardState.stats != null)
+                      _WelcomeSection(
+                          providerProfile:
+                              dashboardState.stats!.providerProfile),
+                    if (dashboardState.stats == null)
+                      const _WelcomeSection(providerProfile: {}),
                     const SizedBox(height: 24),
 
                     // Today's Stats Grid
-                    _QuickStatsGrid(),
+                    if (dashboardState.stats != null)
+                      _QuickStatsGrid(stats: dashboardState.stats!),
+                    if (dashboardState.stats == null)
+                      const _QuickStatsGrid(stats: null),
                     const SizedBox(height: 32),
 
                     // Modern Revenue Chart Card
-                    _RevenueChart(),
+                    if (dashboardState.stats != null)
+                      _RevenueChart(
+                          revenueTrends: dashboardState.stats!.revenueTrends),
+                    if (dashboardState.stats == null)
+                      const _RevenueChart(revenueTrends: []),
                     const SizedBox(height: 32),
 
                     // Next Appointment Card
-                    _RecentAppointments(),
+                    if (dashboardState.stats != null)
+                      _RecentAppointments(
+                          appointments:
+                              dashboardState.stats!.recentAppointments),
+                    if (dashboardState.stats == null)
+                      const _RecentAppointments(appointments: []),
                     const SizedBox(height: 32),
 
                     // Quick Shortcuts Section
@@ -64,8 +82,15 @@ class DashboardPage extends ConsumerWidget {
 }
 
 class _WelcomeSection extends StatelessWidget {
+  final Map<String, dynamic> providerProfile;
+
+  const _WelcomeSection({required this.providerProfile});
+
   @override
   Widget build(BuildContext context) {
+    final firstName = providerProfile['firstName'] ?? 'Provider';
+    final businessName = providerProfile['businessName'] ?? 'AFRO Barber Shop';
+
     return Row(
       children: [
         Expanded(
@@ -81,10 +106,18 @@ class _WelcomeSection extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                'Afro Barber Shop',
+                firstName,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       color: AppTheme.black,
                       fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                businessName,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppTheme.greyMedium,
+                      fontWeight: FontWeight.w500,
                     ),
               ),
             ],
@@ -112,6 +145,10 @@ class _WelcomeSection extends StatelessWidget {
 }
 
 class _QuickStatsGrid extends StatelessWidget {
+  final DashboardStats? stats;
+
+  const _QuickStatsGrid({required this.stats});
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -120,16 +157,17 @@ class _QuickStatsGrid extends StatelessWidget {
           children: [
             _StatCard(
               title: 'Revenue Today',
-              value: '\$ 1,250',
-              icon: Icons
-                  .currency_bitcoin, // Using bitcoin as placeholder for modern look or generic money
+              value: stats != null
+                  ? '\$${stats!.todayRevenue.toStringAsFixed(2)}'
+                  : '\$0',
+              icon: Icons.currency_bitcoin,
               color: AppTheme.primaryYellow,
               width: (constraints.maxWidth - 16) / 2,
             ),
             const SizedBox(width: 16),
             _StatCard(
               title: 'Appointments',
-              value: '12',
+              value: stats?.todayAppointments.toString() ?? '0',
               icon: Icons.calendar_today_outlined,
               color: AppTheme.black,
               width: (constraints.maxWidth - 16) / 2,
@@ -212,8 +250,29 @@ class _StatCard extends StatelessWidget {
 }
 
 class _RevenueChart extends StatelessWidget {
+  final List<Map<String, dynamic>> revenueTrends;
+
+  const _RevenueChart({required this.revenueTrends});
+
   @override
   Widget build(BuildContext context) {
+    // Generate chart data from revenue trends
+    final spots = revenueTrends.isNotEmpty
+        ? revenueTrends.asMap().entries.map((entry) {
+            final day = entry.key;
+            final value = (entry.value['amount'] ?? 0).toDouble();
+            return FlSpot(day.toDouble(), value);
+          }).toList()
+        : const [
+            FlSpot(0, 1),
+            FlSpot(1, 1.5),
+            FlSpot(2, 1.4),
+            FlSpot(3, 2.2),
+            FlSpot(4, 1.8),
+            FlSpot(5, 2.8),
+            FlSpot(6, 2.5),
+          ];
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -256,15 +315,7 @@ class _RevenueChart extends StatelessWidget {
                 borderData: FlBorderData(show: false),
                 lineBarsData: [
                   LineChartBarData(
-                    spots: const [
-                      FlSpot(0, 1),
-                      FlSpot(1, 1.5),
-                      FlSpot(2, 1.4),
-                      FlSpot(3, 2.2),
-                      FlSpot(4, 1.8),
-                      FlSpot(5, 2.8),
-                      FlSpot(6, 2.5),
-                    ],
+                    spots: spots,
                     isCurved: true,
                     color: AppTheme.primaryYellow,
                     barWidth: 6,
@@ -304,6 +355,10 @@ class _RevenueChart extends StatelessWidget {
 }
 
 class _RecentAppointments extends StatelessWidget {
+  final List<Map<String, dynamic>> appointments;
+
+  const _RecentAppointments({required this.appointments});
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -324,19 +379,49 @@ class _RecentAppointments extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        _AppointmentTile(
-          customerName: 'Kaleab Mezgebe',
-          service: 'Luxury Haircut + Beard',
-          time: 'Today, 2:30 PM',
-          status: 'Confirmed',
-        ),
-        const SizedBox(height: 12),
-        _AppointmentTile(
-          customerName: 'John Doe',
-          service: 'Facial & Scrub',
-          time: 'Today, 4:00 PM',
-          status: 'Confirmed',
-        ),
+        if (appointments.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFFAED),
+              borderRadius: BorderRadius.circular(24),
+              border:
+                  Border.all(color: AppTheme.primaryYellow.withOpacity(0.2)),
+            ),
+            child: const Center(
+              child: Column(
+                children: [
+                  Icon(Icons.calendar_today_outlined,
+                      color: AppTheme.greyMedium, size: 32),
+                  SizedBox(height: 8),
+                  Text('No appointments scheduled',
+                      style:
+                          TextStyle(color: AppTheme.greyMedium, fontSize: 14)),
+                  SizedBox(height: 4),
+                  Text('Your upcoming appointments will appear here',
+                      style:
+                          TextStyle(color: AppTheme.greyMedium, fontSize: 12)),
+                ],
+              ),
+            ),
+          )
+        else
+          ...appointments.take(2).map((appointment) {
+            final customerName = appointment['customerName'] ?? 'Unknown';
+            final service = appointment['serviceName'] ?? 'Service';
+            final time = appointment['startTime'] ?? 'Unknown time';
+            final status = appointment['status'] ?? 'Scheduled';
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _AppointmentTile(
+                customerName: customerName,
+                service: service,
+                time: time,
+                status: status,
+              ),
+            );
+          }).toList(),
       ],
     );
   }
@@ -421,30 +506,48 @@ class _QuickActions extends StatelessWidget {
             children: [
               _ActionButton(
                 icon: Icons.add_rounded,
-                label: 'Add New',
+                label: 'Add Customer',
                 color: AppTheme.primaryYellow,
-                onTap: () {},
+                onTap: () {
+                  // Navigate to customers page with add mode
+                  context.go('/customers');
+                },
               ),
               const SizedBox(width: 12),
               _ActionButton(
                 icon: Icons.people_outline,
                 label: 'Customers',
                 color: AppTheme.black,
-                onTap: () {},
+                onTap: () {
+                  context.go('/customers');
+                },
               ),
               const SizedBox(width: 12),
               _ActionButton(
                 icon: Icons.content_cut_outlined,
                 label: 'Services',
                 color: AppTheme.black,
-                onTap: () {},
+                onTap: () {
+                  context.go('/services');
+                },
               ),
               const SizedBox(width: 12),
               _ActionButton(
-                icon: Icons.settings_outlined,
-                label: 'Settings',
+                icon: Icons.calendar_today_outlined,
+                label: 'Appointments',
                 color: AppTheme.black,
-                onTap: () {},
+                onTap: () {
+                  context.go('/appointments');
+                },
+              ),
+              const SizedBox(width: 12),
+              _ActionButton(
+                icon: Icons.analytics_outlined,
+                label: 'Analytics',
+                color: AppTheme.black,
+                onTap: () {
+                  context.go('/analytics');
+                },
               ),
             ],
           ),

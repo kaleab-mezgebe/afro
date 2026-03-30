@@ -11,7 +11,27 @@ class ShopService {
   Future<List<dynamic>> getShops() async {
     try {
       final response = await _apiClient.get('/providers/shops');
-      return response.data as List<dynamic>;
+
+      // Handle different response formats
+      if (response.data is Map<String, dynamic>) {
+        final data = response.data as Map<String, dynamic>;
+
+        // Check if shops are in a 'shops' field or 'data' field
+        if (data['shops'] != null && data['shops'] is List) {
+          return data['shops'] as List<dynamic>;
+        } else if (data['data'] != null && data['data'] is List) {
+          return data['data'] as List<dynamic>;
+        } else {
+          // If it's a single shop object, wrap it in a list
+          return [data];
+        }
+      } else if (response.data is List) {
+        return response.data as List<dynamic>;
+      } else {
+        // Fallback: return empty list
+        _logger.w('Unexpected response format: ${response.data.runtimeType}');
+        return [];
+      }
     } catch (e) {
       _logger.e('Error getting shops', error: e);
       rethrow;
