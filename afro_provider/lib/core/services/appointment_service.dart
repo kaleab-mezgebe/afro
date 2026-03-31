@@ -11,12 +11,24 @@ class AppointmentService {
   Future<List<dynamic>> getShopAppointments(
     String shopId, {
     String? date,
+    String? startDate,
+    String? endDate,
   }) async {
     try {
-      final queryParams = date != null ? {'date': date} : null;
+      final queryParams = <String, String>{};
+      if (date != null) {
+        queryParams['date'] = date;
+      }
+      if (startDate != null) {
+        queryParams['startDate'] = startDate;
+      }
+      if (endDate != null) {
+        queryParams['endDate'] = endDate;
+      }
+
       final response = await _apiClient.get(
         '/providers/shops/$shopId/appointments',
-        queryParameters: queryParams,
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
       );
 
       // Handle different response formats
@@ -58,6 +70,23 @@ class AppointmentService {
       return response.data;
     } catch (e) {
       _logger.e('Error updating appointment status', error: e);
+      rethrow;
+    }
+  }
+
+  // Create appointment
+  Future<Map<String, dynamic>> createAppointment(
+    String shopId,
+    Map<String, dynamic> appointmentData,
+  ) async {
+    try {
+      final response = await _apiClient.post(
+        '/providers/shops/$shopId/appointments',
+        data: appointmentData,
+      );
+      return response.data;
+    } catch (e) {
+      _logger.e('Error creating appointment', error: e);
       rethrow;
     }
   }

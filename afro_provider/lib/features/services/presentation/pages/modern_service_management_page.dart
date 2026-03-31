@@ -8,10 +8,12 @@ class ModernServiceManagementPage extends ConsumerStatefulWidget {
   const ModernServiceManagementPage({super.key});
 
   @override
-  ConsumerState<ModernServiceManagementPage> createState() => _ModernServiceManagementPageState();
+  ConsumerState<ModernServiceManagementPage> createState() =>
+      _ModernServiceManagementPageState();
 }
 
-class _ModernServiceManagementPageState extends ConsumerState<ModernServiceManagementPage>
+class _ModernServiceManagementPageState
+    extends ConsumerState<ModernServiceManagementPage>
     with TickerProviderStateMixin {
   late AnimationController _fabAnimationController;
   late AnimationController _searchAnimationController;
@@ -20,7 +22,14 @@ class _ModernServiceManagementPageState extends ConsumerState<ModernServiceManag
   final TextEditingController _searchController = TextEditingController();
   bool _isSearchExpanded = false;
   String _selectedCategory = 'All';
-  final List<String> _categories = ['All', 'Haircut', 'Beard', 'Coloring', 'Treatment', 'Styling'];
+  final List<String> _categories = [
+    'All',
+    'Haircut',
+    'Beard',
+    'Coloring',
+    'Treatment',
+    'Styling'
+  ];
 
   @override
   void initState() {
@@ -63,72 +72,77 @@ class _ModernServiceManagementPageState extends ConsumerState<ModernServiceManag
 
   // Mock services data
   List<Map<String, dynamic>> get _mockServices => [
-    {
-      'id': '1',
-      'name': 'Classic Haircut',
-      'category': 'Haircut',
-      'price': 25.0,
-      'duration': 30,
-      'description': 'Professional haircut with styling',
-      'isActive': true,
-      'rating': 4.8,
-      'bookings': 156,
-    },
-    {
-      'id': '2',
-      'name': 'Beard Trim',
-      'category': 'Beard',
-      'price': 15.0,
-      'duration': 20,
-      'description': 'Precision beard trimming and shaping',
-      'isActive': true,
-      'rating': 4.9,
-      'bookings': 89,
-    },
-    {
-      'id': '3',
-      'name': 'Hair Coloring',
-      'category': 'Coloring',
-      'price': 80.0,
-      'duration': 120,
-      'description': 'Full hair coloring service',
-      'isActive': true,
-      'rating': 4.7,
-      'bookings': 45,
-    },
-    {
-      'id': '4',
-      'name': 'Deep Conditioning',
-      'category': 'Treatment',
-      'price': 35.0,
-      'duration': 45,
-      'description:': 'Intensive hair treatment',
-      'isActive': false,
-      'rating': 4.6,
-      'bookings': 23,
-    },
-    {
-      'id': '5',
-      'name:': 'Wedding Styling',
-      'category': 'Styling',
-      'price': 150.0,
-      'duration': 180,
-      'description': 'Special occasion hair styling',
-      'isActive': true,
-      'rating': 5.0,
-      'bookings': 12,
-    },
-  ];
+        {
+          'id': '1',
+          'name': 'Classic Haircut',
+          'category': 'Haircut',
+          'price': 25.0,
+          'duration': 30,
+          'description': 'Professional haircut with styling',
+          'isActive': true,
+          'rating': 4.8,
+          'bookings': 156,
+        },
+        {
+          'id': '2',
+          'name': 'Beard Trim',
+          'category': 'Beard',
+          'price': 15.0,
+          'duration': 20,
+          'description': 'Precision beard trimming and shaping',
+          'isActive': true,
+          'rating': 4.9,
+          'bookings': 89,
+        },
+        {
+          'id': '3',
+          'name': 'Hair Coloring',
+          'category': 'Coloring',
+          'price': 80.0,
+          'duration': 120,
+          'description': 'Full hair coloring service',
+          'isActive': true,
+          'rating': 4.7,
+          'bookings': 45,
+        },
+        {
+          'id': '4',
+          'name': 'Deep Conditioning',
+          'category': 'Treatment',
+          'price': 35.0,
+          'duration': 45,
+          'description:': 'Intensive hair treatment',
+          'isActive': false,
+          'rating': 4.6,
+          'bookings': 23,
+        },
+        {
+          'id': '5',
+          'name:': 'Wedding Styling',
+          'category': 'Styling',
+          'price': 150.0,
+          'duration': 180,
+          'description': 'Special occasion hair styling',
+          'isActive': true,
+          'rating': 5.0,
+          'bookings': 12,
+        },
+      ];
 
   List<Map<String, dynamic>> get _filteredServices {
     var services = _mockServices;
     if (_selectedCategory != 'All') {
-      services = services.where((service) => service['category'] == _selectedCategory).toList();
+      services = services
+          .where((service) => service['category'] == _selectedCategory)
+          .toList();
     }
     if (_searchController.text.isNotEmpty) {
-      services = services.where((service) =>
-          service['name'].toString().toLowerCase().contains(_searchController.text.toLowerCase())
-      ).toList();
+      services = services
+          .where((service) => service['name']
+              .toString()
+              .toLowerCase()
+              .contains(_searchController.text.toLowerCase()))
+          .toList();
     }
     return services;
   }
@@ -318,7 +332,8 @@ class _ModernServiceManagementPageState extends ConsumerState<ModernServiceManag
                 (context, index) {
                   final service = filteredServices[index];
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: _buildModernServiceCard(service),
                   );
                 },
@@ -430,7 +445,9 @@ class _ModernServiceManagementPageState extends ConsumerState<ModernServiceManag
                     child: Row(
                       children: [
                         Icon(
-                          service['isActive'] ? Icons.block : Icons.check_circle,
+                          service['isActive']
+                              ? Icons.block
+                              : Icons.check_circle,
                           size: 20,
                         ),
                         const SizedBox(width: 12),
@@ -442,7 +459,8 @@ class _ModernServiceManagementPageState extends ConsumerState<ModernServiceManag
                     value: 'delete',
                     child: Row(
                       children: [
-                        const Icon(Icons.delete, size: 20, color: ModernTheme.error),
+                        const Icon(Icons.delete,
+                            size: 20, color: ModernTheme.error),
                         const SizedBox(width: 12),
                         Text(
                           'Delete Service',
@@ -505,7 +523,8 @@ class _ModernServiceManagementPageState extends ConsumerState<ModernServiceManag
     );
   }
 
-  Widget _buildStatItem(String label, String value, IconData icon, Color color) {
+  Widget _buildStatItem(
+      String label, String value, IconData icon, Color color) {
     return Column(
       children: [
         Icon(icon, color: color, size: 20),
@@ -684,7 +703,13 @@ class _ModernServiceManagementPageState extends ConsumerState<ModernServiceManag
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: ['Haircut', 'Beard', 'Coloring', 'Treatment', 'Styling'].map((cat) {
+                children: [
+                  'Haircut',
+                  'Beard',
+                  'Coloring',
+                  'Treatment',
+                  'Styling'
+                ].map((cat) {
                   final isSelected = selectedCategory == cat;
                   return ModernChip(
                     label: cat,
@@ -721,8 +746,8 @@ class _ModernServiceManagementPageState extends ConsumerState<ModernServiceManag
                   icon: Icons.add,
                   isFullWidth: true,
                   onPressed: () {
-                    if (nameController.text.isNotEmpty && 
-                        priceController.text.isNotEmpty && 
+                    if (nameController.text.isNotEmpty &&
+                        priceController.text.isNotEmpty &&
                         durationController.text.isNotEmpty) {
                       // Create service logic here
                       Navigator.pop(context);
@@ -744,7 +769,8 @@ class _ModernServiceManagementPageState extends ConsumerState<ModernServiceManag
     );
   }
 
-  void _showEditServiceDialog(BuildContext context, Map<String, dynamic> service) {
+  void _showEditServiceDialog(
+      BuildContext context, Map<String, dynamic> service) {
     // Similar to create dialog but with pre-filled data
     _showCreateServiceDialog(context);
   }
@@ -753,13 +779,15 @@ class _ModernServiceManagementPageState extends ConsumerState<ModernServiceManag
     // Toggle service status logic
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Service ${service['isActive'] ? 'deactivated' : 'activated'}'),
+        content: Text(
+            'Service ${service['isActive'] ? 'deactivated' : 'activated'}'),
         behavior: SnackBarBehavior.floating,
       ),
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, Map<String, dynamic> service) {
+  void _showDeleteConfirmation(
+      BuildContext context, Map<String, dynamic> service) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

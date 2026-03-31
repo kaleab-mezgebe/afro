@@ -36,10 +36,12 @@ class ModernStaffManagementPage extends ConsumerStatefulWidget {
   const ModernStaffManagementPage({super.key});
 
   @override
-  ConsumerState<ModernStaffManagementPage> createState() => _ModernStaffManagementPageState();
+  ConsumerState<ModernStaffManagementPage> createState() =>
+      _ModernStaffManagementPageState();
 }
 
-class _ModernStaffManagementPageState extends ConsumerState<ModernStaffManagementPage>
+class _ModernStaffManagementPageState
+    extends ConsumerState<ModernStaffManagementPage>
     with TickerProviderStateMixin {
   late AnimationController _fabAnimationController;
   late AnimationController _searchAnimationController;
@@ -48,7 +50,14 @@ class _ModernStaffManagementPageState extends ConsumerState<ModernStaffManagemen
   final TextEditingController _searchController = TextEditingController();
   bool _isSearchExpanded = false;
   String _selectedRole = 'All';
-  final List<String> _roles = ['All', 'Barber', 'Stylist', 'Beard Specialist', 'Colorist', 'Manager'];
+  final List<String> _roles = [
+    'All',
+    'Barber',
+    'Stylist',
+    'Beard Specialist',
+    'Colorist',
+    'Manager'
+  ];
 
   @override
   void initState() {
@@ -91,67 +100,67 @@ class _ModernStaffManagementPageState extends ConsumerState<ModernStaffManagemen
 
   // Mock staff data
   List<Staff> get _mockStaff => [
-    Staff(
-      id: '1',
-      name: 'John Smith',
-      email: 'john@afrocuts.com',
-      phone: '+1234567890',
-      role: 'Barber',
-      specialty: 'Classic Cuts',
-      rating: 4.8,
-      completedServices: 156,
-      isActive: true,
-      joinDate: DateTime.now().subtract(const Duration(days: 365)),
-    ),
-    Staff(
-      id: '2',
-      name: 'Sarah Johnson',
-      email: 'sarah@afrocuts.com',
-      phone: '+1234567891',
-      role: 'Stylist',
-      specialty: 'Modern Styles',
-      rating: 4.9,
-      completedServices: 203,
-      isActive: true,
-      joinDate: DateTime.now().subtract(const Duration(days: 280)),
-    ),
-    Staff(
-      id: '3',
-      name: 'Mike Wilson',
-      email: 'mike@afrocuts.com',
-      phone: '+1234567892',
-      role: 'Beard Specialist',
-      specialty: 'Beard Art',
-      rating: 4.7,
-      completedServices: 89,
-      isActive: true,
-      joinDate: DateTime.now().subtract(const Duration(days: 180)),
-    ),
-    Staff(
-      id: '4',
-      name: 'Emily Brown',
-      email: 'emily@afrocuts.com',
-      phone: '+1234567893',
-      role: 'Colorist',
-      specialty: 'Hair Coloring',
-      rating: 5.0,
-      completedServices: 67,
-      isActive: false,
-      joinDate: DateTime.now().subtract(const Duration(days: 120)),
-    ),
-    Staff(
-      id: '5',
-      name: 'David Lee',
-      email: 'david@afrocuts.com',
-      phone: '+1234567894',
-      role: 'Manager',
-      specialty: 'Shop Management',
-      rating: 4.6,
-      completedServices: 0,
-      isActive: true,
-      joinDate: DateTime.now().subtract(const Duration(days: 90)),
-    ),
-  ];
+        Staff(
+          id: '1',
+          name: 'John Smith',
+          email: 'john@afrocuts.com',
+          phone: '+1234567890',
+          role: 'Barber',
+          specialty: 'Classic Cuts',
+          rating: 4.8,
+          completedServices: 156,
+          isActive: true,
+          joinDate: DateTime.now().subtract(const Duration(days: 365)),
+        ),
+        Staff(
+          id: '2',
+          name: 'Sarah Johnson',
+          email: 'sarah@afrocuts.com',
+          phone: '+1234567891',
+          role: 'Stylist',
+          specialty: 'Modern Styles',
+          rating: 4.9,
+          completedServices: 203,
+          isActive: true,
+          joinDate: DateTime.now().subtract(const Duration(days: 280)),
+        ),
+        Staff(
+          id: '3',
+          name: 'Mike Wilson',
+          email: 'mike@afrocuts.com',
+          phone: '+1234567892',
+          role: 'Beard Specialist',
+          specialty: 'Beard Art',
+          rating: 4.7,
+          completedServices: 89,
+          isActive: true,
+          joinDate: DateTime.now().subtract(const Duration(days: 180)),
+        ),
+        Staff(
+          id: '4',
+          name: 'Emily Brown',
+          email: 'emily@afrocuts.com',
+          phone: '+1234567893',
+          role: 'Colorist',
+          specialty: 'Hair Coloring',
+          rating: 5.0,
+          completedServices: 67,
+          isActive: false,
+          joinDate: DateTime.now().subtract(const Duration(days: 120)),
+        ),
+        Staff(
+          id: '5',
+          name: 'David Lee',
+          email: 'david@afrocuts.com',
+          phone: '+1234567894',
+          role: 'Manager',
+          specialty: 'Shop Management',
+          rating: 4.6,
+          completedServices: 0,
+          isActive: true,
+          joinDate: DateTime.now().subtract(const Duration(days: 90)),
+        ),
+      ];
 
   List<Staff> get _filteredStaff {
     var staff = _mockStaff;
@@ -159,10 +168,15 @@ class _ModernStaffManagementPageState extends ConsumerState<ModernStaffManagemen
       staff = staff.where((member) => member.role == _selectedRole).toList();
     }
     if (_searchController.text.isNotEmpty) {
-      staff = staff.where((member) =>
-          member.name.toLowerCase().contains(_searchController.text.toLowerCase()) ||
-          member.email.toLowerCase().contains(_searchController.text.toLowerCase())
-      ).toList();
+      staff = staff
+          .where((member) =>
+              member.name
+                  .toLowerCase()
+                  .contains(_searchController.text.toLowerCase()) ||
+              member.email
+                  .toLowerCase()
+                  .contains(_searchController.text.toLowerCase()))
+          .toList();
     }
     return staff;
   }
@@ -355,7 +369,8 @@ class _ModernStaffManagementPageState extends ConsumerState<ModernStaffManagemen
                 (context, index) {
                   final staff = filteredStaff[index];
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: _buildModernStaffCard(staff),
                   );
                 },
@@ -492,7 +507,8 @@ class _ModernStaffManagementPageState extends ConsumerState<ModernStaffManagemen
                     value: 'delete',
                     child: Row(
                       children: [
-                        const Icon(Icons.delete, size: 20, color: ModernTheme.error),
+                        const Icon(Icons.delete,
+                            size: 20, color: ModernTheme.error),
                         const SizedBox(width: 12),
                         Text(
                           'Delete Staff',
@@ -579,7 +595,8 @@ class _ModernStaffManagementPageState extends ConsumerState<ModernStaffManagemen
     );
   }
 
-  Widget _buildStatItem(String label, String value, IconData icon, Color color) {
+  Widget _buildStatItem(
+      String label, String value, IconData icon, Color color) {
     return Column(
       children: [
         Icon(icon, color: color, size: 20),
@@ -768,7 +785,13 @@ class _ModernStaffManagementPageState extends ConsumerState<ModernStaffManagemen
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: ['Barber', 'Stylist', 'Beard Specialist', 'Colorist', 'Manager'].map((role) {
+                children: [
+                  'Barber',
+                  'Stylist',
+                  'Beard Specialist',
+                  'Colorist',
+                  'Manager'
+                ].map((role) {
                   final isSelected = selectedRole == role;
                   return ModernChip(
                     label: role,
@@ -805,8 +828,8 @@ class _ModernStaffManagementPageState extends ConsumerState<ModernStaffManagemen
                   icon: Icons.person_add,
                   isFullWidth: true,
                   onPressed: () {
-                    if (nameController.text.isNotEmpty && 
-                        emailController.text.isNotEmpty && 
+                    if (nameController.text.isNotEmpty &&
+                        emailController.text.isNotEmpty &&
                         phoneController.text.isNotEmpty) {
                       // Add staff logic here
                       Navigator.pop(context);

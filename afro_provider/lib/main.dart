@@ -5,7 +5,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:get/get.dart';
 import 'app/app.dart';
 import 'core/di/injection_container.dart';
-import 'core/utils/app_theme.dart';
+import 'core/utils/modern_theme.dart';
 import 'core/screens/splash_screen.dart';
 import 'core/services/notification_service.dart';
 
@@ -77,8 +77,8 @@ class _AfroProviderAppState extends ConsumerState<AfroProviderApp> {
             return MaterialApp.router(
               title: 'AFRO Provider',
               debugShowCheckedModeBanner: false,
-              theme: AppTheme.lightTheme,
-              darkTheme: AppTheme.darkTheme,
+              theme: ModernTheme.lightTheme,
+              darkTheme: ModernTheme.darkTheme,
               themeMode: ThemeMode.light,
               routerConfig: AppRouter.router,
               builder: (context, child) {

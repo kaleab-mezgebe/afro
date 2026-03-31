@@ -10,10 +10,12 @@ class ModernShopManagementPage extends ConsumerStatefulWidget {
   const ModernShopManagementPage({super.key});
 
   @override
-  ConsumerState<ModernShopManagementPage> createState() => _ModernShopManagementPageState();
+  ConsumerState<ModernShopManagementPage> createState() =>
+      _ModernShopManagementPageState();
 }
 
-class _ModernShopManagementPageState extends ConsumerState<ModernShopManagementPage>
+class _ModernShopManagementPageState
+    extends ConsumerState<ModernShopManagementPage>
     with TickerProviderStateMixin {
   late AnimationController _fabAnimationController;
   late AnimationController _searchAnimationController;
@@ -238,7 +240,8 @@ class _ModernShopManagementPageState extends ConsumerState<ModernShopManagementP
                 (context, index) {
                   final shop = shopState.shops[index];
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: _buildModernShopCard(shop),
                   );
                 },
@@ -306,7 +309,9 @@ class _ModernShopManagementPageState extends ConsumerState<ModernShopManagementP
                     ),
                     const SizedBox(height: 4),
                     ModernChip(
-                      label: shop.category.value.toUpperCase().replaceAll('_', ' '),
+                      label: shop.category.value
+                          .toUpperCase()
+                          .replaceAll('_', ' '),
                       selected: shop.isActive,
                       backgroundColor: ModernTheme.surfaceVariant,
                       selectedColor: shop.isActive
@@ -380,7 +385,8 @@ class _ModernShopManagementPageState extends ConsumerState<ModernShopManagementP
                     value: 'delete',
                     child: Row(
                       children: [
-                        const Icon(Icons.delete, size: 20, color: ModernTheme.error),
+                        const Icon(Icons.delete,
+                            size: 20, color: ModernTheme.error),
                         const SizedBox(width: 12),
                         Text(
                           'Delete Shop',
@@ -463,7 +469,8 @@ class _ModernShopManagementPageState extends ConsumerState<ModernShopManagementP
     );
   }
 
-  Widget _buildStatItem(String label, String value, IconData icon, Color color) {
+  Widget _buildStatItem(
+      String label, String value, IconData icon, Color color) {
     return Column(
       children: [
         Icon(icon, color: color, size: 20),
@@ -555,7 +562,8 @@ class _ModernShopManagementPageState extends ConsumerState<ModernShopManagementP
                   const SizedBox(height: 16),
                   ModernStatCard(
                     title: 'Category',
-                    value: shop.category.value.toUpperCase().replaceAll('_', ' '),
+                    value:
+                        shop.category.value.toUpperCase().replaceAll('_', ' '),
                     icon: Icons.category,
                     iconColor: ModernTheme.primary,
                   ),

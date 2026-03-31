@@ -9,7 +9,8 @@ import '../features/appointments/presentation/pages/appointments_page.dart';
 import '../features/services/presentation/pages/service_management_page.dart';
 import '../features/analytics/presentation/pages/analytics_page.dart';
 import '../features/profile/presentation/pages/provider_profile_page.dart';
-import '../core/utils/app_theme.dart';
+import '../core/utils/modern_theme.dart';
+import '../core/widgets/modern_navigation.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -112,84 +113,16 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.background,
       body: widget.child,
-      bottomNavigationBar: Container(
-        height: 100,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 30,
-              offset: const Offset(0, -10),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: _navigationItems.asMap().entries.map((entry) {
-              final index = entry.key;
-              final item = entry.value;
-              final isSelected = _currentIndex == index;
-
-              return InkWell(
-                onTap: () {
-                  setState(() => _currentIndex = index);
-                  context.go(item.route);
-                },
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color:
-                            isSelected ? AppTheme.primaryYellow : Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Icon(
-                        isSelected ? item.selectedIcon : item.icon,
-                        color:
-                            isSelected ? AppTheme.black : AppTheme.greyMedium,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      item.label,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900,
-                        color:
-                            isSelected ? AppTheme.black : AppTheme.greyMedium,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
-        ),
+      bottomNavigationBar: ModernBottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() => _currentIndex = index);
+          context.go(_navigationItems[index].route!);
+        },
+        items: _navigationItems,
       ),
     );
   }
-}
-
-class NavigationItem {
-  final IconData icon;
-  final IconData selectedIcon;
-  final String label;
-  final String route;
-
-  NavigationItem({
-    required this.icon,
-    required this.selectedIcon,
-    required this.label,
-    required this.route,
-  });
 }

@@ -10,8 +10,25 @@ class ServiceService {
   // Get shop services
   Future<List<dynamic>> getShopServices(String shopId) async {
     try {
-      final response = await _apiClient.get('/providers/shops/$shopId/services');
-      return response.data as List<dynamic>;
+      final response =
+          await _apiClient.get('/providers/shops/$shopId/services');
+      final responseData = response.data;
+
+      // Handle different response formats
+      if (responseData is Map<String, dynamic>) {
+        if (responseData.containsKey('data')) {
+          return responseData['data'] as List<dynamic>;
+        } else {
+          // If it's a map but no 'data' field, return empty list or handle accordingly
+          _logger.w('Unexpected response format: ${responseData.keys}');
+          return [];
+        }
+      } else if (responseData is List<dynamic>) {
+        return responseData;
+      } else {
+        _logger.e('Unexpected response type: ${responseData.runtimeType}');
+        return [];
+      }
     } catch (e) {
       _logger.e('Error getting shop services', error: e);
       rethrow;
