@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'dart:convert';
+import 'dart:html' as html;
 import '../../../../core/utils/modern_theme.dart';
 import '../../../../core/widgets/modern_card.dart';
 import '../../../../core/widgets/modern_search.dart';
@@ -55,8 +56,8 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage>
     try {
       final users = await userService.getUsers();
       setState(() {
-        _users = users;
-        _filteredUsers = users;
+        _users = users as List<Map<String, dynamic>>;
+        _filteredUsers = _users;
         _isLoading = false;
       });
     } catch (e) {
@@ -84,25 +85,25 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage>
         final email = user['email']?.toString().toLowerCase() ?? '';
         final phone = user['phone']?.toString().toLowerCase() ?? '';
         final query = _searchController.text.toLowerCase();
-        
-        return name.contains(query) || 
-               email.contains(query) || 
-               phone.contains(query);
+
+        return name.contains(query) ||
+            email.contains(query) ||
+            phone.contains(query);
       }).toList();
     }
 
     // Apply role filter
     if (_selectedRole != 'All') {
-      filtered = filtered.where((user) => 
-        user['role']?.toString() == _selectedRole
-      ).toList();
+      filtered = filtered
+          .where((user) => user['role']?.toString() == _selectedRole)
+          .toList();
     }
 
     // Apply status filter
     if (_selectedStatus != 'All') {
-      filtered = filtered.where((user) => 
-        user['status']?.toString() == _selectedStatus
-      ).toList();
+      filtered = filtered
+          .where((user) => user['status']?.toString() == _selectedStatus)
+          .toList();
     }
 
     // Apply sorting
@@ -118,7 +119,7 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage>
           final dateA = DateTime.tryParse(a['createdAt'] ?? '');
           final dateB = DateTime.tryParse(b['createdAt'] ?? '');
           if (dateA == null || dateB == null) return 0;
-          return dateB!.compareTo(dateA!);
+          return dateB.compareTo(dateA);
         });
         break;
       case 'lastLogin':
@@ -126,7 +127,7 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage>
           final dateA = DateTime.tryParse(a['lastLogin'] ?? '');
           final dateB = DateTime.tryParse(b['lastLogin'] ?? '');
           if (dateA == null || dateB == null) return 0;
-          return dateB!.compareTo(dateA!);
+          return dateB.compareTo(dateA);
         });
         break;
     }
@@ -176,20 +177,22 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage>
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          value: _selectedRole,
+                          initialValue: _selectedRole,
                           decoration: InputDecoration(
                             labelText: 'Role',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
                           ),
-                          items: ['All', 'Admin', 'Staff', 'Manager', 'Customer']
-                              .map((role) => DropdownMenuItem(
-                                value: role,
-                                child: Text(role),
-                              ))
-                              .toList(),
+                          items:
+                              ['All', 'Admin', 'Staff', 'Manager', 'Customer']
+                                  .map((role) => DropdownMenuItem(
+                                        value: role,
+                                        child: Text(role),
+                                      ))
+                                  .toList(),
                           onChanged: (value) {
                             setState(() {
                               _selectedRole = value!;
@@ -201,19 +204,20 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage>
                       const SizedBox(width: 16),
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          value: _selectedStatus,
+                          initialValue: _selectedStatus,
                           decoration: InputDecoration(
                             labelText: 'Status',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
                           ),
                           items: ['All', 'Active', 'Inactive', 'Suspended']
                               .map((status) => DropdownMenuItem(
-                                value: status,
-                                child: Text(status),
-                              ))
+                                    value: status,
+                                    child: Text(status),
+                                  ))
                               .toList(),
                           onChanged: (value) {
                             setState(() {
@@ -226,19 +230,24 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage>
                       const SizedBox(width: 16),
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          value: _sortBy,
+                          initialValue: _sortBy,
                           decoration: InputDecoration(
                             labelText: 'Sort By',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
                           ),
                           items: [
-                            DropdownMenuItem(value: 'name', child: Text('Name')),
-                            DropdownMenuItem(value: 'email', child: Text('Email')),
-                            DropdownMenuItem(value: 'created', child: Text('Created Date')),
-                            DropdownMenuItem(value: 'lastLogin', child: Text('Last Login')),
+                            DropdownMenuItem(
+                                value: 'name', child: Text('Name')),
+                            DropdownMenuItem(
+                                value: 'email', child: Text('Email')),
+                            DropdownMenuItem(
+                                value: 'created', child: Text('Created Date')),
+                            DropdownMenuItem(
+                                value: 'lastLogin', child: Text('Last Login')),
                           ],
                           onChanged: (value) {
                             setState(() {
@@ -310,7 +319,7 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage>
               user: user,
               onEdit: () => _showEditUserDialog(user),
               onDelete: () => _showDeleteConfirmDialog(user),
-              onToggleStatus: () => _toggleUserStatus(user),
+              onToggleStatus: () => _toggleUserStatus(user['id']),
             );
           },
         ),
@@ -325,7 +334,7 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage>
               user: user,
               onEdit: () => _showEditUserDialog(user),
               onDelete: () => _showDeleteConfirmDialog(user),
-              onToggleStatus: () => _toggleUserStatus(user),
+              onToggleStatus: () => _toggleUserStatus(user['id']),
             );
           }).toList(),
         ),
@@ -468,7 +477,7 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage>
       final users = await userService.getUsers();
       final user = users.firstWhere((u) => u['id'] == userId);
       final newStatus = user['status'] == 'Active' ? 'Inactive' : 'Active';
-      
+
       await userService.updateUserStatus(userId, newStatus);
       await _loadUsers();
 
@@ -490,31 +499,46 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage>
     try {
       // Create CSV content
       final csvData = [
-        ['Name', 'Email', 'Phone', 'Role', 'Status', 'Created Date', 'Last Login'],
+        [
+          'Name',
+          'Email',
+          'Phone',
+          'Role',
+          'Status',
+          'Created Date',
+          'Last Login'
+        ],
         ..._filteredUsers.map((user) => [
-          user['name'] ?? '',
-          user['email'] ?? '',
-          user['phone'] ?? '',
-          user['role'] ?? '',
-          user['status'] ?? '',
-          user['createdAt'] != null ? DateFormat('yyyy-MM-dd HH:mm').format(DateTime.parse(user['createdAt'])) : '',
-          user['lastLogin'] != null ? DateFormat('yyyy-MM-dd HH:mm').format(DateTime.parse(user['lastLogin'])) : '',
-        ]),
+              user['name'] ?? '',
+              user['email'] ?? '',
+              user['phone'] ?? '',
+              user['role'] ?? '',
+              user['status'] ?? '',
+              user['createdAt'] != null
+                  ? DateFormat('yyyy-MM-dd HH:mm')
+                      .format(DateTime.parse(user['createdAt']))
+                  : '',
+              user['lastLogin'] != null
+                  ? DateFormat('yyyy-MM-dd HH:mm')
+                      .format(DateTime.parse(user['lastLogin']))
+                  : '',
+            ]),
       ];
 
       // Convert to CSV string
       final csvString = csvData.map((row) => row.join(',')).join('\n');
-      
+
       // Create download
       final bytes = utf8.encode(csvString);
       final blob = html.Blob([bytes]);
-      
+
       // Create download link
       final url = html.Url.createObjectUrlFromBlob(blob);
       final anchor = html.AnchorElement(href: url)
-        ..setAttribute('download', 'users_${DateTime.now().millisecondsSinceEpoch}.csv')
+        ..setAttribute(
+            'download', 'users_${DateTime.now().millisecondsSinceEpoch}.csv')
         ..click();
-      
+
       // Cleanup
       html.document.body?.children.remove(anchor);
       html.Url.revokeObjectUrl(url);
@@ -541,7 +565,6 @@ class _UserCard extends StatelessWidget {
   final VoidCallback onToggleStatus;
 
   const _UserCard({
-    super.key,
     required this.user,
     required this.onEdit,
     required this.onDelete,
@@ -552,7 +575,7 @@ class _UserCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final status = user['status'] ?? 'Unknown';
     final isActive = status == 'Active';
-    
+
     return ModernCard(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -567,9 +590,10 @@ class _UserCard extends StatelessWidget {
                   child: Row(
                     children: [
                       CircleAvatar(
-                        backgroundColor: isActive ? context.primary : context.textSecondary,
+                        backgroundColor:
+                            isActive ? context.primary : context.textSecondary,
                         child: Text(
-                          (user['name'] ?? '').isNotEmpty 
+                          (user['name'] ?? '').isNotEmpty
                               ? (user['name'] ?? '')[0].toUpperCase()
                               : 'U',
                           style: const TextStyle(
@@ -613,10 +637,11 @@ class _UserCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                
+
                 // Status badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: _getStatusColor(status),
                     borderRadius: BorderRadius.circular(12),
@@ -633,7 +658,7 @@ class _UserCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            
+
             // Role and dates
             Row(
               children: [
@@ -688,12 +713,14 @@ class _UserCard extends StatelessWidget {
                               size: 16,
                               color: isActive ? Colors.orange : Colors.green,
                             ),
-                            tooltip: isActive ? 'Deactivate User' : 'Activate User',
+                            tooltip:
+                                isActive ? 'Deactivate User' : 'Activate User',
                           ),
                           const SizedBox(width: 8),
                           IconButton(
                             onPressed: onDelete,
-                            icon: const Icon(Icons.delete, size: 16, color: Colors.red),
+                            icon: const Icon(Icons.delete,
+                                size: 16, color: Colors.red),
                             tooltip: 'Delete User',
                           ),
                         ],
@@ -729,7 +756,6 @@ class _UserDialog extends StatefulWidget {
   final Function(Map<String, dynamic>) onSave;
 
   const _UserDialog({
-    super.key,
     required this.title,
     this.user,
     required this.onSave,
@@ -751,7 +777,7 @@ class _UserDialogState extends State<_UserDialog> {
   @override
   void initState() {
     super.initState();
-    
+
     if (widget.user != null) {
       _nameController.text = widget.user!['name'] ?? '';
       _emailController.text = widget.user!['email'] ?? '';
@@ -792,15 +818,15 @@ class _UserDialogState extends State<_UserDialog> {
               ),
             ),
             const SizedBox(height: 24),
-            
             Expanded(
               child: Form(
                 key: _formKey,
                 child: Column(
                   children: [
                     TextFormField(
-                      initialValue: widget.user != null ? widget.user!['name'] : '',
-                      decoration: const InputDecoration(
+                      initialValue:
+                          widget.user != null ? widget.user!['name'] : '',
+                      decoration: InputDecoration(
                         labelText: 'Name *',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -814,7 +840,6 @@ class _UserDialogState extends State<_UserDialog> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    
                     TextFormField(
                       controller: _emailController,
                       decoration: const InputDecoration(
@@ -825,34 +850,33 @@ class _UserDialogState extends State<_UserDialog> {
                         if (value == null || value.isEmpty) {
                           return 'Email is required';
                         }
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,}$').hasMatch(value)) {
+                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,}$')
+                            .hasMatch(value)) {
                           return 'Please enter a valid email';
                         }
                         return null;
                       },
                     ),
                     const SizedBox(height: 16),
-                    
                     TextFormField(
                       controller: _phoneController,
                       decoration: const InputDecoration(
                         labelText: 'Phone',
                         border: OutlineInputBorder(),
                       ),
-                      ),
+                    ),
                     const SizedBox(height: 16),
-                    
                     DropdownButtonFormField<String>(
-                      value: _selectedRole,
-                      decoration: const InputDecoration(
+                      initialValue: _selectedRole,
+                      decoration: InputDecoration(
                         labelText: 'Role *',
                         border: OutlineInputBorder(),
                       ),
                       items: ['Admin', 'Staff', 'Manager', 'Customer']
                           .map((role) => DropdownMenuItem(
-                            value: role,
-                            child: Text(role),
-                          ))
+                                value: role,
+                                child: Text(role),
+                              ))
                           .toList(),
                       onChanged: (value) {
                         setState(() {
@@ -861,7 +885,6 @@ class _UserDialogState extends State<_UserDialog> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    
                     Row(
                       children: [
                         Expanded(
@@ -875,12 +898,9 @@ class _UserDialogState extends State<_UserDialog> {
                             },
                           ),
                         ),
-                      ),
                       ],
                     ),
-                    
                     const SizedBox(height: 24),
-                    
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
@@ -895,7 +915,9 @@ class _UserDialogState extends State<_UserDialog> {
                             backgroundColor: context.primary,
                             foregroundColor: context.textPrimary,
                           ),
-                          child: Text(widget.user == null ? 'Create User' : 'Update User'),
+                          child: Text(widget.user == null
+                              ? 'Create User'
+                              : 'Update User'),
                         ),
                       ],
                     ),
@@ -927,7 +949,9 @@ class _UserDialogState extends State<_UserDialog> {
       };
 
       await widget.onSave(userData);
-      Navigator.of(context).pop();
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

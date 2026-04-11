@@ -56,42 +56,38 @@ class PhoneAuthPage extends GetView<PhoneAuthController> {
           // Full-screen loading overlay
           Obx(
             () => controller.isLoading.value
-                ? SafeArea(
-                    top: false,
-                    bottom: false,
-                    child: Positioned.fill(
-                      child: Container(
-                        color: Colors.black.withValues(alpha: 0.3),
-                        child: Align(
-                          alignment: Alignment
-                              .center, // Center horizontally, slightly lower vertically
-                          child: Transform.translate(
-                            offset: Offset(0, 50), // Move 50 pixels down
-                            child: Container(
-                              width: 60,
-                              height: 60,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(30),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.1),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 5),
+                ? Positioned.fill(
+                    child: Container(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      child: Align(
+                        alignment: Alignment
+                            .center, // Center horizontally, slightly lower vertically
+                        child: Transform.translate(
+                          offset: Offset(0, 50), // Move 50 pixels down
+                          child: Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(30),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.1),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: SizedBox(
+                                width: 40,
+                                height: 40,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 3,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    AppTheme.primaryYellow,
                                   ),
-                                ],
-                              ),
-                              child: Center(
-                                child: SizedBox(
-                                  width: 40,
-                                  height: 40,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 3,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      AppTheme.primaryYellow,
-                                    ),
-                                    backgroundColor: Colors.transparent,
-                                  ),
+                                  backgroundColor: Colors.transparent,
                                 ),
                               ),
                             ),

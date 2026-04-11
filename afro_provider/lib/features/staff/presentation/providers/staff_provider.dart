@@ -148,6 +148,34 @@ class StaffNotifier extends StateNotifier<StaffState> {
     state = state.copyWith(staff: currentStaff);
   }
 
+  void updateStaffStatus(String staffId, StaffStatus newStatus) {
+    final currentStaff = List<Staff>.from(state.staff);
+    final index = currentStaff.indexWhere((s) => s.id == staffId);
+
+    if (index != -1) {
+      final updatedStaff = Staff(
+        id: currentStaff[index].id,
+        shopId: currentStaff[index].shopId,
+        firstName: currentStaff[index].firstName,
+        lastName: currentStaff[index].lastName,
+        email: currentStaff[index].email,
+        phoneNumber: currentStaff[index].phoneNumber,
+        role: currentStaff[index].role,
+        status: newStatus,
+        experience: currentStaff[index].experience,
+        rating: currentStaff[index].rating,
+        totalReviews: currentStaff[index].totalReviews,
+        baseSalary: currentStaff[index].baseSalary,
+        canAcceptOnlineBookings: currentStaff[index].canAcceptOnlineBookings,
+        isFeatured: currentStaff[index].isFeatured,
+        createdAt: currentStaff[index].createdAt,
+        updatedAt: DateTime.now(),
+      );
+      currentStaff[index] = updatedStaff;
+      state = state.copyWith(staff: currentStaff);
+    }
+  }
+
   void clearError() {
     state = state.copyWith(error: null);
   }

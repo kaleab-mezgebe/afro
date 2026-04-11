@@ -6,11 +6,13 @@ import '../services/provider_service.dart';
 import '../services/shop_service.dart';
 import '../services/staff_service.dart';
 import '../services/service_service.dart';
+import '../services/user_service.dart';
 import '../services/appointment_service.dart';
 import '../services/analytics_api_service.dart';
 import '../services/customer_service.dart';
 import '../services/transaction_service.dart';
 import '../services/review_service.dart';
+import '../services/portfolio_service.dart';
 
 final _logger = Logger();
 
@@ -21,10 +23,12 @@ late AuthService authService;
 late ProviderService providerService;
 late ShopService shopService;
 late StaffService staffService;
+late ServiceService serviceService;
 late UserService userService;
 late TransactionService transactionService;
 late ReviewService reviewService;
 late AppointmentService appointmentService;
+late PortfolioService portfolioService;
 late AnalyticsApiService analyticsApiService;
 late CustomerService customerService;
 
@@ -46,13 +50,12 @@ Future<void> initializeDependencies() async {
     shopService = ShopService(apiClient);
     staffService = StaffService(apiClient);
     serviceService = ServiceService(apiClient);
-    portfolioService = PortfolioService(apiClient);
+    userService = UserService(apiClient);
     reviewService = ReviewService(apiClient);
     appointmentService = AppointmentService(apiClient);
     analyticsApiService =
         AnalyticsApiService(apiClient); // Backend API analytics
     customerService = CustomerService(apiClient);
-    portfolioService = PortfolioService(apiClient);
     transactionService = TransactionService(apiClient);
 
     print('All services initialized successfully');
