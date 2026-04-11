@@ -9,6 +9,8 @@ import '../features/appointments/presentation/pages/appointments_page.dart';
 import '../features/services/presentation/pages/service_management_page.dart';
 import '../features/analytics/presentation/pages/analytics_page.dart';
 import '../features/profile/presentation/pages/provider_profile_page.dart';
+import '../features/reviews/presentation/pages/review_management_page.dart';
+import '../features/transactions/presentation/pages/transaction_management_page.dart';
 import '../core/utils/modern_theme.dart';
 import '../core/widgets/modern_navigation.dart';
 
@@ -57,8 +59,12 @@ class AppRouter {
             builder: (context, state) => const AnalyticsPage(),
           ),
           GoRoute(
-            path: '/profile',
-            builder: (context, state) => const ProviderProfilePage(),
+            path: '/transactions',
+            builder: (context, state) => const TransactionManagementPage(),
+          ),
+          GoRoute(
+            path: '/reviews',
+            builder: (context, state) => const ReviewManagementPage(),
           ),
         ],
       ),
@@ -103,10 +109,16 @@ class _MainNavigationState extends State<MainNavigation> {
       route: '/services',
     ),
     NavigationItem(
+      icon: Icons.reviews_outlined,
+      selectedIcon: Icons.reviews,
+      label: 'Reviews',
+      route: '/reviews',
+    ),
+    NavigationItem(
       icon: Icons.person_outline_rounded,
       selectedIcon: Icons.person_rounded,
-      label: 'Admin',
-      route: '/profile',
+      label: 'Users',
+      route: '/users',
     ),
   ];
 

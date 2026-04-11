@@ -30,24 +30,24 @@ import '../../domain/usecases/search/search_providers.dart';
 import '../constants/app_constants.dart';
 import '../controllers/auth_controller.dart';
 
-/// Enhanced initial binding that registers all API services
-/// All services use lazy loading to avoid blocking app startup
+/// Enhanced initial binding that registers all API services.
+/// All services use lazy loading to avoid blocking app startup.
 class InitialBindingEnhanced extends Bindings {
   @override
   void dependencies() {
-    // Core Controllers - Initialize immediately
+    // Core Controllers
     Get.put<AuthController>(AuthController(), permanent: true);
 
-    // Core Components
-    Get.put<LocalStorage>(LocalStorageImpl(), permanent: true);
-    
+    // Core Components - lazy to avoid blocking startup with I/O
+    Get.lazyPut<LocalStorage>(() => LocalStorageImpl(), fenix: true);
+
     // Legacy API Client for backwards compatibility
     Get.lazyPut<ApiClient>(
       () => ApiClientImpl(baseUrl: AppConstants.apiBaseUrl),
       fenix: true,
     );
 
-    // Enhanced API Client - lazy but persistent
+    // Enhanced API Client
     Get.lazyPut<EnhancedApiClient>(
       () => EnhancedApiClient(FirebaseAuth.instance),
       fenix: true,
@@ -104,42 +104,35 @@ class InitialBindingEnhanced extends Bindings {
       fenix: true,
     );
 
-    // API Services - Lazy loading for better performance
+    // API Services
     Get.lazyPut<AuthApiService>(
       () => AuthApiService(Get.find<EnhancedApiClient>()),
       fenix: true,
     );
-
     Get.lazyPut<BarberApiService>(
       () => BarberApiService(Get.find<EnhancedApiClient>()),
       fenix: true,
     );
-
     Get.lazyPut<AppointmentApiService>(
       () => AppointmentApiService(Get.find<EnhancedApiClient>()),
       fenix: true,
     );
-
     Get.lazyPut<CustomerApiService>(
       () => CustomerApiService(Get.find<EnhancedApiClient>()),
       fenix: true,
     );
-
     Get.lazyPut<FavoriteApiService>(
       () => FavoriteApiService(Get.find<EnhancedApiClient>()),
       fenix: true,
     );
-
     Get.lazyPut<PaymentApiService>(
       () => PaymentApiService(Get.find<EnhancedApiClient>()),
       fenix: true,
     );
-
     Get.lazyPut<ReviewApiService>(
       () => ReviewApiService(Get.find<EnhancedApiClient>()),
       fenix: true,
     );
-
     Get.lazyPut<ServiceApiService>(
       () => ServiceApiService(Get.find<EnhancedApiClient>()),
       fenix: true,

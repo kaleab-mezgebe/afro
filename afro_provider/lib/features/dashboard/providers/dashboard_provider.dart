@@ -43,7 +43,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      // Load analytics
+      // Load analytics from backend API
       final analytics = await analyticsApiService.getShopAnalytics(
         shopId,
         period: 'today',
