@@ -1,6 +1,6 @@
 class ApiConfig {
   // Base URL - Change this to your backend URL
-  static const String baseUrl = 'http://10.0.2.2:3001/api/v1';
+  static const String baseUrl = 'http://192.168.0.201:3001/api/v1';
 
   // For Android emulator use: http://10.0.2.2:3001/api/v1
   // For iOS simulator use: http://localhost:3001/api/v1
