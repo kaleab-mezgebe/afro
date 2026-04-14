@@ -9,7 +9,7 @@ import '../../../domain/usecases/booking/get_availability.dart';
 import '../../../domain/usecases/booking/get_booking_history.dart';
 import '../../../domain/usecases/booking/get_providers.dart';
 import '../../../domain/usecases/booking/get_services.dart';
-import '../../../core/constants/app_constants.dart';
+import '../../../core/config/api_config.dart';
 import '../controllers/appointments_controller.dart';
 
 class AppointmentsBinding extends Bindings {
@@ -20,9 +20,7 @@ class AppointmentsBinding extends Bindings {
       Get.lazyPut<LocalStorage>(() => LocalStorageImpl());
     }
     if (!Get.isRegistered<ApiClient>()) {
-      Get.lazyPut<ApiClient>(
-        () => ApiClientImpl(baseUrl: AppConstants.apiBaseUrl),
-      );
+      Get.lazyPut<ApiClient>(() => ApiClientImpl(baseUrl: ApiConfig.baseUrl));
     }
 
     // Repository (if not already registered)

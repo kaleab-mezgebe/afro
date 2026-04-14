@@ -1,6 +1,5 @@
 class AppConstants {
   static const String appName = 'Afro';
-  static const String apiBaseUrl = 'http://192.168.0.201:3001/api/v1';
 
   // For Android emulator use: http://10.0.2.2:3001/api/v1
   // For iOS simulator use: http://localhost:3001/api/v1

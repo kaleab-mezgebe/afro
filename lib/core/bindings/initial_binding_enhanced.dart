@@ -27,7 +27,7 @@ import '../../domain/usecases/booking/get_services.dart';
 import '../../domain/usecases/auth/login.dart';
 import '../../domain/usecases/auth/register.dart';
 import '../../domain/usecases/search/search_providers.dart';
-import '../constants/app_constants.dart';
+import '../config/api_config.dart';
 import '../controllers/auth_controller.dart';
 
 /// Enhanced initial binding that registers all API services.
@@ -43,7 +43,7 @@ class InitialBindingEnhanced extends Bindings {
 
     // Legacy API Client for backwards compatibility
     Get.lazyPut<ApiClient>(
-      () => ApiClientImpl(baseUrl: AppConstants.apiBaseUrl),
+      () => ApiClientImpl(baseUrl: ApiConfig.baseUrl),
       fenix: true,
     );
 
@@ -95,10 +95,7 @@ class InitialBindingEnhanced extends Bindings {
       () => SearchProviders(Get.find<SearchRepository>()),
       fenix: true,
     );
-    Get.lazyPut<Login>(
-      () => Login(Get.find<AuthRepository>()),
-      fenix: true,
-    );
+    Get.lazyPut<Login>(() => Login(Get.find<AuthRepository>()), fenix: true);
     Get.lazyPut<Register>(
       () => Register(Get.find<AuthRepository>()),
       fenix: true,

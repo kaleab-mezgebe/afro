@@ -14,7 +14,7 @@ import '../../domain/usecases/booking/get_providers.dart';
 import '../../domain/usecases/booking/get_services.dart';
 import '../../domain/usecases/auth/login.dart';
 import '../../domain/usecases/auth/register.dart';
-import '../constants/app_constants.dart';
+import '../config/api_config.dart';
 
 import '../../domain/repositories/search_repository.dart';
 import '../../data/repositories/search_repository_impl.dart';
@@ -28,9 +28,7 @@ class InitialBinding extends Bindings {
 
     // Core
     Get.put<LocalStorage>(LocalStorageImpl());
-    Get.lazyPut<ApiClient>(
-      () => ApiClientImpl(baseUrl: AppConstants.apiBaseUrl),
-    );
+    Get.lazyPut<ApiClient>(() => ApiClientImpl(baseUrl: ApiConfig.baseUrl));
 
     // Repositories
     Get.lazyPut<BookingRepository>(

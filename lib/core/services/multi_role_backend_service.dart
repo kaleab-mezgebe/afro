@@ -2,23 +2,26 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:logger/logger.dart';
+import '../config/api_config.dart';
 
 enum UserRole { admin, barber, customer }
+
 enum Gender { male, female, other }
 
 class MultiRoleBackendService {
-  static final MultiRoleBackendService _instance = MultiRoleBackendService._internal();
+  static final MultiRoleBackendService _instance =
+      MultiRoleBackendService._internal();
   factory MultiRoleBackendService() => _instance;
   MultiRoleBackendService._internal();
 
-  final String _baseUrl = 'http://192.168.0.201:3001/api/v1';
+  final String _baseUrl = ApiConfig.baseUrl;
   final Logger _logger = Logger();
 
   // Get current Firebase token
   Future<String?> _getCurrentToken() async {
     final currentUser = auth.FirebaseAuth.instance.currentUser;
     if (currentUser == null) return null;
-    
+
     try {
       return await currentUser.getIdToken(true);
     } catch (e) {
@@ -34,11 +37,11 @@ class MultiRoleBackendService {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     };
-    
+
     if (token != null) {
       headers['Authorization'] = 'Bearer $token';
     }
-    
+
     return headers;
   }
 
@@ -47,7 +50,10 @@ class MultiRoleBackendService {
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/auth/verify-token'),
-        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
         body: jsonEncode({'token': token}),
       );
 
@@ -93,10 +99,7 @@ class MultiRoleBackendService {
       final response = await http.post(
         Uri.parse('$_baseUrl/auth/assign-role'),
         headers: headers,
-        body: jsonEncode({
-          'userId': userId,
-          'role': role.name,
-        }),
+        body: jsonEncode({'userId': userId, 'role': role.name}),
       );
 
       return response.statusCode == 200;
@@ -113,10 +116,7 @@ class MultiRoleBackendService {
       final response = await http.post(
         Uri.parse('$_baseUrl/auth/remove-role'),
         headers: headers,
-        body: jsonEncode({
-          'userId': userId,
-          'role': role.name,
-        }),
+        body: jsonEncode({'userId': userId, 'role': role.name}),
       );
 
       return response.statusCode == 200;
@@ -147,14 +147,18 @@ class MultiRoleBackendService {
         if (verified != null) 'verified': verified.toString(),
       };
 
-      final uri = Uri.parse('$_baseUrl/barbers').replace(queryParameters: queryParams);
+      final uri = Uri.parse(
+        '$_baseUrl/barbers',
+      ).replace(queryParameters: queryParams);
       final headers = await _getHeaders();
       final response = await http.get(uri, headers: headers);
-      
+
       if (response.statusCode == 200) {
         final Map<String, dynamic> body = jsonDecode(response.body);
-        final dynamic dataField = body.containsKey('data') ? body['data'] : body;
-        
+        final dynamic dataField = body.containsKey('data')
+            ? body['data']
+            : body;
+
         if (dataField is List) {
           return dataField.cast<Map<String, dynamic>>();
         }
@@ -205,7 +209,8 @@ class MultiRoleBackendService {
         if (hairType != null) 'hairType': hairType,
         if (skinType != null) 'skinType': skinType,
         if (preferredServices != null) 'preferredServices': preferredServices,
-        if (notificationPreferences != null) 'notificationPreferences': notificationPreferences,
+        if (notificationPreferences != null)
+          'notificationPreferences': notificationPreferences,
       };
 
       final response = await http.put(
@@ -228,14 +233,18 @@ class MultiRoleBackendService {
         if (genderTarget != null) 'genderTarget': genderTarget.name,
       };
 
-      final uri = Uri.parse('$_baseUrl/services').replace(queryParameters: queryParams);
+      final uri = Uri.parse(
+        '$_baseUrl/services',
+      ).replace(queryParameters: queryParams);
       final headers = await _getHeaders();
       final response = await http.get(uri, headers: headers);
-      
+
       if (response.statusCode == 200) {
         final Map<String, dynamic> body = jsonDecode(response.body);
-        final dynamic dataField = body.containsKey('data') ? body['data'] : body;
-        
+        final dynamic dataField = body.containsKey('data')
+            ? body['data']
+            : body;
+
         if (dataField is List) {
           return dataField.cast<Map<String, dynamic>>();
         }
@@ -298,8 +307,10 @@ class MultiRoleBackendService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> body = jsonDecode(response.body);
-        final dynamic dataField = body.containsKey('data') ? body['data'] : body;
-        
+        final dynamic dataField = body.containsKey('data')
+            ? body['data']
+            : body;
+
         if (dataField is List) {
           return dataField.cast<Map<String, dynamic>>();
         }
@@ -325,8 +336,10 @@ class MultiRoleBackendService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> body = jsonDecode(response.body);
-        final dynamic dataField = body.containsKey('data') ? body['data'] : body;
-        
+        final dynamic dataField = body.containsKey('data')
+            ? body['data']
+            : body;
+
         if (dataField is List) {
           return dataField.cast<Map<String, dynamic>>();
         }
@@ -354,8 +367,10 @@ class MultiRoleBackendService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> body = jsonDecode(response.body);
-        final dynamic dataField = body.containsKey('data') ? body['data'] : body;
-        
+        final dynamic dataField = body.containsKey('data')
+            ? body['data']
+            : body;
+
         if (dataField is List) {
           return dataField.cast<Map<String, dynamic>>();
         }
@@ -471,12 +486,12 @@ class MultiRoleBackendService {
   // Helper method to get user's primary role
   UserRole? getPrimaryRole(List<dynamic> userRoles) {
     if (userRoles.isEmpty) return null;
-    
+
     // Priority: admin > barber > customer
     if (hasRole(userRoles, UserRole.admin)) return UserRole.admin;
     if (hasRole(userRoles, UserRole.barber)) return UserRole.barber;
     if (hasRole(userRoles, UserRole.customer)) return UserRole.customer;
-    
+
     return null;
   }
 }
