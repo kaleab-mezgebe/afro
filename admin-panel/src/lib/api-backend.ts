@@ -1,7 +1,9 @@
 // API Service for Admin Panel
 import { toast } from 'react-hot-toast';
+import { getAuth } from 'firebase/auth';
+import { auth } from './firebase';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.0.201:3001/api/v1';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -36,25 +38,33 @@ class ApiService {
     this.baseURL = API_BASE_URL;
   }
 
-  private getToken(): string | null {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('authToken');
+  private async getToken(): Promise<string | null> {
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        return await user.getIdToken();
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting Firebase token:', error);
+      return null;
     }
-    return null;
   }
 
-  public setAuthToken(token: string): void {
+  public async setAuthToken(token: string): Promise<void> {
+    // Firebase tokens are managed automatically, this method is kept for compatibility
     if (typeof window !== 'undefined') {
       localStorage.setItem('authToken', token);
     }
   }
 
-  public isAuthenticated(): boolean {
-    return !!this.getToken();
+  public async isAuthenticated(): Promise<boolean> {
+    const token = await this.getToken();
+    return !!token;
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
-    const token = this.getToken();
+    const token = await this.getToken();
     const url = `${this.baseURL}${endpoint}`;
 
     try {
