@@ -20,4 +20,7 @@ abstract class AppRoutes {
   static const bookingSuccess = '/booking/success';
   static const favorites = '/favorites';
   static const nearby = '/nearby';
+  static const paymentMethod = '/payment/method';
+  static const reviewSubmission = '/review/submit';
+  static const helpSupport = '/help-support';
 }

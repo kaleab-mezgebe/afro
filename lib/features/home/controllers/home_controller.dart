@@ -4,6 +4,7 @@ import '../models/specialist_model.dart';
 import '../models/category_model.dart';
 import '../../../routes/app_routes.dart';
 import '../../../core/services/barber_api_service.dart';
+import '../../../core/utils/error_handler.dart';
 
 class HomeController extends GetxController {
   final RxString selectedCategory = 'Hairdressing'.obs;
@@ -16,6 +17,7 @@ class HomeController extends GetxController {
 
   final BarberApiService _barberApiService = Get.find<BarberApiService>();
   final RxBool isLoading = false.obs;
+  final RxString error = ''.obs;
 
   @override
   void onInit() {
@@ -26,21 +28,31 @@ class HomeController extends GetxController {
   Future<void> fetchSpecialists() async {
     try {
       isLoading.value = true;
+      error.value = '';
       final specialistsJson = await _barberApiService.getBarbers();
-      
-      final mappedSpecialists = specialistsJson.map((json) => Specialist(
-        id: json['id'] ?? '',
-        name: json['name'] ?? 'Unknown',
-        price: '\$${json['minPrice'] ?? '0.00'}',
-        image: json['imageUrl'] ?? 'https://picsum.photos/seed/${json['id']}/200/200.jpg',
-        categories: List<String>.from(json['services']?.map((s) => s.toString()) ?? ['Hairdressing']),
-        gender: json['gender'] ?? 'male',
-        rating: (json['rating'] ?? 0.0).toDouble(),
-      )).toList();
+
+      final mappedSpecialists = specialistsJson
+          .map(
+            (json) => Specialist(
+              id: json['id'] ?? '',
+              name: json['name'] ?? 'Unknown',
+              price: '\$${json['minPrice'] ?? '0.00'}',
+              image:
+                  json['imageUrl'] ??
+                  'https://picsum.photos/seed/${json['id']}/200/200.jpg',
+              categories: List<String>.from(
+                json['services']?.map((s) => s.toString()) ?? ['Hairdressing'],
+              ),
+              gender: json['gender'] ?? 'male',
+              rating: (json['rating'] ?? 0.0).toDouble(),
+            ),
+          )
+          .toList();
 
       allSpecialists.assignAll(mappedSpecialists);
     } catch (e) {
-      Get.snackbar('Error', 'Failed to fetch specialists from backend');
+      error.value = ErrorHandler.getErrorMessage(e);
+      ErrorHandler.handleError(e, onRetry: fetchSpecialists);
     } finally {
       isLoading.value = false;
     }

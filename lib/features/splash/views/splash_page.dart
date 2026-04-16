@@ -83,18 +83,20 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
 
     if (currentUser != null && !showOnboarding) {
       try {
-        debugPrint('[DEBUG] Starting backend verification for existing session');
+        debugPrint(
+          '[DEBUG] Starting backend verification for existing session',
+        );
         // We need to ensure the user exists in our SQL backend too
         final authApiService = Get.find<AuthApiService>();
-        final idToken = await currentUser.getIdToken(true); // force refresh
+        final idToken = (await currentUser.getIdToken(true)) ?? '';
         debugPrint('[DEBUG] ID Token obtained, verifying with backend...');
-        final result = await authApiService.verifyToken(idToken!);
-        isBackendVerified = result != null;
+        await authApiService.verifyToken(idToken);
+        isBackendVerified = true;
         debugPrint('[DEBUG] Backend verification result: $isBackendVerified');
       } catch (e) {
         debugPrint('[ERROR] Backend verification failed: $e');
         // If backend verification fails, we shouldn't proceed as verified
-        isBackendVerified = false; 
+        isBackendVerified = false;
       }
     }
 

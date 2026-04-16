@@ -300,7 +300,7 @@ class SettingsPage extends GetView<ProfileController> {
             subtitle: 'FAQs & Guides',
             isToggle: false,
             value: null,
-            onChanged: (value) {},
+            onChanged: (value) => Get.toNamed('/help-support'),
           ),
 
           _buildSettingTile(
@@ -309,7 +309,7 @@ class SettingsPage extends GetView<ProfileController> {
             subtitle: 'Get in touch with our team',
             isToggle: false,
             value: null,
-            onChanged: (value) {},
+            onChanged: (value) => Get.toNamed('/help-support'),
           ),
 
           _buildSettingTile(

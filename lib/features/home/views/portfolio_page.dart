@@ -28,7 +28,6 @@ class _PortfolioPageState extends State<PortfolioPage> {
   bool _isLoading = true;
   String? _error;
 
-  Map<String, dynamic>? _barberDetails;
   List<Map<String, dynamic>> _services = [];
   List<Map<String, dynamic>> _reviews = [];
   List<String> _portfolioImages = [];
@@ -53,39 +52,89 @@ class _PortfolioPageState extends State<PortfolioPage> {
       _error = null;
     });
 
-    try {
-      final barberId = widget.specialist!['id'] as String;
+    // Safe barberId — never hard-cast dynamic to String
+    final barberId = widget.specialist!['id']?.toString() ?? '';
 
-      // Fetch barber details, services, and reviews in parallel
-      final results = await Future.wait([
-        _barberService.getBarber(barberId),
-        _serviceService.getServices(), // Get all services, filter by barber
-        _reviewService.getBarberReviews(barberId, limit: 10),
-      ]);
+    if (barberId.isEmpty || barberId == 'default') {
+      // No real backend ID — use whatever came from the list
+      setState(() {
+        _isLoading = false;
+        _services = _extractServicesFromSpecialist();
+      });
+      return;
+    }
+
+    try {
+      List<Map<String, dynamic>> services = [];
+      List<Map<String, dynamic>> reviews = [];
+      List<String> portfolioImages = [];
+
+      // 1. Services — barber-specific endpoint, then fallback chain
+      try {
+        final raw = await _serviceService.getServicesByBarber(barberId);
+        services = raw.cast<Map<String, dynamic>>();
+      } catch (_) {
+        try {
+          final all = await _serviceService.getServices();
+          services = all
+              .cast<Map<String, dynamic>>()
+              .where(
+                (s) =>
+                    s['barberId']?.toString() == barberId ||
+                    s['barber_id']?.toString() == barberId,
+              )
+              .toList();
+        } catch (_) {
+          services = _extractServicesFromSpecialist();
+        }
+      }
+
+      // 2. Barber details for portfolio images (non-critical)
+      try {
+        final details = await _barberService.getBarber(barberId);
+        final rawImages = details['portfolioImages'];
+        if (rawImages is List) {
+          portfolioImages = rawImages
+              .map((e) => e?.toString() ?? '')
+              .where((e) => e.isNotEmpty)
+              .toList();
+        }
+      } catch (_) {}
+
+      // 3. Reviews (non-critical)
+      try {
+        final raw = await _reviewService.getBarberReviews(barberId, limit: 10);
+        reviews = raw.cast<Map<String, dynamic>>();
+      } catch (_) {}
 
       setState(() {
-        _barberDetails = results[0] as Map<String, dynamic>;
-        _services = (results[1] as List)
-            .cast<Map<String, dynamic>>()
-            .where((s) => s['barberId'] == barberId)
-            .toList();
-        _reviews = (results[2] as List).cast<Map<String, dynamic>>();
-
-        // Extract portfolio images from barber details
-        if (_barberDetails!['portfolioImages'] != null) {
-          _portfolioImages = List<String>.from(
-            _barberDetails!['portfolioImages'],
-          );
-        }
-
+        _services = services;
+        _reviews = reviews;
+        _portfolioImages = portfolioImages;
         _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _error = 'Failed to load barber data: $e';
+        _error = 'Failed to load barber data. Please try again.';
         _isLoading = false;
       });
     }
+  }
+
+  /// Extract services from the specialist map passed from the home page
+  List<Map<String, dynamic>> _extractServicesFromSpecialist() {
+    final rawServices = widget.specialist!['services'];
+    if (rawServices is List) {
+      return rawServices.map((s) {
+        if (s is Map<String, dynamic>) return s;
+        return <String, dynamic>{
+          'name': s?.toString() ?? 'Service',
+          'priceCents': 0,
+          'durationMinutes': 30,
+        };
+      }).toList();
+    }
+    return [];
   }
 
   @override
@@ -107,19 +156,6 @@ class _PortfolioPageState extends State<PortfolioPage> {
             message: _error!,
             actionText: 'Retry',
             onAction: _loadBarberData,
-          ),
-        ),
-      );
-    }
-
-    if (_services.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(title: Text(widget.specialist?['name'] ?? 'Barber')),
-        body: const Center(
-          child: AppEmptyState(
-            icon: Icons.content_cut,
-            title: 'No Services Available',
-            message: 'This barber has not added any services yet',
           ),
         ),
       );
@@ -154,7 +190,7 @@ class _PortfolioPageState extends State<PortfolioPage> {
                 children: [
                   if (widget.specialist?['imageUrl'] != null)
                     Image.network(
-                      widget.specialist!['imageUrl'],
+                      widget.specialist!['imageUrl'].toString(),
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => Container(
                         color: AppTheme.grey300,
@@ -187,11 +223,7 @@ class _PortfolioPageState extends State<PortfolioPage> {
                   _isFavorite ? Icons.favorite : Icons.favorite_border,
                   color: _isFavorite ? Colors.red : Colors.white,
                 ),
-                onPressed: () {
-                  setState(() {
-                    _isFavorite = !_isFavorite;
-                  });
-                },
+                onPressed: () => setState(() => _isFavorite = !_isFavorite),
               ),
             ],
           ),
@@ -233,7 +265,8 @@ class _PortfolioPageState extends State<PortfolioPage> {
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
-                          widget.specialist?['location'] ??
+                          widget.specialist?['location']?.toString() ??
+                              widget.specialist?['address']?.toString() ??
                               'Location not specified',
                           style: TextStyle(
                             fontSize: 14,
@@ -247,102 +280,124 @@ class _PortfolioPageState extends State<PortfolioPage> {
                   const SizedBox(height: 24),
 
                   // Services Section
-                  const Text(
-                    'Services',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
+                  if (_services.isNotEmpty) ...[
+                    const Text(
+                      'Services',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ..._services.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final service = entry.value;
+                      final isSelected = _selectedServiceIndex == index;
+                      final name = service['name']?.toString() ?? 'Service';
+                      final priceCents =
+                          (service['priceCents'] as num?)?.toInt() ??
+                          ((service['price'] as num?)?.toDouble() ?? 0.0) * 100;
+                      final duration =
+                          service['durationMinutes']?.toString() ?? '30';
 
-                  // Services List
-                  ..._services.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final service = entry.value;
-                    final isSelected = _selectedServiceIndex == index;
-
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedServiceIndex = index;
-                        });
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? AppTheme.primaryYellow.withValues(alpha: 0.1)
-                              : Colors.white,
-                          border: Border.all(
+                      return GestureDetector(
+                        onTap: () =>
+                            setState(() => _selectedServiceIndex = index),
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
                             color: isSelected
-                                ? AppTheme.primaryYellow
-                                : AppTheme.grey300,
-                            width: isSelected ? 2 : 1,
+                                ? AppTheme.primaryYellow.withValues(alpha: 0.1)
+                                : Colors.white,
+                            border: Border.all(
+                              color: isSelected
+                                  ? AppTheme.primaryYellow
+                                  : AppTheme.grey300,
+                              width: isSelected ? 2 : 1,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    service['name'] ?? 'Service',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: isSelected
-                                          ? AppTheme.primaryYellow
-                                          : Colors.black,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    service['description'] ?? '',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: AppTheme.grey600,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.access_time,
-                                        size: 16,
-                                        color: AppTheme.grey600,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      name,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: isSelected
+                                            ? AppTheme.primaryYellow
+                                            : Colors.black,
                                       ),
-                                      const SizedBox(width: 4),
+                                    ),
+                                    if (service['description'] != null) ...[
+                                      const SizedBox(height: 4),
                                       Text(
-                                        '${service['durationMinutes'] ?? 30} min',
+                                        service['description'].toString(),
                                         style: TextStyle(
                                           fontSize: 14,
                                           color: AppTheme.grey600,
                                         ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ],
-                                  ),
-                                ],
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.access_time,
+                                          size: 16,
+                                          color: AppTheme.grey600,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          '$duration min',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: AppTheme.grey600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 16),
-                            Text(
-                              '\$${((service['priceCents'] ?? 0) / 100).toStringAsFixed(2)}',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: isSelected
-                                    ? AppTheme.primaryYellow
-                                    : Colors.black,
+                              const SizedBox(width: 16),
+                              Text(
+                                '\$${(priceCents / 100).toStringAsFixed(2)}',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: isSelected
+                                      ? AppTheme.primaryYellow
+                                      : Colors.black,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+                  ] else ...[
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: AppTheme.grey50,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'No services listed yet',
+                          style: TextStyle(color: AppTheme.greyMedium),
                         ),
                       ),
-                    );
-                  }).toList(),
+                    ),
+                  ],
 
                   const SizedBox(height: 24),
 
@@ -409,16 +464,20 @@ class _PortfolioPageState extends State<PortfolioPage> {
                             Row(
                               children: [
                                 Text(
-                                  review['customerName'] ?? 'Anonymous',
+                                  review['customerName']?.toString() ??
+                                      'Anonymous',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 const Spacer(),
                                 Row(
-                                  children: List.generate(5, (index) {
+                                  children: List.generate(5, (i) {
                                     return Icon(
-                                      index < (review['rating'] ?? 0)
+                                      i <
+                                              ((review['rating'] as num?)
+                                                      ?.toInt() ??
+                                                  0)
                                           ? Icons.star
                                           : Icons.star_border,
                                       size: 16,
@@ -430,7 +489,7 @@ class _PortfolioPageState extends State<PortfolioPage> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              review['comment'] ?? '',
+                              review['comment']?.toString() ?? '',
                               style: TextStyle(
                                 fontSize: 14,
                                 color: AppTheme.grey700,
@@ -439,10 +498,10 @@ class _PortfolioPageState extends State<PortfolioPage> {
                           ],
                         ),
                       );
-                    }).toList(),
+                    }),
                   ],
 
-                  const SizedBox(height: 100), // Space for bottom button
+                  const SizedBox(height: 100),
                 ],
               ),
             ),
@@ -450,47 +509,49 @@ class _PortfolioPageState extends State<PortfolioPage> {
         ],
       ),
 
-      // Book Now Button
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: ElevatedButton(
-            onPressed: () {
-              if (widget.specialist != null && _services.isNotEmpty) {
-                controller.startBookingFromPortfolio(
-                  widget.specialist!,
-                  _services[_selectedServiceIndex],
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryYellow,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Text(
-              'Book ${_services[_selectedServiceIndex]['name']} - \$${((_services[_selectedServiceIndex]['priceCents'] ?? 0) / 100).toStringAsFixed(2)}',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+      // Book Now Button — only shown when services are available
+      bottomNavigationBar: _services.isEmpty
+          ? null
+          : Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
                 color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, -2),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (widget.specialist != null && _services.isNotEmpty) {
+                      controller.startBookingFromPortfolio(
+                        widget.specialist!,
+                        _services[_selectedServiceIndex],
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryYellow,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Book ${_services[_selectedServiceIndex]['name']?.toString() ?? 'Service'}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
-      ),
     );
   }
 }

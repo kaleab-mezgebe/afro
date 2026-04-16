@@ -6,6 +6,22 @@ class ServiceApiService {
 
   ServiceApiService(this._apiClient);
 
+  /// Get services for a specific barber
+  Future<List<dynamic>> getServicesByBarber(String barberId) async {
+    try {
+      final response = await _apiClient.get('/barbers/$barberId/services');
+      final data = response.data;
+      if (data is List) return data;
+      if (data is Map && data.containsKey('services'))
+        return data['services'] as List;
+      if (data is Map && data.containsKey('data')) return data['data'] as List;
+      return [];
+    } catch (e) {
+      AppLogger.e('Error getting barber services: $e');
+      rethrow;
+    }
+  }
+
   /// Get all services
   Future<List<dynamic>> getServices({
     String? category,
@@ -31,7 +47,7 @@ class ServiceApiService {
       } else if (data is Map && data.containsKey('services')) {
         return data['services'] as List<dynamic>;
       }
-      
+
       return [];
     } catch (e) {
       AppLogger.e('Error getting services: $e');
@@ -44,13 +60,13 @@ class ServiceApiService {
     try {
       final response = await _apiClient.get('/services/category/$category');
       final data = response.data;
-      
+
       if (data is List) {
         return data;
       } else if (data is Map && data.containsKey('services')) {
         return data['services'] as List<dynamic>;
       }
-      
+
       return [];
     } catch (e) {
       AppLogger.e('Error getting services by category: $e');
@@ -63,14 +79,14 @@ class ServiceApiService {
     try {
       final response = await _apiClient.get('/services/$serviceId');
       final data = response.data;
-      
+
       if (data is Map<String, dynamic>) {
         if (data.containsKey('service')) {
           return data['service'] as Map<String, dynamic>;
         }
         return data;
       }
-      
+
       return {};
     } catch (e) {
       AppLogger.e('Error getting service: $e');

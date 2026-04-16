@@ -10,6 +10,7 @@ import '../services/payment_api_service.dart';
 import '../services/review_api_service.dart';
 import '../services/service_api_service.dart';
 import '../services/auth_api_service.dart';
+import '../services/connectivity_service.dart';
 
 import '../../data/datasources/local/local_storage.dart';
 import '../../data/datasources/remote/api_client.dart';
@@ -37,6 +38,9 @@ class InitialBindingEnhanced extends Bindings {
   void dependencies() {
     // Core Controllers
     Get.put<AuthController>(AuthController(), permanent: true);
+
+    // Connectivity monitoring - start early
+    Get.put<ConnectivityService>(ConnectivityService(), permanent: true);
 
     // Core Components - lazy to avoid blocking startup with I/O
     Get.lazyPut<LocalStorage>(() => LocalStorageImpl(), fenix: true);

@@ -10,6 +10,8 @@ import '../features/appointments/views/booking_service_page.dart';
 import '../features/appointments/views/booking_summary_page.dart';
 import '../features/appointments/views/booking_time_page.dart';
 import '../features/appointments/views/booking_success_page.dart';
+import '../features/appointments/views/payment_method_page.dart';
+import '../features/appointments/views/review_submission_page.dart';
 import '../features/favorites/bindings/favorites_binding.dart';
 import '../features/favorites/views/favorites_page.dart';
 import '../features/home/bindings/portfolio_binding.dart';
@@ -22,6 +24,7 @@ import '../features/onboarding/views/onboarding_page.dart';
 import '../features/preferences/views/preference_selection_page.dart';
 import '../features/profile/bindings/profile_binding.dart';
 import '../features/profile/views/edit_profile_page.dart';
+import '../features/profile/views/help_support_page.dart';
 import '../features/profile/views/profile_page.dart';
 import '../features/profile/views/settings_page.dart';
 import '../features/search/bindings/search_binding.dart';
@@ -151,6 +154,16 @@ class AppPages {
       name: AppRoutes.bookingSuccess,
       page: () => const BookingSuccessPage(),
     ),
+    GetPage(
+      name: AppRoutes.paymentMethod,
+      page: () => const PaymentMethodPage(),
+      binding: AppointmentsBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.reviewSubmission,
+      page: () => const ReviewSubmissionPage(),
+    ),
+    GetPage(name: AppRoutes.helpSupport, page: () => const HelpSupportPage()),
     GetPage(
       name: AppRoutes.search,
       page: () => const search.SearchPage(),

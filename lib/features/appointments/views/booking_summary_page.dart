@@ -307,46 +307,53 @@ class BookingSummaryPage extends GetView<AppointmentsController> {
   }
 
   Widget _buildPaymentCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [AppTheme.softShadow],
-        border: Border.all(color: AppTheme.grey100),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1A1A1A),
-              borderRadius: BorderRadius.circular(12),
+    return GestureDetector(
+      onTap: () => Get.toNamed(AppRoutes.paymentMethod),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppTheme.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [AppTheme.softShadow],
+          border: Border.all(color: AppTheme.grey100),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1A1A1A),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.payments_outlined,
+                size: 24,
+                color: AppTheme.primaryYellow,
+              ),
             ),
-            child: const Icon(
-              Icons.credit_card,
-              size: 24,
-              color: AppTheme.primaryYellow,
+            const SizedBox(width: 16),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Select Payment Method',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  ),
+                  Text(
+                    'Cash, Telebirr, CBE Birr, Card',
+                    style: TextStyle(color: AppTheme.grey500, fontSize: 13),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 16),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Mastercard',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                ),
-                Text(
-                  '**** **** **** 4582',
-                  style: TextStyle(color: AppTheme.grey500, fontSize: 13),
-                ),
-              ],
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 14,
+              color: AppTheme.grey400,
             ),
-          ),
-          Icon(Icons.check_circle, color: AppTheme.primaryYellow),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -437,23 +444,10 @@ class BookingSummaryPage extends GetView<AppointmentsController> {
         child: SizedBox(
           width: double.infinity,
           height: 56,
-          child: Obx(
-            () => ElevatedButton(
-              onPressed: controller.isLoading.value
-                  ? null
-                  : controller.createNewBooking,
-              style: AppTheme.primaryButton,
-              child: controller.isLoading.value
-                  ? const SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: CircularProgressIndicator(
-                        color: AppTheme.black,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : const Text('Complete Payment'),
-            ),
+          child: ElevatedButton(
+            onPressed: () => Get.toNamed(AppRoutes.paymentMethod),
+            style: AppTheme.primaryButton,
+            child: const Text('Choose Payment Method'),
           ),
         ),
       ),

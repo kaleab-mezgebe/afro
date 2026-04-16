@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../core/services/favorite_api_service.dart';
+import '../../../core/utils/error_handler.dart';
 import '../../../routes/app_routes.dart';
 
 class FavoritesController extends GetxController {
@@ -25,13 +25,7 @@ class FavoritesController extends GetxController {
       final data = await _favoriteApiService.getFavorites();
       favorites.assignAll(data.cast<Map<String, dynamic>>());
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to load favorites',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ErrorHandler.handleError(e, onRetry: loadFavorites);
     } finally {
       isLoading.value = false;
     }
@@ -43,20 +37,11 @@ class FavoritesController extends GetxController {
     try {
       await _favoriteApiService.addFavorite(barberId);
       await loadFavorites();
-      Get.snackbar(
-        'Added to Favorites',
+      ErrorHandler.showErrorSnackbar(
         '${provider['name'] ?? 'Provider'} added to favorites',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
       );
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to add to favorites',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ErrorHandler.handleError(e);
     }
   }
 
@@ -68,20 +53,8 @@ class FavoritesController extends GetxController {
             fav['id']?.toString() == barberId ||
             fav['barberId']?.toString() == barberId,
       );
-      Get.snackbar(
-        'Removed',
-        'Removed from favorites',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
-      );
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to remove from favorites',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ErrorHandler.handleError(e);
     }
   }
 
