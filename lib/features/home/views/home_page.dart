@@ -61,7 +61,7 @@ class HomePage extends GetView<HomeController> {
               ),
             ),
             TextButton(
-              onPressed: () {}, // Navigate to all specialists
+              onPressed: () {},
               child: const Text(
                 'See All',
                 style: TextStyle(
@@ -75,6 +75,50 @@ class HomePage extends GetView<HomeController> {
         ),
         const SizedBox(height: 16),
         Obx(() {
+          // Loading state
+          if (controller.isLoading.value) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 40),
+                child: CircularProgressIndicator(color: AppTheme.primaryYellow),
+              ),
+            );
+          }
+
+          // Error state with retry
+          if (controller.error.value.isNotEmpty &&
+              controller.allSpecialists.isEmpty) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 32),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.wifi_off_rounded,
+                      size: 48,
+                      color: AppTheme.grey300,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Could not load specialists',
+                      style: TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton.icon(
+                      onPressed: controller.fetchSpecialists,
+                      icon: const Icon(Icons.refresh_rounded, size: 18),
+                      label: const Text('Retry'),
+                      style: AppTheme.primaryButton,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
           final specialists = controller.filteredSpecialists;
           if (specialists.isEmpty) {
             return _buildEmptyState();

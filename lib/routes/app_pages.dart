@@ -25,6 +25,8 @@ import '../features/preferences/views/preference_selection_page.dart';
 import '../features/profile/bindings/profile_binding.dart';
 import '../features/profile/views/edit_profile_page.dart';
 import '../features/profile/views/help_support_page.dart';
+import '../features/support/views/support_tickets_page.dart';
+import '../features/promotions/views/promotions_page.dart';
 import '../features/profile/views/profile_page.dart';
 import '../features/profile/views/settings_page.dart';
 import '../features/search/bindings/search_binding.dart';
@@ -164,6 +166,11 @@ class AppPages {
       page: () => const ReviewSubmissionPage(),
     ),
     GetPage(name: AppRoutes.helpSupport, page: () => const HelpSupportPage()),
+    GetPage(
+      name: AppRoutes.supportTickets,
+      page: () => const SupportTicketsPage(),
+    ),
+    GetPage(name: AppRoutes.promotions, page: () => const PromotionsPage()),
     GetPage(
       name: AppRoutes.search,
       page: () => const search.SearchPage(),

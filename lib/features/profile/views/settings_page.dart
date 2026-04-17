@@ -285,7 +285,7 @@ class SettingsPage extends GetView<ProfileController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Support',
+            'Support & Promotions',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -293,6 +293,24 @@ class SettingsPage extends GetView<ProfileController> {
             ),
           ),
           const SizedBox(height: 24),
+
+          _buildSettingTile(
+            icon: Icons.local_offer_outlined,
+            title: 'Promotions & Offers',
+            subtitle: 'View deals and apply promo codes',
+            isToggle: false,
+            value: null,
+            onChanged: (value) => Get.toNamed('/promotions'),
+          ),
+
+          _buildSettingTile(
+            icon: Icons.support_agent_outlined,
+            title: 'Support Tickets',
+            subtitle: 'Submit and track your issues',
+            isToggle: false,
+            value: null,
+            onChanged: (value) => Get.toNamed('/support/tickets'),
+          ),
 
           _buildSettingTile(
             icon: Icons.help_outline_rounded,

@@ -23,4 +23,6 @@ abstract class AppRoutes {
   static const paymentMethod = '/payment/method';
   static const reviewSubmission = '/review/submit';
   static const helpSupport = '/help-support';
+  static const supportTickets = '/support/tickets';
+  static const promotions = '/promotions';
 }
