@@ -100,7 +100,17 @@ export default function SettingsPage() {
       const response = await SettingsService.get();
 
       if (response.success && response.data) {
-        setSettings(response.data);
+        // Deep merge API response with defaults to avoid undefined nested objects
+        setSettings(prev => ({
+          general: { ...prev.general, ...(response.data.general ?? {}) },
+          notifications: { ...prev.notifications, ...(response.data.notifications ?? {}) },
+          security: { ...prev.security, ...(response.data.security ?? {}) },
+          payment: {
+            ...prev.payment,
+            ...(response.data.payment ?? {}),
+            paymentMethods: response.data.payment?.paymentMethods ?? prev.payment.paymentMethods,
+          },
+        }));
       }
     } catch (error) {
       toast.error('Failed to load settings');
@@ -197,7 +207,7 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="stat-label">Notifications</p>
-                <p className="stat-value">{Object.values(settings.notifications).filter(Boolean).length}/5</p>
+                <p className="stat-value">{Object.values(settings.notifications ?? {}).filter(Boolean).length}/5</p>
                 <div className="stat-change positive">
                   <Bell size={12} />
                   Active
@@ -227,7 +237,7 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="stat-label">Payment Methods</p>
-                <p className="stat-value">{settings.payment.paymentMethods.length}</p>
+                <p className="stat-value">{settings.payment?.paymentMethods?.length ?? 0}</p>
                 <div className="stat-change positive">
                   <CreditCard size={12} />
                   Available
@@ -335,7 +345,7 @@ export default function SettingsPage() {
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900 mb-6">Notification Settings</h2>
                   <div className="space-y-4">
-                    {Object.entries(settings.notifications).map(([key, value]) => (
+                    {Object.entries(settings.notifications ?? {}).map(([key, value]) => (
                       <div key={key} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                         <div className="flex items-center gap-3">
                           {key === 'emailNotifications' && <Mail size={20} className="text-gray-600" />}

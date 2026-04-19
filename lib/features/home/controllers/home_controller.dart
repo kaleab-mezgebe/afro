@@ -39,9 +39,13 @@ class HomeController extends GetxController {
           cats = rawServices.map((s) => s.toString()).toList();
         }
 
-        // Safely parse price
-        final rawPrice = json['minPrice'] ?? json['price'] ?? 0;
-        final priceStr = rawPrice.toString();
+        // Safely parse price — backend returns dollar value directly
+        final rawPrice =
+            json['minPrice'] ?? json['price'] ?? json['startingPrice'] ?? 0;
+        final priceDouble = double.tryParse(rawPrice.toString()) ?? 0.0;
+        final priceStr = priceDouble == priceDouble.truncateToDouble()
+            ? priceDouble.toInt().toString()
+            : priceDouble.toStringAsFixed(2);
 
         // Safely parse rating
         final rawRating = json['rating'];

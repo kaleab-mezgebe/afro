@@ -58,15 +58,22 @@ class ProviderModel extends Provider {
 
   factory ProviderModel.fromJson(Map<String, dynamic> json) {
     return ProviderModel(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      category: json['category'] as String,
-      rating: (json['rating'] as num).toDouble(),
-      location: json['location'] as String? ?? '',
-      services: List<String>.from(json['services'] ?? []),
-      minPrice: (json['minPrice'] ?? 0.0).toDouble(),
-      maxPrice: (json['maxPrice'] ?? 0.0).toDouble(),
-      imageUrl: json['imageUrl'] as String?,
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? 'Specialist',
+      category:
+          json['category']?.toString() ??
+          (json['services'] is List && (json['services'] as List).isNotEmpty
+              ? (json['services'] as List).first.toString()
+              : 'Barber'),
+      rating: double.tryParse(json['rating']?.toString() ?? '0') ?? 0.0,
+      location:
+          json['location']?.toString() ?? json['address']?.toString() ?? '',
+      services: json['services'] is List
+          ? List<String>.from(json['services'])
+          : [],
+      minPrice: double.tryParse(json['minPrice']?.toString() ?? '0') ?? 0.0,
+      maxPrice: double.tryParse(json['maxPrice']?.toString() ?? '0') ?? 0.0,
+      imageUrl: json['imageUrl']?.toString() ?? json['image']?.toString(),
     );
   }
 
@@ -95,12 +102,22 @@ class ServiceModel extends Service {
   });
 
   factory ServiceModel.fromJson(Map<String, dynamic> json) {
+    // price comes as string "15.00" from the API
+    final rawPrice = json['price'] ?? json['priceCents'] ?? 0;
+    final priceDouble = double.tryParse(rawPrice.toString()) ?? 0.0;
+    // if field is named priceCents it's already in cents, otherwise convert
+    final priceCents =
+        json.containsKey('priceCents') && !json.containsKey('price')
+        ? (priceDouble).toInt()
+        : (priceDouble * 100).toInt();
+
     return ServiceModel(
-      id: json['id'] as String,
-      providerId: json['providerId'] as String,
-      name: json['name'] as String,
-      durationMinutes: json['durationMinutes'] as int,
-      priceCents: json['priceCents'] as int,
+      id: json['id']?.toString() ?? '',
+      providerId:
+          json['barberId']?.toString() ?? json['providerId']?.toString() ?? '',
+      name: json['name']?.toString() ?? 'Service',
+      durationMinutes: (json['durationMinutes'] as num?)?.toInt() ?? 30,
+      priceCents: priceCents,
     );
   }
 

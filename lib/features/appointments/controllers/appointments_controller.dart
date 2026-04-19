@@ -11,6 +11,7 @@ import '../../../domain/usecases/booking/get_booking_history.dart';
 import '../../../domain/usecases/booking/get_providers.dart';
 import '../../../domain/usecases/booking/get_services.dart';
 import '../../../core/utils/error_handler.dart';
+import '../../../core/services/appointment_api_service.dart';
 
 class AppointmentsController extends GetxController {
   final GetProviders getProviders;
@@ -112,18 +113,18 @@ class AppointmentsController extends GetxController {
       isLoading.value = true;
       error.value = '';
 
-      final booking = await createBooking(
-        provider: selectedProvider.value!,
-        service: selectedService.value!,
-        start: selectedTimeSlot.value!.start,
-        end: selectedTimeSlot.value!.end,
+      // Use AppointmentApiService (EnhancedApiClient) which properly attaches auth token
+      final appointmentApiService = Get.find<AppointmentApiService>();
+      await appointmentApiService.createAppointment(
+        barberId: selectedProvider.value!.id,
+        serviceId: selectedService.value!.id,
+        appointmentDate: selectedTimeSlot.value!.start,
       );
-
-      bookings.insert(0, booking);
 
       // Reset selection
       selectedProvider.value = null;
       selectedService.value = null;
+      selectedServices.clear();
       selectedTimeSlot.value = null;
       services.clear();
       timeSlots.clear();
@@ -161,18 +162,21 @@ class AppointmentsController extends GetxController {
     loadServices(provider.id);
   }
 
+  // Holds multiple selected services from portfolio
+  final RxList<Service> selectedServices = <Service>[].obs;
+
   void startBookingFromPortfolio(
     Map<String, dynamic> specialist, [
-    Map<String, dynamic>? service,
+    List<Map<String, dynamic>>? serviceList,
   ]) {
     // Clear previous state
     selectedProvider.value = null;
     selectedService.value = null;
+    selectedServices.clear();
     selectedTimeSlot.value = null;
     services.clear();
     timeSlots.clear();
 
-    // Mapping logic
     final provider = Provider(
       id: specialist['id'] ?? 'unknown',
       name: specialist['name'] ?? 'Specialist',
@@ -189,24 +193,31 @@ class AppointmentsController extends GetxController {
 
     selectedProvider.value = provider;
 
-    if (service != null) {
-      final serviceEntity = Service(
-        id:
-            service['id'] ??
-            service['name']?.toLowerCase()?.replaceAll(' ', '_') ??
-            'service',
-        providerId: provider.id,
-        name: service['name'] ?? 'Service',
-        priceCents: _parsePrice(service['price']),
-        durationMinutes: _parseDuration(service['duration']),
-      );
-      selectedService.value = serviceEntity;
+    if (serviceList != null && serviceList.isNotEmpty) {
+      final mapped = serviceList
+          .map(
+            (s) => Service(
+              id:
+                  s['id'] ??
+                  s['name']?.toString().toLowerCase().replaceAll(' ', '_') ??
+                  'service',
+              providerId: provider.id,
+              name: s['name'] ?? 'Service',
+              priceCents: _parsePrice(s['price']),
+              durationMinutes: _parseDuration(
+                s['durationMinutes'] ?? s['duration'],
+              ),
+            ),
+          )
+          .toList();
+
+      selectedServices.assignAll(mapped);
+      // Set primary service to first selected for backward compat
+      selectedService.value = mapped.first;
     }
 
-    // Load full services list for this provider in background
     loadServices(provider.id);
 
-    // Navigate to appropriate page
     if (selectedService.value != null) {
       Get.toNamed(AppRoutes.bookingTime);
     } else {

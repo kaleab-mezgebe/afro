@@ -14,7 +14,7 @@ class ErrorHandler {
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
         message =
-            'Connection timeout. Please check your internet connection and try again.';
+            'Cannot reach the server. Make sure your device and PC are on the same Wi-Fi network.';
         break;
 
       case DioExceptionType.sendTimeout:
@@ -39,9 +39,9 @@ class ErrorHandler {
         break;
 
       case DioExceptionType.connectionError:
-        // Show specific no internet snackbar instead of generic message
-        showNoInternetSnackbar();
-        message = 'No internet connection. Please check your network settings.';
+        message =
+            'Cannot connect to server. Check that the backend is running and your device is on the same network.';
+        showBackendUnreachableSnackbar();
         break;
 
       case DioExceptionType.unknown:
@@ -133,6 +133,18 @@ class ErrorHandler {
           style: TextStyle(color: Get.theme.colorScheme.onError),
         ),
       ),
+    );
+  }
+
+  /// Show backend unreachable snackbar (different from no internet)
+  static void showBackendUnreachableSnackbar() {
+    Get.snackbar(
+      'Server Unreachable',
+      'Make sure your phone and PC are on the same Wi-Fi network.',
+      snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 6),
+      backgroundColor: Get.theme.colorScheme.error.withValues(alpha: 0.9),
+      colorText: Get.theme.colorScheme.onError,
     );
   }
 

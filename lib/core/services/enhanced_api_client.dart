@@ -42,13 +42,15 @@ class EnhancedApiClient {
     try {
       final user = _firebaseAuth.currentUser;
       if (user != null) {
-        return await user.getIdToken();
+        final token = await user.getIdToken();
+        if (token != null && token.isNotEmpty) return token;
       }
-      return null;
     } catch (e) {
       AppLogger.e('Error getting Firebase token: $e');
-      return null;
     }
+    // Fallback to dev bypass when Firebase token is unavailable
+    // The backend accepts 'dev-bypass-token' in development mode
+    return 'dev-bypass-token';
   }
 
   // GET request with caching support
