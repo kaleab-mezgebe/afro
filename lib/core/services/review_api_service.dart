@@ -45,13 +45,14 @@ class ReviewApiService {
         queryParameters: queryParams,
       );
 
-      final data = response.data;
-      if (data is List) {
-        return data;
-      } else if (data is Map && data.containsKey('reviews')) {
-        return data['reviews'] as List<dynamic>;
+      // Unwrap { success, data: { reviews: [...] } }
+      final raw = response.data;
+      final inner = (raw is Map && raw.containsKey('data')) ? raw['data'] : raw;
+
+      if (inner is List) return inner;
+      if (inner is Map && inner.containsKey('reviews')) {
+        return inner['reviews'] as List<dynamic>;
       }
-      
       return [];
     } catch (e) {
       AppLogger.e('Error getting barber reviews: $e');
@@ -77,7 +78,7 @@ class ReviewApiService {
       } else if (data is Map && data.containsKey('reviews')) {
         return data['reviews'] as List<dynamic>;
       }
-      
+
       return [];
     } catch (e) {
       AppLogger.e('Error getting my reviews: $e');
@@ -90,14 +91,14 @@ class ReviewApiService {
     try {
       final response = await _apiClient.get('/reviews/$reviewId');
       final data = response.data;
-      
+
       if (data is Map<String, dynamic>) {
         if (data.containsKey('review')) {
           return data['review'] as Map<String, dynamic>;
         }
         return data;
       }
-      
+
       return {};
     } catch (e) {
       AppLogger.e('Error getting review: $e');
@@ -118,14 +119,14 @@ class ReviewApiService {
 
       final response = await _apiClient.put('/reviews/$reviewId', data: data);
       final responseData = response.data;
-      
+
       if (responseData is Map<String, dynamic>) {
         if (responseData.containsKey('review')) {
           return responseData['review'] as Map<String, dynamic>;
         }
         return responseData;
       }
-      
+
       return {};
     } catch (e) {
       AppLogger.e('Error updating review: $e');

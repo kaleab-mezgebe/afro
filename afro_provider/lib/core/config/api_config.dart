@@ -1,7 +1,7 @@
 class ApiConfig {
   // Base URL - Change this to your backend URL
-  // Your machine's Wi-Fi IP: 192.168.1.8, backend port: 3001
-  static const String baseUrl = 'http://192.168.1.8:3001/api/v1';
+  // Your machine's Wi-Fi IP: 192.168.1.9, backend port: 3001
+  static const String baseUrl = 'http://192.168.1.9:3001/api/v1';
 
   // For Android emulator use: http://10.0.2.2:3001/api/v1
   // For iOS simulator use: http://localhost:3001/api/v1
