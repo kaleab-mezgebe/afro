@@ -19,7 +19,12 @@ class CustomerApiService {
 
   /// Update customer profile
   Future<Map<String, dynamic>> updateProfile({
+    String? name,
+    String? phone,
+    String? avatar,
+    String? bio,
     String? gender,
+    DateTime? dateOfBirth,
     String? hairType,
     String? skinType,
     List<String>? preferredServices,
@@ -27,15 +32,19 @@ class CustomerApiService {
   }) async {
     try {
       final data = <String, dynamic>{};
+      if (name != null) data['name'] = name;
+      if (phone != null) data['phone'] = phone;
+      if (avatar != null) data['avatar'] = avatar;
+      if (bio != null) data['bio'] = bio;
       if (gender != null) data['gender'] = gender;
+      if (dateOfBirth != null)
+        data['dateOfBirth'] = dateOfBirth.toIso8601String();
       if (hairType != null) data['hairType'] = hairType;
       if (skinType != null) data['skinType'] = skinType;
-      if (preferredServices != null) {
+      if (preferredServices != null)
         data['preferredServices'] = preferredServices;
-      }
-      if (notificationPreferences != null) {
+      if (notificationPreferences != null)
         data['notificationPreferences'] = notificationPreferences;
-      }
 
       final response = await _apiClient.put('/customers/profile', data: data);
       return response.data;

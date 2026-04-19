@@ -25,10 +25,17 @@ class ProfileRepositoryImpl implements ProfileRepository {
     String? gender,
     DateTime? dateOfBirth,
   }) async {
-    final data = await _customerApiService.updateProfile(gender: gender);
-    // Also update the user name via Firebase if needed
+    final data = await _customerApiService.updateProfile(
+      name: name,
+      phone: phoneNumber,
+      avatar: avatar,
+      bio: bio,
+      gender: gender,
+      dateOfBirth: dateOfBirth,
+    );
+    // Also sync Firebase display name
     final user = FirebaseAuth.instance.currentUser;
-    if (user != null && name != user.displayName) {
+    if (user != null && name.isNotEmpty && name != user.displayName) {
       await user.updateDisplayName(name);
     }
     return _mapToProfile(data);

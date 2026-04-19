@@ -122,115 +122,88 @@ class _Header extends StatelessWidget {
                   ],
                 ),
               ),
-              // Filter button with badge
-              Obx(
-                () => GestureDetector(
-                  onTap: () => _showFilterSheet(context, controller),
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: controller.activeFilterCount > 0
-                              ? _yellow
-                              : _black,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Icon(
-                          Icons.tune_rounded,
-                          color: controller.activeFilterCount > 0
-                              ? _black
-                              : Colors.white,
-                          size: 22,
-                        ),
-                      ),
-                      if (controller.activeFilterCount > 0)
-                        Positioned(
-                          top: -4,
-                          right: -4,
-                          child: Container(
-                            width: 18,
-                            height: 18,
-                            decoration: const BoxDecoration(
-                              color: Colors.red,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Center(
-                              child: Text(
-                                '${controller.activeFilterCount}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 14),
-          // Search bar
+          // Search bar — pixel-perfect match to home page style
           Container(
-            height: 52,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
             decoration: BoxDecoration(
-              color: _bg,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.grey200),
+              color: const Color(0xFFF5F5F5),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFFE0E0E0)),
             ),
             child: Row(
               children: [
-                const SizedBox(width: 14),
-                const Icon(
-                  Icons.search_rounded,
-                  color: AppTheme.grey400,
-                  size: 22,
-                ),
-                const SizedBox(width: 10),
+                const Icon(Icons.search_rounded, color: _black, size: 24),
+                const SizedBox(width: 12),
                 Expanded(
                   child: TextField(
                     onChanged: controller.updateQuery,
                     onSubmitted: (_) => controller.performSearch(),
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: 'Barbers, salons, makeup artists...',
+                    style: const TextStyle(fontSize: 15, color: _black),
+                    decoration: const InputDecoration(
+                      hintText: 'Search for salons, barbers...',
                       hintStyle: TextStyle(
-                        color: AppTheme.grey400,
-                        fontSize: 14,
+                        color: AppTheme.greyMedium,
+                        fontSize: 15,
                       ),
                       border: InputBorder.none,
-                      isDense: true,
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                      ),
+
+                      contentPadding: EdgeInsets.symmetric(vertical: 14),
                     ),
                   ),
                 ),
                 Obx(
-                  () => controller.query.value.isNotEmpty
-                      ? GestureDetector(
-                          onTap: () => controller.clearFilters(),
-                          child: Container(
-                            margin: const EdgeInsets.only(right: 10),
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: AppTheme.grey200,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.close_rounded,
-                              size: 14,
-                              color: _black,
+                  () => GestureDetector(
+                    onTap: () => _showFilterSheet(context, controller),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryYellow,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.tune_rounded,
+                            color: _black,
+                            size: 18,
+                          ),
+                        ),
+                        if (controller.activeFilterCount > 0)
+                          Positioned(
+                            top: -4,
+                            right: -4,
+                            child: Container(
+                              width: 16,
+                              height: 16,
+                              decoration: const BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '${controller.activeFilterCount}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
-                        )
-                      : const SizedBox(width: 14),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -293,7 +266,9 @@ class _QuickChip extends StatelessWidget {
           decoration: BoxDecoration(
             color: value.value ? _yellow : Colors.white,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: value.value ? _yellow : AppTheme.grey200),
+            border: Border.all(
+              color: value.value ? AppTheme.black : AppTheme.grey200,
+            ),
             boxShadow: value.value
                 ? [
                     BoxShadow(
@@ -969,28 +944,37 @@ class _SpecialistCard extends StatelessWidget {
             // Info
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    // Category + rating row
                     Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _yellow.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            provider.category.toUpperCase(),
-                            style: const TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w900,
-                              color: _black,
-                              letterSpacing: 0.5,
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _yellow.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              provider.category.toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w900,
+                                color: _black,
+                                letterSpacing: 0.5,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ),
@@ -998,24 +982,24 @@ class _SpecialistCard extends StatelessWidget {
                         const Icon(
                           Icons.star_rounded,
                           color: _yellow,
-                          size: 15,
+                          size: 14,
                         ),
                         const SizedBox(width: 2),
                         Text(
                           provider.rating.toStringAsFixed(1),
                           style: const TextStyle(
-                            fontSize: 13,
+                            fontSize: 12,
                             fontWeight: FontWeight.w900,
                             color: _black,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    // Name
                     Text(
                       provider.name,
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 15,
                         fontWeight: FontWeight.w900,
                         color: _black,
                         letterSpacing: -0.3,
@@ -1023,12 +1007,12 @@ class _SpecialistCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
+                    // Location
                     Row(
                       children: [
                         Icon(
                           Icons.location_on_rounded,
-                          size: 13,
+                          size: 12,
                           color: AppTheme.grey400,
                         ),
                         const SizedBox(width: 3),
@@ -1038,7 +1022,7 @@ class _SpecialistCard extends StatelessWidget {
                                 ? provider.location
                                 : 'Addis Ababa',
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 11,
                               color: AppTheme.grey500,
                               fontWeight: FontWeight.w500,
                             ),
@@ -1048,7 +1032,7 @@ class _SpecialistCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    // Price + Book button
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -1057,24 +1041,24 @@ class _SpecialistCard extends StatelessWidget {
                               ? 'From \$${provider.minPrice.toInt()}'
                               : 'View Pricing',
                           style: const TextStyle(
-                            fontSize: 13,
+                            fontSize: 12,
                             fontWeight: FontWeight.w900,
                             color: _black,
                           ),
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
+                            horizontal: 10,
+                            vertical: 5,
                           ),
                           decoration: BoxDecoration(
                             color: _yellow,
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Text(
                             'Book',
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: FontWeight.w800,
                               color: _black,
                             ),
@@ -1241,9 +1225,23 @@ void _showFilterSheet(
   );
 }
 
-class _FilterBottomSheet extends StatelessWidget {
+class _FilterBottomSheet extends StatefulWidget {
   final search_ctrl.SearchController controller;
   const _FilterBottomSheet({required this.controller});
+
+  @override
+  State<_FilterBottomSheet> createState() => _FilterBottomSheetState();
+}
+
+class _FilterBottomSheetState extends State<_FilterBottomSheet> {
+  search_ctrl.SearchController get c => widget.controller;
+
+  static const _sectionStyle = TextStyle(
+    fontSize: 13,
+    fontWeight: FontWeight.w800,
+    color: _black,
+    letterSpacing: 0.5,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -1252,141 +1250,528 @@ class _FilterBottomSheet extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 36,
-            height: 4,
-            margin: const EdgeInsets.symmetric(vertical: 12),
-            decoration: BoxDecoration(
-              color: AppTheme.grey300,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(24, 4, 24, 20),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Filter & Sort',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  color: _black,
-                ),
+      child: DraggableScrollableSheet(
+        initialChildSize: 0.85,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (_, scrollCtrl) => Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+              child: Column(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppTheme.grey300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Advanced Filters',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          color: _black,
+                        ),
+                      ),
+                      Obx(
+                        () => c.activeFilterCount > 0
+                            ? GestureDetector(
+                                onTap: () {
+                                  c.clearFilters();
+                                  setState(() {});
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.grey100,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    'Reset all (${c.activeFilterCount})',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppTheme.grey600,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Minimum Rating',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.grey700,
+            const Divider(height: 24),
+            Expanded(
+              child: ListView(
+                controller: scrollCtrl,
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                children: [
+                  // Sort By
+                  const Text('Sort By', style: _sectionStyle),
+                  const SizedBox(height: 10),
+                  Obx(
+                    () => Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _sortChip('Rating', 'rating'),
+                        _sortChip('Price', 'price'),
+                        _sortChip('Distance', 'distance'),
+                        _sortChip('Reviews', 'reviews'),
+                      ],
+                    ),
                   ),
-                ),
-                Obx(
-                  () => Slider(
-                    value: controller.minRating.value,
-                    min: 0,
-                    max: 5,
-                    divisions: 10,
-                    activeColor: _yellow,
-                    label: controller.minRating.value.toStringAsFixed(1),
-                    onChanged: (v) => controller.minRating.value = v,
+                  const SizedBox(height: 8),
+                  Obx(
+                    () => Row(
+                      children: [
+                        _orderChip('Low → High', false),
+                        const SizedBox(width: 8),
+                        _orderChip('High → Low', true),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Max Price',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.grey700,
+                  const SizedBox(height: 20),
+
+                  // Min Rating
+                  Obx(
+                    () => Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Minimum Rating', style: _sectionStyle),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.star_rounded,
+                              color: _yellow,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              c.minRating.value == 0
+                                  ? 'Any'
+                                  : c.minRating.value.toStringAsFixed(1),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: _black,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Obx(
-                  () => Slider(
-                    value: controller.maxPrice.value,
-                    min: 0,
-                    max: 500,
-                    divisions: 50,
-                    activeColor: _yellow,
-                    label: '\$${controller.maxPrice.value.toInt()}',
-                    onChanged: (v) => controller.maxPrice.value = v,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      controller.clearFilters();
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      decoration: BoxDecoration(
-                        color: _bg,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppTheme.grey200),
+                  Obx(
+                    () => SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: _yellow,
+                        thumbColor: _yellow,
+                        inactiveTrackColor: AppTheme.grey200,
+                        overlayColor: _yellow.withValues(alpha: 0.2),
                       ),
-                      child: const Center(
-                        child: Text(
-                          'Reset',
-                          style: TextStyle(
+                      child: Slider(
+                        value: c.minRating.value,
+                        min: 0,
+                        max: 5,
+                        divisions: 10,
+                        onChanged: (v) {
+                          c.updateMinRating(v);
+                          setState(() {});
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Price Range
+                  Obx(
+                    () => Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Price Range', style: _sectionStyle),
+                        Text(
+                          '\$${c.minPrice.value.toInt()} – \$${c.maxPrice.value.toInt()}',
+                          style: const TextStyle(
+                            fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: _black,
                           ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 2,
-                  child: GestureDetector(
-                    onTap: () {
-                      controller.applyFilters();
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      decoration: BoxDecoration(
-                        color: _yellow,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'Apply Filters',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800,
+                  Obx(
+                    () => RangeSlider(
+                      values: RangeValues(c.minPrice.value, c.maxPrice.value),
+                      min: 0,
+                      max: 500,
+                      divisions: 50,
+                      activeColor: _yellow,
+                      inactiveColor: AppTheme.grey200,
+                      onChanged: (v) {
+                        c.updateMinPrice(v.start);
+                        c.updateMaxPrice(v.end);
+                        setState(() {});
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Max Distance
+                  Obx(
+                    () => Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Max Distance', style: _sectionStyle),
+                        Text(
+                          c.maxDistance.value >= 50
+                              ? 'Any'
+                              : '${c.maxDistance.value.toInt()} km',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
                             color: _black,
-                            fontSize: 15,
                           ),
                         ),
+                      ],
+                    ),
+                  ),
+                  Obx(
+                    () => SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: _yellow,
+                        thumbColor: _yellow,
+                        inactiveTrackColor: AppTheme.grey200,
+                        overlayColor: _yellow.withValues(alpha: 0.2),
+                      ),
+                      child: Slider(
+                        value: c.maxDistance.value,
+                        min: 1,
+                        max: 50,
+                        divisions: 49,
+                        onChanged: (v) {
+                          c.updateMaxDistance(v);
+                          setState(() {});
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Gender
+                  const Text('Gender Focus', style: _sectionStyle),
+                  const SizedBox(height: 10),
+                  Obx(
+                    () => Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _genderChip('Any', 'any'),
+                        _genderChip('Men', 'male'),
+                        _genderChip('Women', 'female'),
+                        _genderChip('Unisex', 'unisex'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Availability
+                  const Text('Availability', style: _sectionStyle),
+                  const SizedBox(height: 10),
+                  Obx(
+                    () => Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _availChip('Any Time', 'any'),
+                        _availChip('Today', 'today'),
+                        _availChip('This Week', 'this_week'),
+                        _availChip('This Month', 'this_month'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Services
+                  const Text('Services', style: _sectionStyle),
+                  const SizedBox(height: 10),
+                  Obx(
+                    () => Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: c.availableServices.map(_serviceChip).toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Quick Toggles
+                  const Text('Quick Filters', style: _sectionStyle),
+                  const SizedBox(height: 10),
+                  Obx(
+                    () => Column(
+                      children: [
+                        _toggleRow(
+                          'Open Now',
+                          Icons.access_time_rounded,
+                          c.onlyOpenNow.value,
+                          c.toggleOpenNow,
+                        ),
+                        const SizedBox(height: 8),
+                        _toggleRow(
+                          'Top Rated Only',
+                          Icons.star_rounded,
+                          c.onlyFeatured.value,
+                          c.toggleFeatured,
+                        ),
+                        const SizedBox(height: 8),
+                        _toggleRow(
+                          'Verified Only',
+                          Icons.verified_rounded,
+                          c.onlyVerified.value,
+                          c.toggleVerified,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
+            // Apply button
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                24,
+                8,
+                24,
+                MediaQuery.of(context).padding.bottom + 16,
+              ),
+              child: GestureDetector(
+                onTap: () {
+                  c.applyFilters();
+                  Navigator.pop(context);
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: _yellow,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'Apply Filters',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        color: _black,
                       ),
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _sortChip(String label, String value) {
+    final sel = c.sortBy.value == value;
+    return GestureDetector(
+      onTap: () {
+        c.updateSortBy(value);
+        setState(() {});
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: sel ? _yellow : AppTheme.grey100,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: sel ? _yellow : AppTheme.grey200),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: sel ? FontWeight.w800 : FontWeight.w500,
+            color: _black,
           ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  Widget _orderChip(String label, bool value) {
+    final sel = c.sortOrder.value == value;
+    return GestureDetector(
+      onTap: () {
+        c.updateSortOrder(value);
+        setState(() {});
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: sel ? _black : AppTheme.grey100,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: sel ? FontWeight.w700 : FontWeight.w500,
+            color: sel ? Colors.white : AppTheme.grey600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _genderChip(String label, String value) {
+    final sel = c.gender.value == value;
+    return GestureDetector(
+      onTap: () {
+        c.updateGender(value);
+        setState(() {});
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: sel ? _yellow : AppTheme.grey100,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: sel ? _yellow : AppTheme.grey200),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: sel ? FontWeight.w800 : FontWeight.w500,
+            color: _black,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _availChip(String label, String value) {
+    final sel = c.availability.value == value;
+    return GestureDetector(
+      onTap: () {
+        c.updateAvailability(value);
+        setState(() {});
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: sel ? _yellow : AppTheme.grey100,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: sel ? _yellow : AppTheme.grey200),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: sel ? FontWeight.w800 : FontWeight.w500,
+            color: _black,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _serviceChip(String svc) {
+    final sel = c.selectedServices.contains(svc);
+    return GestureDetector(
+      onTap: () {
+        c.toggleService(svc);
+        setState(() {});
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: sel ? _yellow.withValues(alpha: 0.15) : AppTheme.grey100,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: sel ? _yellow : AppTheme.grey200),
+        ),
+        child: Text(
+          svc,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: sel ? FontWeight.w800 : FontWeight.w500,
+            color: sel ? _black : AppTheme.grey600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _toggleRow(
+    String label,
+    IconData icon,
+    bool value,
+    VoidCallback onTap,
+  ) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: value ? _yellow.withValues(alpha: 0.08) : AppTheme.grey50,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: value ? _yellow : AppTheme.grey200),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: value ? _black : AppTheme.grey500),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: value ? FontWeight.w700 : FontWeight.w500,
+                  color: _black,
+                ),
+              ),
+            ),
+            Container(
+              width: 44,
+              height: 24,
+              decoration: BoxDecoration(
+                color: value ? _yellow : AppTheme.grey200,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: AnimatedAlign(
+                duration: const Duration(milliseconds: 200),
+                alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
