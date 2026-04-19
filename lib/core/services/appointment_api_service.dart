@@ -46,8 +46,13 @@ class AppointmentApiService {
         queryParameters: queryParams,
       );
 
-      final data = response.data['data'];
-      return (data is List) ? data : [];
+      // Response shape: { success, data: { data: [...], total, page, limit } }
+      final outer = response.data;
+      final inner = outer is Map ? (outer['data'] ?? outer) : outer;
+      final list = inner is Map
+          ? (inner['data'] ?? inner['appointments'] ?? [])
+          : inner;
+      return (list is List) ? list : [];
     } catch (e) {
       AppLogger.e('Error getting my appointments: $e');
       rethrow;

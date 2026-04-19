@@ -34,29 +34,37 @@ class AppointmentsBinding extends Bindings {
     }
 
     // Use cases
-    Get.lazyPut<GetProviders>(
-      () => GetProviders(Get.find<BookingRepository>()),
-    );
-    Get.lazyPut<GetServices>(() => GetServices(Get.find<BookingRepository>()));
-    Get.lazyPut<GetAvailability>(
-      () => GetAvailability(Get.find<BookingRepository>()),
-    );
-    Get.lazyPut<CreateBooking>(
-      () => CreateBooking(Get.find<BookingRepository>()),
-    );
-    Get.lazyPut<GetBookingHistory>(
-      () => GetBookingHistory(Get.find<BookingRepository>()),
-    );
+    if (!Get.isRegistered<GetProviders>()) {
+      Get.put<GetProviders>(GetProviders(Get.find<BookingRepository>()));
+    }
+    if (!Get.isRegistered<GetServices>()) {
+      Get.put<GetServices>(GetServices(Get.find<BookingRepository>()));
+    }
+    if (!Get.isRegistered<GetAvailability>()) {
+      Get.put<GetAvailability>(GetAvailability(Get.find<BookingRepository>()));
+    }
+    if (!Get.isRegistered<CreateBooking>()) {
+      Get.put<CreateBooking>(CreateBooking(Get.find<BookingRepository>()));
+    }
+    if (!Get.isRegistered<GetBookingHistory>()) {
+      Get.put<GetBookingHistory>(
+        GetBookingHistory(Get.find<BookingRepository>()),
+      );
+    }
 
-    // Controller
-    Get.lazyPut<AppointmentsController>(
-      () => AppointmentsController(
-        getProviders: Get.find<GetProviders>(),
-        getServices: Get.find<GetServices>(),
-        getAvailability: Get.find<GetAvailability>(),
-        createBooking: Get.find<CreateBooking>(),
-        getBookingHistory: Get.find<GetBookingHistory>(),
-      ),
-    );
+    // Controller — fenix:true keeps it alive across page pushes so
+    // selectedProvider/selectedService/selectedTimeSlot survive navigation
+    if (!Get.isRegistered<AppointmentsController>()) {
+      Get.put<AppointmentsController>(
+        AppointmentsController(
+          getProviders: Get.find<GetProviders>(),
+          getServices: Get.find<GetServices>(),
+          getAvailability: Get.find<GetAvailability>(),
+          createBooking: Get.find<CreateBooking>(),
+          getBookingHistory: Get.find<GetBookingHistory>(),
+        ),
+        permanent: false,
+      );
+    }
   }
 }

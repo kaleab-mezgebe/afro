@@ -39,21 +39,16 @@ class BookingSummaryPage extends GetView<AppointmentsController> {
         final timeSlot = controller.selectedTimeSlot.value;
 
         if (provider == null || service == null || timeSlot == null) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.error_outline, size: 64, color: AppTheme.error),
-                const SizedBox(height: 16),
-                const Text('Missing booking information'),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () => Get.offAllNamed(AppRoutes.home),
-                  child: const Text('Return Home'),
-                ),
-              ],
-            ),
-          );
+          // Redirect to the right step instead of dead-ending
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (provider == null || service == null) {
+              Get.offAllNamed(AppRoutes.home);
+            } else {
+              // Have provider+service but no time — go back to time picker
+              Get.offNamed(AppRoutes.bookingTime);
+            }
+          });
+          return const Center(child: CircularProgressIndicator());
         }
 
         return Column(
@@ -307,52 +302,173 @@ class BookingSummaryPage extends GetView<AppointmentsController> {
   }
 
   Widget _buildPaymentCard() {
-    return GestureDetector(
-      onTap: () => Get.toNamed(AppRoutes.paymentMethod),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppTheme.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [AppTheme.softShadow],
-          border: Border.all(color: AppTheme.grey100),
+    return Obx(() {
+      final method = controller.selectedPaymentMethod.value;
+      final label = _paymentLabel(method);
+      final icon = _paymentIcon(method);
+
+      return GestureDetector(
+        onTap: () => _showPaymentPicker(),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppTheme.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [AppTheme.softShadow],
+            border: Border.all(color: AppTheme.grey100),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1A1A1A),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, size: 24, color: AppTheme.primaryYellow),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                    Text(
+                      'Tap to change',
+                      style: TextStyle(color: AppTheme.grey500, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 14,
+                color: AppTheme.grey400,
+              ),
+            ],
+          ),
         ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1A1A1A),
-                borderRadius: BorderRadius.circular(12),
+      );
+    });
+  }
+
+  String _paymentLabel(String? method) {
+    switch (method) {
+      case 'telebirr':
+        return 'Telebirr';
+      case 'cbe_birr':
+        return 'CBE Birr';
+      case 'chapa':
+        return 'Chapa';
+      case 'card':
+        return 'Credit / Debit Card';
+      default:
+        return 'Pay at Shop (Cash)';
+    }
+  }
+
+  IconData _paymentIcon(String? method) {
+    switch (method) {
+      case 'telebirr':
+        return Icons.phone_android_outlined;
+      case 'cbe_birr':
+        return Icons.account_balance_outlined;
+      case 'chapa':
+        return Icons.credit_card_outlined;
+      case 'card':
+        return Icons.credit_card;
+      default:
+        return Icons.payments_outlined;
+    }
+  }
+
+  void _showPaymentPicker() {
+    final options = [
+      ('cash', 'Pay at Shop (Cash)', Icons.payments_outlined),
+      ('telebirr', 'Telebirr', Icons.phone_android_outlined),
+      ('cbe_birr', 'CBE Birr', Icons.account_balance_outlined),
+      ('chapa', 'Chapa', Icons.credit_card_outlined),
+      ('card', 'Credit / Debit Card', Icons.credit_card),
+    ];
+    Get.bottomSheet(
+      Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 36,
+                height: 4,
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppTheme.grey300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-              child: const Icon(
-                Icons.payments_outlined,
-                size: 24,
-                color: AppTheme.primaryYellow,
-              ),
-            ),
-            const SizedBox(width: 16),
-            const Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
+              const Padding(
+                padding: EdgeInsets.fromLTRB(24, 4, 24, 16),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
                     'Select Payment Method',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  Text(
-                    'Cash, Telebirr, CBE Birr, Card',
-                    style: TextStyle(color: AppTheme.grey500, fontSize: 13),
-                  ),
-                ],
+                ),
               ),
-            ),
-            const Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 14,
-              color: AppTheme.grey400,
-            ),
-          ],
+              ...options.map((opt) {
+                final (value, label, icon) = opt;
+                return Obx(() {
+                  final isSelected =
+                      controller.selectedPaymentMethod.value == value;
+                  return ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppTheme.primaryYellow
+                            : AppTheme.grey100,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        icon,
+                        size: 20,
+                        color: isSelected ? Colors.black : AppTheme.grey600,
+                      ),
+                    ),
+                    title: Text(
+                      label,
+                      style: TextStyle(
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                    ),
+                    trailing: isSelected
+                        ? const Icon(
+                            Icons.check_circle_rounded,
+                            color: AppTheme.primaryYellow,
+                          )
+                        : null,
+                    onTap: () {
+                      controller.selectedPaymentMethod.value = value;
+                      Get.back();
+                    },
+                  );
+                });
+              }),
+              const SizedBox(height: 8),
+            ],
+          ),
         ),
       ),
     );
@@ -441,15 +557,27 @@ class BookingSummaryPage extends GetView<AppointmentsController> {
         ],
       ),
       child: SafeArea(
-        child: SizedBox(
-          width: double.infinity,
-          height: 56,
-          child: ElevatedButton(
-            onPressed: () => Get.toNamed(AppRoutes.paymentMethod),
-            style: AppTheme.primaryButton,
-            child: const Text('Choose Payment Method'),
-          ),
-        ),
+        child: Obx(() {
+          final isLoading = controller.isLoading.value;
+          return SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: ElevatedButton(
+              onPressed: isLoading ? null : () => controller.createNewBooking(),
+              style: AppTheme.primaryButton,
+              child: isLoading
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.black,
+                      ),
+                    )
+                  : const Text('Confirm Booking'),
+            ),
+          );
+        }),
       ),
     );
   }

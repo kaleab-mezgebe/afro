@@ -21,7 +21,7 @@ class BookingSuccessPage extends StatelessWidget {
               _buildSuccessAnimation(),
               const SizedBox(height: 32),
               Text(
-                'Payment Successful!',
+                'Booking Confirmed!',
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
@@ -84,11 +84,7 @@ class BookingSuccessPage extends StatelessWidget {
             color: AppTheme.primaryYellow,
             shape: BoxShape.circle,
           ),
-          child: const Icon(
-            Icons.check,
-            color: AppTheme.black,
-            size: 48,
-          ),
+          child: const Icon(Icons.check, color: AppTheme.black, size: 48),
         ),
       ),
     );

@@ -170,11 +170,12 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: _getRoleColor(staff.role).withValues(alpha: 0.1),
+                          color:
+                              _getRoleColor(staff.role).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          staff.role.value.toUpperCase().replaceAll('_', ' '),
+                          staff.role.displayName.toUpperCase(),
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
@@ -406,7 +407,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage> {
                     return DropdownMenuItem(
                       value: role,
                       child:
-                          Text(role.value.replaceAll('_', ' ').toUpperCase()),
+                          Text(role.displayName),
                     );
                   }).toList(),
                   onChanged: (value) {
@@ -585,7 +586,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage> {
                     return DropdownMenuItem(
                       value: role,
                       child:
-                          Text(role.value.replaceAll('_', ' ').toUpperCase()),
+                          Text(role.displayName),
                     );
                   }).toList(),
                   onChanged: (value) {
@@ -681,14 +682,30 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage> {
         return Colors.blue;
       case StaffRole.hairStylist:
         return Colors.purple;
+      case StaffRole.hairColorSpecialist:
+        return Colors.deepPurple;
+      case StaffRole.nailTechnician:
+        return Colors.teal;
+      case StaffRole.makeupArtist:
+        return Colors.pink;
+      case StaffRole.eyelashTechnician:
+        return Colors.indigo;
+      case StaffRole.browSpecialist:
+        return Colors.brown;
+      case StaffRole.esthetician:
+        return Colors.cyan;
+      case StaffRole.massageTherapist:
+        return Colors.green;
+      case StaffRole.beardSpecialist:
+        return Colors.blueGrey;
+      case StaffRole.waxingSpecialist:
+        return Colors.deepOrange;
+      case StaffRole.threadingSpecialist:
+        return Colors.lime;
       case StaffRole.receptionist:
         return Colors.orange;
       case StaffRole.manager:
         return Colors.green;
-      case StaffRole.makeupArtist:
-        return Colors.pink;
-      case StaffRole.nailTechnician:
-        return Colors.teal;
       case StaffRole.owner:
         return Colors.amber;
     }
@@ -792,3 +809,5 @@ class _StatusDot extends StatelessWidget {
     );
   }
 }
+
+

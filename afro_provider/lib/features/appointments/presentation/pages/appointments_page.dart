@@ -346,6 +346,8 @@ class _AppointmentsPageState extends ConsumerState<AppointmentsPage>
                     onEdit: () => _showEditAppointmentDialog(appointment),
                     onCancel: () => _showCancelConfirmDialog(appointment),
                     onComplete: () => _showCompleteConfirmDialog(appointment),
+                    onConfirm: () => _showConfirmDialog(appointment),
+                    onReject: () => _showRejectDialog(appointment),
                   );
                 },
               ),
@@ -417,11 +419,23 @@ class _AppointmentsPageState extends ConsumerState<AppointmentsPage>
                       const SizedBox(width: 8),
                       Expanded(
                         child: ModernFilterChip(
-                          label: 'Scheduled',
-                          selected: _selectedStatus == 'scheduled',
+                          label: 'Pending',
+                          selected: _selectedStatus == 'pending',
                           onSelected: (selected) {
                             setState(() {
-                              _selectedStatus = 'scheduled';
+                              _selectedStatus = 'pending';
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ModernFilterChip(
+                          label: 'Confirmed',
+                          selected: _selectedStatus == 'confirmed',
+                          onSelected: (selected) {
+                            setState(() {
+                              _selectedStatus = 'confirmed';
                             });
                           },
                         ),
@@ -829,7 +843,9 @@ class _AppointmentsPageState extends ConsumerState<AppointmentsPage>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Complete Appointment'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Complete Appointment',
+            style: TextStyle(fontWeight: FontWeight.bold)),
         content: Text(
           'Mark the appointment with ${appointment['customerName'] ?? 'Customer'} as completed?',
         ),
@@ -838,31 +854,13 @@ class _AppointmentsPageState extends ConsumerState<AppointmentsPage>
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('No'),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () async {
               Navigator.of(context).pop();
               try {
                 await appointmentService.updateAppointmentStatus(
-                  appointment['id'],
-                  'completed',
-                );
-
-                // Update local state
-                final appointmentDate =
-                    DateTime.parse(appointment['startTime']);
-                final dayKey = DateTime(appointmentDate.year,
-                    appointmentDate.month, appointmentDate.day);
-
-                if (_appointments.containsKey(dayKey)) {
-                  final index = _appointments[dayKey]!
-                      .indexWhere((a) => a['id'] == appointment['id']);
-                  if (index != -1) {
-                    _appointments[dayKey]![index]['status'] = 'completed';
-                  }
-                }
-
-                setState(() {});
-
+                    appointment['id'], 'completed');
+                _updateLocalStatus(appointment, 'completed');
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Appointment completed')),
@@ -871,16 +869,154 @@ class _AppointmentsPageState extends ConsumerState<AppointmentsPage>
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error completing appointment: $e')),
+                    SnackBar(content: Text('Error: $e')),
                   );
                 }
               }
             },
-            child: const Text('Yes', style: TextStyle(color: Colors.green)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Complete'),
           ),
         ],
       ),
     );
+  }
+
+  void _showConfirmDialog(Map<String, dynamic> appointment) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Confirm Appointment',
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Text(
+          'Confirm the appointment with ${appointment['customerName'] ?? 'Customer'} on ${appointment['startTime'] != null ? DateFormat('MMM d, h:mm a').format(DateTime.parse(appointment['startTime'])) : 'scheduled time'}?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Not Now'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              try {
+                await appointmentService.confirmAppointment(appointment['id']);
+                _updateLocalStatus(appointment, 'confirmed');
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Appointment confirmed'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error: $e')),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRejectDialog(Map<String, dynamic> appointment) {
+    final reasonController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Reject Appointment',
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Reject the appointment with ${appointment['customerName'] ?? 'Customer'}?',
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: reasonController,
+              decoration: const InputDecoration(
+                labelText: 'Reason (optional)',
+                border: OutlineInputBorder(),
+                hintText: 'e.g. Fully booked, unavailable...',
+              ),
+              maxLines: 2,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              try {
+                await appointmentService.rejectAppointment(
+                  appointment['id'],
+                  reason: reasonController.text.trim().isEmpty
+                      ? null
+                      : reasonController.text.trim(),
+                );
+                _updateLocalStatus(appointment, 'cancelled');
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Appointment rejected'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error: $e')),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Reject'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _updateLocalStatus(Map<String, dynamic> appointment, String newStatus) {
+    final dateStr = appointment['startTime'] ?? appointment['date'];
+    if (dateStr == null) return;
+    final appointmentDate = DateTime.parse(dateStr);
+    final dayKey = DateTime(
+        appointmentDate.year, appointmentDate.month, appointmentDate.day);
+    if (_appointments.containsKey(dayKey)) {
+      final index = _appointments[dayKey]!
+          .indexWhere((a) => a['id'] == appointment['id']);
+      if (index != -1) {
+        _appointments[dayKey]![index]['status'] = newStatus;
+      }
+    }
+    setState(() {});
   }
 }
 
@@ -889,12 +1025,16 @@ class _AppointmentCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onCancel;
   final VoidCallback onComplete;
+  final VoidCallback? onConfirm;
+  final VoidCallback? onReject;
 
   const _AppointmentCard({
     required this.appointment,
     required this.onEdit,
     required this.onCancel,
     required this.onComplete,
+    this.onConfirm,
+    this.onReject,
   });
 
   @override
@@ -1004,7 +1144,55 @@ class _AppointmentCard extends StatelessWidget {
                 const Spacer(),
 
                 // Action buttons based on status
-                if (status == 'scheduled')
+                if (status == 'pending')
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Reject button
+                      isMobile
+                          ? IconButton(
+                              onPressed: onReject,
+                              icon: const Icon(Icons.close_rounded,
+                                  size: 18, color: Colors.red),
+                              tooltip: 'Reject',
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                  minWidth: 32, minHeight: 32),
+                            )
+                          : TextButton.icon(
+                              onPressed: onReject,
+                              icon: const Icon(Icons.close_rounded,
+                                  size: 16, color: Colors.red),
+                              label: const Text('Reject',
+                                  style: TextStyle(color: Colors.red)),
+                            ),
+                      const SizedBox(width: 4),
+                      // Confirm button
+                      isMobile
+                          ? IconButton(
+                              onPressed: onConfirm,
+                              icon: const Icon(Icons.check_rounded,
+                                  size: 18, color: Colors.green),
+                              tooltip: 'Confirm',
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                  minWidth: 32, minHeight: 32),
+                            )
+                          : ElevatedButton.icon(
+                              onPressed: onConfirm,
+                              icon: const Icon(Icons.check_rounded, size: 16),
+                              label: const Text('Confirm'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                              ),
+                            ),
+                    ],
+                  ),
+
+                if (status == 'scheduled' || status == 'confirmed')
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -1090,6 +1278,10 @@ class _AppointmentCard extends StatelessWidget {
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
+      case 'pending':
+        return Colors.orange;
+      case 'confirmed':
+        return Colors.blue;
       case 'scheduled':
         return Colors.blue;
       case 'completed':
@@ -1099,7 +1291,7 @@ class _AppointmentCard extends StatelessWidget {
       case 'no_show':
         return Colors.grey;
       default:
-        return Colors.blue;
+        return Colors.orange;
     }
   }
 

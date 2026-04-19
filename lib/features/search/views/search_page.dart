@@ -1,272 +1,402 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../core/theme/app_theme.dart';
 import '../controllers/search_controller.dart' as search_ctrl;
 import '../../../domain/entities/provider.dart';
-// Assuming this exists or using local
+
+// ─── Palette ────────────────────────────────────────────────────────────────
+const _yellow = AppTheme.primaryYellow;
+const _black = AppTheme.black;
+const _bg = Color(0xFFF7F7F7);
 
 class SearchPage extends GetView<search_ctrl.SearchController> {
   const SearchPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      floatingActionButton: Obx(() => FloatingActionButton.extended(
-        heroTag: 'search_map_fab',
-        onPressed: controller.toggleMap,
-        backgroundColor: AppTheme.primaryYellow,
-        foregroundColor: AppTheme.black,
-        icon: Icon(controller.showMap.value ? Icons.list_rounded : Icons.map_rounded),
-        label: Text(controller.showMap.value ? 'Show List' : 'Show Map'),
-      )),
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(context),
-            _buildCategoryFilters(),
-            Expanded(
-              child: Obx(() {
-                if (controller.isLoading.value) {
-                  return _buildLoadingState();
-                }
-
-                if (controller.showMap.value) {
-                  return _buildMapView();
-                }
-
-                if (controller.query.value.isEmpty &&
-                    !controller.hasActiveFilters) {
-                  return _buildInitialState();
-                }
-
-                if (controller.filteredProviders.isEmpty) {
-                  return _buildEmptyState();
-                }
-
-                return _buildResultsList();
-              }),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.dark,
+      child: Scaffold(
+        backgroundColor: _bg,
+        floatingActionButton: Obx(
+          () => FloatingActionButton.extended(
+            heroTag: 'search_map_fab',
+            onPressed: controller.toggleMap,
+            backgroundColor: _yellow,
+            foregroundColor: _black,
+            elevation: 4,
+            icon: Icon(
+              controller.showMap.value ? Icons.list_rounded : Icons.map_rounded,
             ),
-          ],
+            label: Text(
+              controller.showMap.value ? 'List View' : 'Map View',
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
+          ),
+        ),
+        body: SafeArea(
+          child: Column(
+            children: [
+              _Header(controller: controller),
+              _CategoryStrip(controller: controller),
+              Expanded(
+                child: Obx(() {
+                  if (controller.isLoading.value) return _LoadingSkeleton();
+                  if (controller.showMap.value)
+                    return _MapView(controller: controller);
+                  if (controller.query.value.isEmpty &&
+                      !controller.hasActiveFilters) {
+                    return _DiscoverView(controller: controller);
+                  }
+                  if (controller.filteredProviders.isEmpty)
+                    return _EmptyState(controller: controller);
+                  return _ResultsList(controller: controller);
+                }),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildHeader(BuildContext context) {
+// ─── Header ─────────────────────────────────────────────────────────────────
+class _Header extends StatelessWidget {
+  final search_ctrl.SearchController controller;
+  const _Header({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    final canPop = Navigator.of(context).canPop();
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-      decoration: BoxDecoration(
-        color: AppTheme.white,
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(30),
-          bottomRight: Radius.circular(30),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.black.withValues(alpha: 0.03),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Explore Services',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.black,
-            ),
-          ),
-          const SizedBox(height: 20),
+          // Top row: back button + title + filter
           Row(
             children: [
+              if (canPop)
+                GestureDetector(
+                  onTap: () => Get.back(),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: _bg,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      size: 18,
+                      color: _black,
+                    ),
+                  ),
+                ),
+              if (canPop) const SizedBox(width: 12),
               Expanded(
-                child: Container(
-                  height: 56,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: AppTheme.grey100,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppTheme.grey200),
-                  ),
-                  child: TextField(
-                    onChanged: controller.updateQuery,
-                    onSubmitted: (_) => controller.performSearch(),
-                    decoration: InputDecoration(
-                      hintText: 'Search for salons, barbers...',
-                      hintStyle: TextStyle(
-                        color: AppTheme.grey400,
-                        fontSize: 15,
-                      ),
-                      border: InputBorder.none,
-                      icon: const Icon(
-                        Icons.search_rounded,
-                        color: AppTheme.black,
-                        size: 24,
-                      ),
-                      suffixIcon: Obx(
-                        () => controller.query.value.isNotEmpty
-                            ? IconButton(
-                                icon: const Icon(Icons.close_rounded, size: 20),
-                                onPressed: () => controller.clearFilters(),
-                              )
-                            : const SizedBox.shrink(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Explore Services',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        color: _black,
+                        letterSpacing: -0.5,
                       ),
                     ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Obx(() => _buildFilterButton(context)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          _buildQuickFilterRow(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterButton(BuildContext context) {
-    return GestureDetector(
-      onTap: () => _showFilterSheet(context),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: AppTheme.black,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.black.withValues(alpha: 0.2),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.tune_rounded,
-              color: AppTheme.white,
-              size: 28,
-            ),
-          ),
-          if (controller.activeFilterCount > 0)
-            Positioned(
-              top: -5,
-              right: -5,
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: const BoxDecoration(
-                  color: AppTheme.primaryYellow,
-                  shape: BoxShape.circle,
-                ),
-                child: Text(
-                  '${controller.activeFilterCount}',
-                  style: const TextStyle(
-                    color: AppTheme.black,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickFilterRow() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          Obx(() => _buildSortDropdown()),
-          const SizedBox(width: 8),
-          _buildQuickChip('Open Now', controller.onlyOpenNow, controller.toggleOpenNow),
-          const SizedBox(width: 8),
-          _buildQuickChip('Featured', controller.onlyFeatured, controller.toggleFeatured),
-          const SizedBox(width: 8),
-          _buildQuickChip('Verified', controller.onlyVerified, controller.toggleVerified),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickChip(String label, RxBool value, VoidCallback onTap) {
-    return Obx(() => GestureDetector(
-      onTap: onTap,
-      child: Chip(
-        label: Text(label),
-        backgroundColor: value.value ? AppTheme.primaryYellow : AppTheme.white,
-        labelStyle: TextStyle(
-          color: AppTheme.black,
-          fontSize: 12,
-          fontWeight: value.value ? FontWeight.bold : FontWeight.normal,
-        ),
-        side: BorderSide(color: value.value ? AppTheme.primaryYellow : AppTheme.grey200),
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-      ),
-    ));
-  }
-
-  Widget _buildCategoryFilters() {
-    return Container(
-      height: 60,
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: controller.categories.length,
-        itemBuilder: (context, index) {
-          final category = controller.categories[index];
-          return Obx(() {
-            final isSelected = controller.selectedCategory.value == category;
-            return Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: GestureDetector(
-                onTap: () => controller.updateCategory(category),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppTheme.primaryYellow
-                        : AppTheme.grey50,
-                    borderRadius: BorderRadius.circular(25),
-                    border: Border.all(
-                      color: isSelected
-                          ? AppTheme.primaryYellow
-                          : AppTheme.grey200,
+                    Text(
+                      'Find your perfect specialist',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppTheme.grey500,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                    boxShadow: [
-                      if (isSelected)
-                        BoxShadow(
-                          color: AppTheme.primaryYellow.withValues(alpha: 0.2),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
+                  ],
+                ),
+              ),
+              // Filter button with badge
+              Obx(
+                () => GestureDetector(
+                  onTap: () => _showFilterSheet(context, controller),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: controller.activeFilterCount > 0
+                              ? _yellow
+                              : _black,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Icon(
+                          Icons.tune_rounded,
+                          color: controller.activeFilterCount > 0
+                              ? _black
+                              : Colors.white,
+                          size: 22,
+                        ),
+                      ),
+                      if (controller.activeFilterCount > 0)
+                        Positioned(
+                          top: -4,
+                          right: -4,
+                          child: Container(
+                            width: 18,
+                            height: 18,
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${controller.activeFilterCount}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                     ],
                   ),
-                  child: Text(
-                    category.capitalizeFirst!,
-                    style: TextStyle(
-                      color: isSelected
-                          ? AppTheme.white
-                          : AppTheme.textSecondary,
-                      fontWeight: isSelected
-                          ? FontWeight.bold
-                          : FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          // Search bar
+          Container(
+            height: 52,
+            decoration: BoxDecoration(
+              color: _bg,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.grey200),
+            ),
+            child: Row(
+              children: [
+                const SizedBox(width: 14),
+                const Icon(
+                  Icons.search_rounded,
+                  color: AppTheme.grey400,
+                  size: 22,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextField(
+                    onChanged: controller.updateQuery,
+                    onSubmitted: (_) => controller.performSearch(),
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Barbers, salons, makeup artists...',
+                      hintStyle: TextStyle(
+                        color: AppTheme.grey400,
+                        fontSize: 14,
+                      ),
+                      border: InputBorder.none,
+                      isDense: true,
                     ),
                   ),
+                ),
+                Obx(
+                  () => controller.query.value.isNotEmpty
+                      ? GestureDetector(
+                          onTap: () => controller.clearFilters(),
+                          child: Container(
+                            margin: const EdgeInsets.only(right: 10),
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: AppTheme.grey200,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.close_rounded,
+                              size: 14,
+                              color: _black,
+                            ),
+                          ),
+                        )
+                      : const SizedBox(width: 14),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Quick chips
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _QuickChip(
+                  label: 'Open Now',
+                  icon: Icons.access_time_rounded,
+                  value: controller.onlyOpenNow,
+                  onTap: controller.toggleOpenNow,
+                ),
+                const SizedBox(width: 8),
+                _QuickChip(
+                  label: 'Top Rated',
+                  icon: Icons.star_rounded,
+                  value: controller.onlyFeatured,
+                  onTap: controller.toggleFeatured,
+                ),
+                const SizedBox(width: 8),
+                _QuickChip(
+                  label: 'Verified',
+                  icon: Icons.verified_rounded,
+                  value: controller.onlyVerified,
+                  onTap: controller.toggleVerified,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuickChip extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final RxBool value;
+  final VoidCallback onTap;
+  const _QuickChip({
+    required this.label,
+    required this.icon,
+    required this.value,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(
+      () => GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          decoration: BoxDecoration(
+            color: value.value ? _yellow : Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: value.value ? _yellow : AppTheme.grey200),
+            boxShadow: value.value
+                ? [
+                    BoxShadow(
+                      color: _yellow.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 14,
+                color: value.value ? _black : AppTheme.grey500,
+              ),
+              const SizedBox(width: 5),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: value.value ? FontWeight.w800 : FontWeight.w500,
+                  color: value.value ? _black : AppTheme.grey600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Category Strip ──────────────────────────────────────────────────────────
+class _CategoryStrip extends StatelessWidget {
+  final search_ctrl.SearchController controller;
+  const _CategoryStrip({required this.controller});
+
+  static const _cats = [
+    {'label': 'All', 'icon': Icons.grid_view_rounded},
+    {'label': 'Barber', 'icon': Icons.content_cut_rounded},
+    {'label': 'Hair Stylist', 'icon': Icons.face_retouching_natural_rounded},
+    {'label': 'Hair Color', 'icon': Icons.palette_rounded},
+    {'label': 'Nails', 'icon': Icons.front_hand_rounded},
+    {'label': 'Makeup', 'icon': Icons.brush_rounded},
+    {'label': 'Lashes', 'icon': Icons.remove_red_eye_rounded},
+    {'label': 'Brows', 'icon': Icons.auto_fix_high_rounded},
+    {'label': 'Skin Care', 'icon': Icons.spa_rounded},
+    {'label': 'Massage', 'icon': Icons.self_improvement_rounded},
+    {'label': 'Waxing', 'icon': Icons.waves_rounded},
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.white,
+      height: 52,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        itemCount: _cats.length,
+        itemBuilder: (context, i) {
+          final cat = _cats[i];
+          final label = cat['label'] as String;
+          return Obx(() {
+            final isSelected =
+                controller.selectedCategory.value == label ||
+                (label == 'All' && controller.selectedCategory.value == 'All');
+            return GestureDetector(
+              onTap: () => controller.updateCategory(label),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                decoration: BoxDecoration(
+                  color: isSelected ? _yellow : _bg,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isSelected ? _yellow : AppTheme.grey200,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      cat['icon'] as IconData,
+                      size: 14,
+                      color: isSelected ? _black : AppTheme.grey500,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: isSelected
+                            ? FontWeight.w800
+                            : FontWeight.w500,
+                        color: isSelected ? _black : AppTheme.grey600,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             );
@@ -275,348 +405,478 @@ class SearchPage extends GetView<search_ctrl.SearchController> {
       ),
     );
   }
+}
 
-  Widget _buildInitialState() {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildSearchHistory(),
-          _buildServiceCategories(),
-          _buildNearbyPreview(),
-          const SizedBox(height: 20),
-        ],
-      ),
-    );
-  }
+// ─── Discover View (initial state) ──────────────────────────────────────────
+class _DiscoverView extends StatelessWidget {
+  final search_ctrl.SearchController controller;
+  const _DiscoverView({required this.controller});
 
-  Widget _buildSearchHistory() {
-    return Obx(() {
-      if (controller.searchHistory.isEmpty) return const SizedBox.shrink();
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+  static const _services = [
+    {
+      'label': 'Haircut',
+      'icon': Icons.content_cut_rounded,
+      'color': Color(0xFFFFB900),
+      'sub': 'Classic & Fade',
+    },
+    {
+      'label': 'Beard',
+      'icon': Icons.face_retouching_natural_rounded,
+      'color': Color(0xFF4CAF50),
+      'sub': 'Trim & Shape',
+    },
+    {
+      'label': 'Hair Color',
+      'icon': Icons.palette_rounded,
+      'color': Color(0xFF9C27B0),
+      'sub': 'Balayage & More',
+    },
+    {
+      'label': 'Makeup',
+      'icon': Icons.brush_rounded,
+      'color': Color(0xFFE91E63),
+      'sub': 'Bridal & Events',
+    },
+    {
+      'label': 'Nails',
+      'icon': Icons.front_hand_rounded,
+      'color': Color(0xFFFF5722),
+      'sub': 'Gel & Acrylic',
+    },
+    {
+      'label': 'Lashes',
+      'icon': Icons.remove_red_eye_rounded,
+      'color': Color(0xFF3F51B5),
+      'sub': 'Extensions & Lift',
+    },
+    {
+      'label': 'Brows',
+      'icon': Icons.auto_fix_high_rounded,
+      'color': Color(0xFF795548),
+      'sub': 'Threading & Tint',
+    },
+    {
+      'label': 'Skin Care',
+      'icon': Icons.spa_rounded,
+      'color': Color(0xFF00BCD4),
+      'sub': 'Facials & Peels',
+    },
+    {
+      'label': 'Massage',
+      'icon': Icons.self_improvement_rounded,
+      'color': Color(0xFF009688),
+      'sub': 'Relax & Deep Tissue',
+    },
+    {
+      'label': 'Waxing',
+      'icon': Icons.waves_rounded,
+      'color': Color(0xFFFF9800),
+      'sub': 'Full Body & Facial',
+    },
+    {
+      'label': 'Threading',
+      'icon': Icons.linear_scale_rounded,
+      'color': Color(0xFF607D8B),
+      'sub': 'Brows & Face',
+    },
+    {
+      'label': 'Bridal',
+      'icon': Icons.favorite_rounded,
+      'color': Color(0xFFF44336),
+      'sub': 'Full Bridal Package',
+    },
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
+      slivers: [
+        // Recent searches
+        SliverToBoxAdapter(
+          child: Obx(() {
+            if (controller.searchHistory.isEmpty)
+              return const SizedBox.shrink();
+            return _RecentSearches(controller: controller);
+          }),
+        ),
+
+        // Hero banner
+        const SliverToBoxAdapter(child: _HeroBanner()),
+
+        // Service grid title
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  'Recent Searches',
+                  'Browse by Service',
                   style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.black,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: _black,
+                    letterSpacing: -0.3,
                   ),
                 ),
-                GestureDetector(
-                  onTap: () => controller.clearHistory(),
-                  child: Text(
-                    'Clear All',
-                    style: TextStyle(
-                      color: AppTheme.grey500,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
+                Text(
+                  '${_services.length} categories',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppTheme.grey500,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
             ),
           ),
-          SizedBox(
-            height: 40,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: controller.searchHistory.length,
-              itemBuilder: (context, index) {
-                final term = controller.searchHistory[index];
-                return Padding(
-                  padding: const EdgeInsets.only(right: 10),
-                  child: ActionChip(
-                    label: Text(term),
-                    onPressed: () {
-                      controller.updateQuery(term);
-                      controller.performSearch();
-                    },
-                    backgroundColor: AppTheme.grey100,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    side: BorderSide.none,
-                    labelStyle: const TextStyle(
-                      color: AppTheme.black,
-                      fontSize: 13,
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      );
-    });
-  }
+        ),
 
-  /// Replaces Quick Actions — shows service category tiles that search properly
-  Widget _buildServiceCategories() {
-    final categories = [
-      {'label': 'Haircut', 'icon': Icons.content_cut_rounded, 'color': const Color(0xFFFFB900)},
-      {'label': 'Beard', 'icon': Icons.face_retouching_natural, 'color': const Color(0xFF4CAF50)},
-      {'label': 'Color', 'icon': Icons.palette_rounded, 'color': const Color(0xFF9C27B0)},
-      {'label': 'Makeup', 'icon': Icons.brush_rounded, 'color': const Color(0xFFE91E63)},
-      {'label': 'Facial', 'icon': Icons.spa_rounded, 'color': const Color(0xFF00BCD4)},
-      {'label': 'Nails', 'icon': Icons.front_hand_rounded, 'color': const Color(0xFFFF5722)},
-    ];
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Browse by Service',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.black,
-            ),
-          ),
-          const SizedBox(height: 16),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
+        // Service grid
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          sliver: SliverGrid(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
-              childAspectRatio: 1.1,
+              childAspectRatio: 0.9,
             ),
-            itemCount: categories.length,
-            itemBuilder: (context, i) {
-              final cat = categories[i];
-              return GestureDetector(
+            delegate: SliverChildBuilderDelegate((context, i) {
+              final s = _services[i];
+              return _ServiceTile(
+                label: s['label'] as String,
+                sub: s['sub'] as String,
+                icon: s['icon'] as IconData,
+                color: s['color'] as Color,
                 onTap: () {
-                  controller.updateQuery(cat['label'] as String);
+                  controller.updateQuery(s['label'] as String);
                   controller.performSearch();
                 },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: AppTheme.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppTheme.grey200),
-                    boxShadow: [
-                      BoxShadow(
-                        color: (cat['color'] as Color).withValues(alpha: 0.08),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+              );
+            }, childCount: _services.length),
+          ),
+        ),
+
+        const SliverToBoxAdapter(child: SizedBox(height: 100)),
+      ],
+    );
+  }
+}
+
+class _HeroBanner extends StatelessWidget {
+  const _HeroBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      height: 140,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1C1C1E), Color(0xFF2C2C2E)],
+        ),
+      ),
+      child: Stack(
+        children: [
+          // Decorative circles
+          Positioned(
+            right: -20,
+            top: -20,
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _yellow.withValues(alpha: 0.15),
+              ),
+            ),
+          ),
+          Positioned(
+            right: 30,
+            bottom: -30,
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _yellow.withValues(alpha: 0.08),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: (cat['color'] as Color).withValues(alpha: 0.12),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          cat['icon'] as IconData,
-                          color: cat['color'] as Color,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        cat['label'] as String,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.black,
-                        ),
-                      ),
-                    ],
+                  decoration: BoxDecoration(
+                    color: _yellow,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    'DISCOVER',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                      color: _black,
+                      letterSpacing: 1.5,
+                    ),
                   ),
                 ),
-              );
-            },
+                const SizedBox(height: 8),
+                const Text(
+                  'Find the best beauty\nspecialists near you',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildNearbyPreview() {
+class _ServiceTile extends StatelessWidget {
+  final String label;
+  final String sub;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _ServiceTile({
+    required this.label,
+    required this.sub,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.1),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(icon, color: color, size: 26),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                color: _black,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              sub,
+              style: TextStyle(
+                fontSize: 10,
+                color: AppTheme.grey500,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RecentSearches extends StatelessWidget {
+  final search_ctrl.SearchController controller;
+  const _RecentSearches({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Popular Near You',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.black,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            height: 150,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              image: const DecorationImage(
-                image: NetworkImage('https://picsum.photos/seed/map/800/400'),
-                fit: BoxFit.cover,
-                opacity: 0.7,
-              ),
-            ),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    AppTheme.black.withValues(alpha: 0.6),
-                  ],
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Recent',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: _black,
                 ),
               ),
-              child: Center(
-                child: GestureDetector(
-                  onTap: () => controller.toggleMap(),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppTheme.grey50,
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    child: const Text(
-                      'View Map',
-                      style: TextStyle(
-                        color: AppTheme.black,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+              GestureDetector(
+                onTap: () => controller.clearHistory(),
+                child: Text(
+                  'Clear',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppTheme.grey500,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLoadingState() {
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      itemCount: 5,
-      itemBuilder: (context, index) => _buildShimmerCard(),
-    );
-  }
-
-  Widget _buildShimmerCard() {
-    return Container(
-      height: 120,
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: AppTheme.grey100,
-        borderRadius: BorderRadius.circular(20),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.search_off_rounded, size: 80, color: AppTheme.grey300),
-          const SizedBox(height: 20),
-          const Text(
-            'No results found',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.black,
-            ),
+            ],
           ),
           const SizedBox(height: 10),
-          Text(
-            'Try adjusting your filters or search term',
-            style: TextStyle(color: AppTheme.grey500),
-          ),
-          const SizedBox(height: 30),
-          ElevatedButton(
-            onPressed: () => controller.clearFilters(),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryYellow,
-              foregroundColor: AppTheme.black,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-            ),
-            child: const Text('Clear All Filters'),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: controller.searchHistory
+                .take(6)
+                .map(
+                  (term) => GestureDetector(
+                    onTap: () {
+                      controller.updateQuery(term);
+                      controller.performSearch();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 7,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: AppTheme.grey200),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.history_rounded,
+                            size: 13,
+                            color: AppTheme.grey400,
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            term,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: _black,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                )
+                .toList(),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildResultsList() {
+// ─── Results List ────────────────────────────────────────────────────────────
+class _ResultsList extends StatelessWidget {
+  final search_ctrl.SearchController controller;
+  const _ResultsList({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       children: [
-        // Active filter / search banner with back option
+        // Results banner
         Obx(() {
           final q = controller.query.value;
-          final hasFilter = controller.hasActiveFilters;
-          if (q.isEmpty && !hasFilter) return const SizedBox.shrink();
+          final count = controller.filteredProviders.length;
           return Container(
-            margin: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+            margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: AppTheme.primaryYellow.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppTheme.primaryYellow.withValues(alpha: 0.3)),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppTheme.grey100),
             ),
             child: Row(
               children: [
-                const Icon(Icons.filter_list_rounded, size: 18, color: AppTheme.primaryYellow),
-                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: _yellow.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.search_rounded,
+                    size: 16,
+                    color: _black,
+                  ),
+                ),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    q.isNotEmpty ? 'Results for "$q"' : 'Filtered results',
+                    q.isNotEmpty
+                        ? '$count results for "$q"'
+                        : '$count specialists found',
                     style: const TextStyle(
                       fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.black,
+                      fontWeight: FontWeight.w700,
+                      color: _black,
                     ),
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 GestureDetector(
                   onTap: () => controller.clearFilters(),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryYellow,
-                      borderRadius: BorderRadius.circular(20),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
                     ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.close_rounded, size: 14, color: AppTheme.black),
-                        SizedBox(width: 4),
-                        Text('Clear', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.black)),
-                      ],
+                    decoration: BoxDecoration(
+                      color: _bg,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Text(
+                      'Clear',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: _black,
+                      ),
                     ),
                   ),
                 ),
@@ -626,141 +886,220 @@ class SearchPage extends GetView<search_ctrl.SearchController> {
         }),
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+            physics: const BouncingScrollPhysics(),
             itemCount: controller.filteredProviders.length,
             itemBuilder: (context, index) {
-              return _buildSpecialistCard(controller.filteredProviders[index]);
+              return _SpecialistCard(
+                provider: controller.filteredProviders[index],
+              );
             },
           ),
         ),
       ],
     );
   }
+}
 
-  Widget _buildSpecialistCard(Provider provider) {
+class _SpecialistCard extends StatelessWidget {
+  final Provider provider;
+  const _SpecialistCard({required this.provider});
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => Get.toNamed(
         '/portfolio',
-        arguments: {'specialist': _mapProviderToMap(provider)},
+        arguments: {
+          'id': provider.id,
+          'name': provider.name,
+          'image':
+              provider.imageUrl ??
+              'https://picsum.photos/seed/${provider.id}/200/200',
+          'rating': provider.rating,
+          'categories': [provider.category],
+          'location': provider.location,
+          'services': provider.services,
+          'contact': {
+            'phone': '+251 712 345 678',
+            'email': 'info@salon.com',
+            'address': provider.location,
+          },
+        },
       ),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
+        margin: const EdgeInsets.only(bottom: 14),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
-        child: IntrinsicHeight(
-          child: Row(
-            children: [
-              _buildProviderImage(provider),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: AppTheme.primaryYellow.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              provider.category.toUpperCase(),
-                              style: const TextStyle(
-                                fontSize: 9,
-                                fontWeight: FontWeight.w900,
-                                color: AppTheme.black,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              const Icon(Icons.star_rounded, color: AppTheme.primaryYellow, size: 16),
-                              const SizedBox(width: 2),
-                              Text(
-                                provider.rating.toStringAsFixed(1),
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w900,
-                                  color: AppTheme.black,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        provider.name,
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w900,
-                          color: AppTheme.black,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(Icons.location_on_rounded, color: AppTheme.greyMedium, size: 14),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              provider.location,
-                              style: const TextStyle(fontSize: 12, color: AppTheme.greyMedium, fontWeight: FontWeight.w500),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 14),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            provider.minPrice > 0 ? 'FROM \$${provider.minPrice.toInt()}' : 'VIEW PRICING',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w900,
-                              color: AppTheme.black,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: AppTheme.black,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(Icons.arrow_forward_ios_rounded, size: 10, color: Colors.white),
-                          ),
-                        ],
-                      ),
-                    ],
+        child: Row(
+          children: [
+            // Image
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(24),
+                bottomLeft: Radius.circular(24),
+              ),
+              child: SizedBox(
+                width: 110,
+                height: 130,
+                child: Image.network(
+                  provider.imageUrl ??
+                      'https://picsum.photos/seed/${provider.id}/300/300',
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    color: AppTheme.grey100,
+                    child: const Icon(
+                      Icons.person_rounded,
+                      size: 40,
+                      color: AppTheme.grey300,
+                    ),
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+            // Info
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _yellow.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            provider.category.toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              color: _black,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                        const Spacer(),
+                        const Icon(
+                          Icons.star_rounded,
+                          color: _yellow,
+                          size: 15,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          provider.rating.toStringAsFixed(1),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w900,
+                            color: _black,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      provider.name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        color: _black,
+                        letterSpacing: -0.3,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on_rounded,
+                          size: 13,
+                          color: AppTheme.grey400,
+                        ),
+                        const SizedBox(width: 3),
+                        Expanded(
+                          child: Text(
+                            provider.location.isNotEmpty
+                                ? provider.location
+                                : 'Addis Ababa',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppTheme.grey500,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          provider.minPrice > 0
+                              ? 'From \$${provider.minPrice.toInt()}'
+                              : 'View Pricing',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w900,
+                            color: _black,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _yellow,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Text(
+                            'Book',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: _black,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
-  Widget _buildMapView() {
+}
+
+// ─── Map View ────────────────────────────────────────────────────────────────
+class _MapView extends StatelessWidget {
+  final search_ctrl.SearchController controller;
+  const _MapView({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
     return Stack(
       children: [
         GoogleMap(
@@ -772,580 +1111,282 @@ class SearchPage extends GetView<search_ctrl.SearchController> {
           zoomControlsEnabled: false,
           myLocationButtonEnabled: false,
           mapType: MapType.normal,
-          onMapCreated: (mapController) {
-            // Optional: Store map controller
-          },
+          onMapCreated: (_) {},
         ),
         Positioned(
           bottom: 20,
           left: 0,
           right: 0,
           child: SizedBox(
-            height: 120,
+            height: 140,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: controller.filteredProviders.length,
-              itemBuilder: (context, index) {
-                final provider = controller.filteredProviders[index];
-                return Container(
-                  width: 300,
-                  margin: const EdgeInsets.only(right: 12),
-                  child: _buildSpecialistCard(provider),
-                );
-              },
+              itemBuilder: (context, index) => SizedBox(
+                width: 280,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: _SpecialistCard(
+                    provider: controller.filteredProviders[index],
+                  ),
+                ),
+              ),
             ),
           ),
         ),
       ],
     );
   }
+}
 
-  Widget _buildProviderImage(Provider provider) {
-    return Container(
-      width: 110,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF0F0F0),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(24),
-          bottomLeft: Radius.circular(24),
-        ),
-        image: DecorationImage(
-          image: NetworkImage(
-            provider.imageUrl ?? 'https://picsum.photos/seed/${provider.id}/300/300',
-          ),
-          fit: BoxFit.cover,
-        ),
-      ),
-    );
-  }
-
-  Map<String, dynamic> _mapProviderToMap(Provider provider) {
-    return {
-      'id': provider.id,
-      'name': provider.name,
-      'image':
-          provider.imageUrl ??
-          'https://picsum.photos/seed/${provider.id}/200/200',
-      'rating': provider.rating,
-      'categories': [provider.category],
-      'location': provider.location,
-      'services': provider.services,
-      'contact': {
-        'phone': '+251 712 345 678',
-        'email': 'info@salon.com',
-        'address': provider.location,
-      },
-    };
-  }
-
-  void _showFilterSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _FilterBottomSheet(controller: controller),
-    );
-  }
-
-  Widget _buildSortDropdown() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: AppTheme.grey50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.grey200),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: controller.sortBy.value,
-          isDense: true,
-          items: controller.sortOptions.map((option) {
-            return DropdownMenuItem(
-              value: option,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    _getSortIcon(option),
-                    size: 16,
-                    color: AppTheme.textSecondary,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    _getSortLabel(option),
-                    style: const TextStyle(fontSize: 14, color: AppTheme.black),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
-          onChanged: (value) {
-            if (value != null) {
-              controller.updateSortBy(value);
-              controller.applyFilters();
-            }
-          },
+// ─── Loading Skeleton ────────────────────────────────────────────────────────
+class _LoadingSkeleton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+      itemCount: 5,
+      itemBuilder: (_, __) => Container(
+        height: 130,
+        margin: const EdgeInsets.only(bottom: 14),
+        decoration: BoxDecoration(
+          color: AppTheme.grey100,
+          borderRadius: BorderRadius.circular(24),
         ),
       ),
     );
-  }
-
-  IconData _getSortIcon(String sortBy) {
-    switch (sortBy) {
-      case 'rating':
-        return Icons.star_rounded;
-      case 'price':
-        return Icons.attach_money_rounded;
-      case 'distance':
-        return Icons.location_on_rounded;
-      case 'reviews':
-        return Icons.chat_rounded;
-      default:
-        return Icons.sort_rounded;
-    }
-  }
-
-  String _getSortLabel(String sortBy) {
-    switch (sortBy) {
-      case 'rating':
-        return 'Rating';
-      case 'price':
-        return 'Price';
-      case 'distance':
-        return 'Distance';
-      case 'reviews':
-        return 'Reviews';
-      default:
-        return 'Sort';
-    }
   }
 }
 
-class _FilterBottomSheet extends StatefulWidget {
+// ─── Empty State ─────────────────────────────────────────────────────────────
+class _EmptyState extends StatelessWidget {
+  final search_ctrl.SearchController controller;
+  const _EmptyState({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(28),
+              decoration: BoxDecoration(
+                color: AppTheme.grey100,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.search_off_rounded,
+                size: 56,
+                color: AppTheme.grey300,
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'No results found',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+                color: _black,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Try a different search term or adjust your filters',
+              style: TextStyle(color: AppTheme.grey500, fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 28),
+            GestureDetector(
+              onTap: () => controller.clearFilters(),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 14,
+                ),
+                decoration: BoxDecoration(
+                  color: _yellow,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Text(
+                  'Clear Filters',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
+                    color: _black,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Filter Bottom Sheet ─────────────────────────────────────────────────────
+void _showFilterSheet(
+  BuildContext context,
+  search_ctrl.SearchController controller,
+) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => _FilterBottomSheet(controller: controller),
+  );
+}
+
+class _FilterBottomSheet extends StatelessWidget {
   final search_ctrl.SearchController controller;
   const _FilterBottomSheet({required this.controller});
 
   @override
-  State<_FilterBottomSheet> createState() => _FilterBottomSheetState();
-}
-
-class _FilterBottomSheetState extends State<_FilterBottomSheet> {
-  late double _tempMinRating;
-  late double _tempMaxPrice;
-  late double _tempMinPrice;
-  late double _tempMaxDistance;
-  late String _tempSortBy;
-  late bool _tempSortOrder;
-  late String _tempAvailability;
-  late String _tempGender;
-  late bool _tempOnlyOpenNow;
-  late bool _tempOnlyFeatured;
-  late bool _tempOnlyVerified;
-  late List<String> _tempServices;
-
-  @override
-  void initState() {
-    super.initState();
-    _tempMinRating = widget.controller.minRating.value;
-    _tempMaxPrice = widget.controller.maxPrice.value;
-    _tempMinPrice = widget.controller.minPrice.value;
-    _tempMaxDistance = widget.controller.maxDistance.value;
-    _tempSortBy = widget.controller.sortBy.value;
-    _tempSortOrder = widget.controller.sortOrder.value;
-    _tempAvailability = widget.controller.availability.value;
-    _tempGender = widget.controller.gender.value;
-    _tempOnlyOpenNow = widget.controller.onlyOpenNow.value;
-    _tempOnlyFeatured = widget.controller.onlyFeatured.value;
-    _tempOnlyVerified = widget.controller.onlyVerified.value;
-    _tempServices = List.from(widget.controller.selectedServices);
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
       decoration: const BoxDecoration(
-        color: AppTheme.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(30),
-          topRight: Radius.circular(30),
-        ),
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          _buildDragHandle(),
-          _buildSheetHeader(context),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 20),
-                  _buildSectionHeader('Sort & Order'),
-                  _buildSortSection(),
-                  const Divider(height: 40, color: AppTheme.grey100),
-                  _buildSectionHeader('Price Range'),
-                  _buildPriceSection(),
-                  const Divider(height: 40, color: AppTheme.grey100),
-                  _buildSectionHeader('Filters'),
-                  _buildQuickToggleSection(),
-                  const Divider(height: 40, color: AppTheme.grey100),
-                  _buildSectionHeader('Availability & Distance'),
-                  _buildAvailabilityAndDistanceSection(),
-                  const Divider(height: 40, color: AppTheme.grey100),
-                  _buildSectionHeader('Gender Preference'),
-                  _buildGenderSection(),
-                  const Divider(height: 40, color: AppTheme.grey100),
-                  _buildSectionHeader('Services'),
-                  _buildServiceSection(),
-                  const SizedBox(height: 100), // Space for bottom button
-                ],
+          Container(
+            width: 36,
+            height: 4,
+            margin: const EdgeInsets.symmetric(vertical: 12),
+            decoration: BoxDecoration(
+              color: AppTheme.grey300,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(24, 4, 24, 20),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Filter & Sort',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  color: _black,
+                ),
               ),
             ),
           ),
-          _buildApplyButton(context),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDragHandle() {
-    return Center(
-      child: Container(
-        margin: const EdgeInsets.only(top: 12),
-        width: 40,
-        height: 4,
-        decoration: BoxDecoration(
-          color: AppTheme.grey200,
-          borderRadius: BorderRadius.circular(2),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSheetHeader(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'Filter',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.black,
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              widget.controller.clearFilters();
-              Navigator.pop(context);
-            },
-            child: const Text(
-              'Reset All',
-              style: TextStyle(
-                color: Colors.redAccent,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: AppTheme.black,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSortSection() {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: AppTheme.grey50,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: _tempSortBy,
-              isExpanded: true,
-              items: widget.controller.sortOptions.map((option) {
-                return DropdownMenuItem(
-                  value: option,
-                  child: Text(
-                    option.capitalizeFirst ?? option,
-                    style: const TextStyle(fontSize: 15, color: AppTheme.black),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Minimum Rating',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.grey700,
                   ),
-                );
-              }).toList(),
-              onChanged: (val) => setState(() => _tempSortBy = val!),
+                ),
+                Obx(
+                  () => Slider(
+                    value: controller.minRating.value,
+                    min: 0,
+                    max: 5,
+                    divisions: 10,
+                    activeColor: _yellow,
+                    label: controller.minRating.value.toStringAsFixed(1),
+                    onChanged: (v) => controller.minRating.value = v,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Max Price',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.grey700,
+                  ),
+                ),
+                Obx(
+                  () => Slider(
+                    value: controller.maxPrice.value,
+                    min: 0,
+                    max: 500,
+                    divisions: 50,
+                    activeColor: _yellow,
+                    label: '\$${controller.maxPrice.value.toInt()}',
+                    onChanged: (v) => controller.maxPrice.value = v,
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            _buildRadioButton('Ascending', !_tempSortOrder, () => setState(() => _tempSortOrder = false)),
-            const SizedBox(width: 16),
-            _buildRadioButton('Descending', _tempSortOrder, () => setState(() => _tempSortOrder = true)),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRadioButton(String label, bool isSelected, VoidCallback onTap) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            color: isSelected ? AppTheme.primaryYellow : AppTheme.grey50,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? AppTheme.black : AppTheme.grey600,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              fontSize: 14,
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      controller.clearFilters();
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      decoration: BoxDecoration(
+                        color: _bg,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppTheme.grey200),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'Reset',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: _black,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 2,
+                  child: GestureDetector(
+                    onTap: () {
+                      controller.applyFilters();
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      decoration: BoxDecoration(
+                        color: _yellow,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'Apply Filters',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            color: _black,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPriceSection() {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              '\$${_tempMinPrice.toInt()} - \$${_tempMaxPrice.toInt()}',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: AppTheme.black,
-                fontSize: 15,
-              ),
-            ),
-            const Text(
-              'Max \$500',
-              style: TextStyle(color: AppTheme.grey400, fontSize: 13),
-            ),
-          ],
-        ),
-        RangeSlider(
-          values: RangeValues(_tempMinPrice, _tempMaxPrice),
-          min: 0,
-          max: 500,
-          divisions: 50,
-          activeColor: AppTheme.primaryYellow,
-          inactiveColor: AppTheme.grey100,
-          labels: RangeLabels(
-            '\$${_tempMinPrice.toInt()}',
-            '\$${_tempMaxPrice.toInt()}',
-          ),
-          onChanged: (values) {
-            setState(() {
-              _tempMinPrice = values.start;
-              _tempMaxPrice = values.end;
-            });
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuickToggleSection() {
-    return Column(
-      children: [
-        _buildSectionToggle('Open Now', _tempOnlyOpenNow, (v) => setState(() => _tempOnlyOpenNow = v)),
-        _buildSectionToggle('Featured Providers', _tempOnlyFeatured, (v) => setState(() => _tempOnlyFeatured = v)),
-        _buildSectionToggle('Verified Experts', _tempOnlyVerified, (v) => setState(() => _tempOnlyVerified = v)),
-      ],
-    );
-  }
-
-  Widget _buildSectionToggle(String label, bool value, Function(bool) onChanged) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(color: AppTheme.grey700, fontSize: 15)),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeThumbColor: AppTheme.primaryYellow,
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildAvailabilityAndDistanceSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Search Area', style: TextStyle(color: AppTheme.grey600, fontSize: 14)),
-        Slider(
-          value: _tempMaxDistance,
-          min: 1,
-          max: 100,
-          divisions: 20,
-          activeColor: AppTheme.primaryYellow,
-          inactiveColor: AppTheme.grey100,
-          label: '${_tempMaxDistance.toInt()} km',
-          onChanged: (v) => setState(() => _tempMaxDistance = v),
-        ),
-        const SizedBox(height: 16),
-        const Text('When', style: TextStyle(color: AppTheme.grey600, fontSize: 14)),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          children: widget.controller.availabilityOptions.map((option) {
-            final isSelected = _tempAvailability == option;
-            return ChoiceChip(
-              label: Text(option.capitalizeFirst ?? option),
-              selected: isSelected,
-              onSelected: (val) => setState(() => _tempAvailability = option),
-              selectedColor: AppTheme.primaryYellow,
-              backgroundColor: AppTheme.grey50,
-              labelStyle: TextStyle(
-                color: AppTheme.black,
-                fontSize: 13,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              ),
-              side: BorderSide.none,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildGenderSection() {
-    return Wrap(
-      spacing: 8,
-      children: widget.controller.genderOptions.map((option) {
-        final isSelected = _tempGender == option;
-        return ChoiceChip(
-          label: Text(option.capitalizeFirst ?? option),
-          selected: isSelected,
-          onSelected: (val) => setState(() => _tempGender = option),
-          selectedColor: AppTheme.primaryYellow,
-          backgroundColor: AppTheme.grey50,
-          labelStyle: TextStyle(
-            color: AppTheme.black,
-            fontSize: 13,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          ),
-          side: BorderSide.none,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildServiceSection() {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: widget.controller.availableServices.map((service) {
-        final isSelected = _tempServices.contains(service);
-        return FilterChip(
-          label: Text(service),
-          selected: isSelected,
-          onSelected: (val) {
-            setState(() {
-              if (val) {
-                _tempServices.add(service);
-              } else {
-                _tempServices.remove(service);
-              }
-            });
-          },
-          selectedColor: AppTheme.primaryYellow.withValues(alpha: 0.2),
-          backgroundColor: AppTheme.white,
-          checkmarkColor: AppTheme.black,
-          labelStyle: TextStyle(
-            color: AppTheme.black,
-            fontSize: 12,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          ),
-          side: BorderSide(color: isSelected ? AppTheme.primaryYellow : AppTheme.grey200),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildApplyButton(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppTheme.white,
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
-          ),
-        ],
-      ),
-      child: SizedBox(
-        width: double.infinity,
-        height: 56,
-        child: ElevatedButton(
-          onPressed: () {
-            widget.controller.updateMinRating(_tempMinRating);
-            widget.controller.updateMaxPrice(_tempMaxPrice);
-            widget.controller.updateMinPrice(_tempMinPrice);
-            widget.controller.updateMaxDistance(_tempMaxDistance);
-            widget.controller.updateSortBy(_tempSortBy);
-            widget.controller.updateSortOrder(_tempSortOrder);
-            widget.controller.updateAvailability(_tempAvailability);
-            widget.controller.updateGender(_tempGender);
-            widget.controller.onlyOpenNow.value = _tempOnlyOpenNow;
-            widget.controller.onlyFeatured.value = _tempOnlyFeatured;
-            widget.controller.onlyVerified.value = _tempOnlyVerified;
-            widget.controller.selectedServices.assignAll(_tempServices);
-            widget.controller.applyFilters();
-            Navigator.pop(context);
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.primaryYellow,
-            foregroundColor: AppTheme.black,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(18),
-            ),
-            elevation: 0,
-          ),
-          child: const Text(
-            'Apply Filters',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-        ),
       ),
     );
   }

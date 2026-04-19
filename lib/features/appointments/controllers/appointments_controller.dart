@@ -33,6 +33,7 @@ class AppointmentsController extends GetxController {
 
   final RxBool isLoading = false.obs;
   final RxString error = ''.obs;
+  final RxString selectedPaymentMethod = 'cash'.obs;
 
   AppointmentsController({
     required this.getProviders,
@@ -126,6 +127,7 @@ class AppointmentsController extends GetxController {
       selectedService.value = null;
       selectedServices.clear();
       selectedTimeSlot.value = null;
+      selectedPaymentMethod.value = 'cash';
       services.clear();
       timeSlots.clear();
 
@@ -142,15 +144,88 @@ class AppointmentsController extends GetxController {
     try {
       isLoading.value = true;
       error.value = '';
-      final result = await getBookingHistory();
-      result.sort((a, b) => b.start.compareTo(a.start));
-      bookings.value = result;
+
+      // Use AppointmentApiService (EnhancedApiClient) — has proper auth token
+      final appointmentApiService = Get.find<AppointmentApiService>();
+      final rawList = await appointmentApiService.getMyAppointments();
+
+      final parsed = rawList.map((json) {
+        final map = json as Map<String, dynamic>;
+        return _bookingFromMap(map);
+      }).toList();
+
+      parsed.sort((a, b) => b.start.compareTo(a.start));
+      bookings.value = parsed;
     } catch (e) {
       error.value = ErrorHandler.getErrorMessage(e);
-      ErrorHandler.handleError(e, onRetry: loadBookingHistory);
+      // Don't show snackbar for history load — just show error state in UI
     } finally {
       isLoading.value = false;
     }
+  }
+
+  Booking _bookingFromMap(Map<String, dynamic> json) {
+    final providerRaw = json['provider'];
+    final serviceRaw = json['service'];
+
+    final provider = providerRaw is Map<String, dynamic>
+        ? Provider(
+            id: providerRaw['id']?.toString() ?? '',
+            name: providerRaw['name']?.toString() ?? 'Specialist',
+            category: providerRaw['category']?.toString() ?? 'Beauty',
+            rating: (providerRaw['rating'] as num?)?.toDouble() ?? 0.0,
+            location: providerRaw['location']?.toString() ?? '',
+            imageUrl: providerRaw['imageUrl']?.toString(),
+          )
+        : Provider(
+            id: json['barberId']?.toString() ?? '',
+            name: json['barberName']?.toString() ?? 'Specialist',
+            category: json['serviceType']?.toString() ?? 'Beauty',
+            rating: 0.0,
+            location: '',
+          );
+
+    final service = serviceRaw is Map<String, dynamic>
+        ? Service(
+            id: serviceRaw['id']?.toString() ?? '',
+            providerId: serviceRaw['providerId']?.toString() ?? '',
+            name: serviceRaw['name']?.toString() ?? 'Service',
+            durationMinutes:
+                (serviceRaw['durationMinutes'] as num?)?.toInt() ?? 30,
+            priceCents: (serviceRaw['priceCents'] as num?)?.toInt() ?? 0,
+          )
+        : Service(
+            id: json['serviceType']?.toString() ?? 'unknown',
+            providerId: json['barberId']?.toString() ?? '',
+            name: json['serviceType']?.toString() ?? 'Service',
+            durationMinutes: 30,
+            priceCents: 0,
+          );
+
+    final startRaw = json['start'] ?? json['appointmentDate'];
+    final start = startRaw != null
+        ? DateTime.parse(startRaw.toString())
+        : DateTime.now();
+    final endRaw = json['end'];
+    final end = endRaw != null
+        ? DateTime.parse(endRaw.toString())
+        : start.add(const Duration(minutes: 30));
+
+    final statusStr = json['status']?.toString() ?? 'pending';
+    final status = BookingStatus.values.firstWhere(
+      (e) => e.name == statusStr,
+      orElse: () => BookingStatus.pending,
+    );
+
+    return Booking(
+      id: json['id']?.toString() ?? '',
+      provider: provider,
+      service: service,
+      start: start,
+      end: end,
+      status: status,
+      totalPriceCents: (json['totalPriceCents'] as num?)?.toInt() ?? 0,
+    );
   }
 
   void selectProvider(Provider provider) {
@@ -219,6 +294,12 @@ class AppointmentsController extends GetxController {
     loadServices(provider.id);
 
     if (selectedService.value != null) {
+      // Pre-load availability then go to time picker
+      loadAvailability(
+        providerId: provider.id,
+        serviceId: selectedService.value!.id,
+        date: selectedDate.value,
+      );
       Get.toNamed(AppRoutes.bookingTime);
     } else {
       Get.toNamed(AppRoutes.bookingService);

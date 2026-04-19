@@ -95,23 +95,23 @@ class BookingRepositoryImpl implements BookingRepository {
   Future<List<Booking>> getMyBookings() async {
     try {
       final response = await _apiClient.get('/appointments/my');
-      final List<dynamic> data = response is List
-          ? response
-          : (response['data'] ?? response['appointments'] ?? []);
+      // Backend returns { data: [...], total, page, limit }
+      final raw = response['data'] ?? response['appointments'] ?? response;
+      final List<dynamic> data = raw is List ? raw : [];
 
       final bookings = data
           .map((json) => BookingModel.fromJson(json as Map<String, dynamic>))
           .toList();
 
-      // Update local storage with latest data
-      for (var booking in bookings) {
+      // Cache locally
+      for (final booking in bookings) {
         await _saveBookingToLocalStorage(booking);
       }
 
       return bookings;
     } catch (e) {
       // Return cached bookings if API fails
-      return await _getBookingsFromLocalStorage();
+      return _getBookingsFromLocalStorage();
     }
   }
 

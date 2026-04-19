@@ -1,7 +1,7 @@
 class Provider {
   final String id;
   final String name;
-  final String category; // barber | salon
+  final String category;
   final double rating;
   final String location;
   final List<String> services;
@@ -12,6 +12,8 @@ class Provider {
   final bool? isVerified;
   final String? gender;
   final int? reviewCount;
+  final double? latitude;
+  final double? longitude;
 
   const Provider({
     required this.id,
@@ -27,5 +29,7 @@ class Provider {
     this.isVerified,
     this.gender,
     this.reviewCount,
+    this.latitude,
+    this.longitude,
   });
 }

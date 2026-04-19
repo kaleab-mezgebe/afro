@@ -43,9 +43,13 @@ class SearchRepositoryImpl implements SearchRepository {
           services: List<String>.from(json['services'] ?? []),
           minPrice: _toDouble(json['minPrice']),
           maxPrice: _toDouble(json['maxPrice']),
-          imageUrl: json['imageUrl'] ?? 'https://picsum.photos/seed/${json['id']}/200/200',
+          imageUrl:
+              json['imageUrl'] ??
+              'https://picsum.photos/seed/${json['id']}/200/200',
           reviewCount: json['totalReviews'] ?? 0,
           isVerified: json['isVerified'] ?? false,
+          latitude: _toDouble(json['latitude']),
+          longitude: _toDouble(json['longitude']),
         );
       }).toList();
     } catch (e) {

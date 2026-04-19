@@ -31,6 +31,17 @@ class EnhancedApiClient {
           final token = await _getFirebaseToken();
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
+          } else {
+            // Token unavailable (network blocked) — use dev bypass with real UID
+            // so the backend can still identify the correct user
+            final uid = _currentUid;
+            if (uid != null) {
+              options.headers['Authorization'] = 'Bearer dev-bypass-token';
+              options.headers['X-Dev-Uid'] = uid;
+              AppLogger.w(
+                'Using dev bypass with uid=$uid (token refresh blocked)',
+              );
+            }
           }
           handler.next(options);
         },
@@ -42,16 +53,28 @@ class EnhancedApiClient {
     try {
       final user = _firebaseAuth.currentUser;
       if (user != null) {
-        final token = await user.getIdToken();
-        if (token != null && token.isNotEmpty) return token;
+        // Try cached token first (no network needed)
+        try {
+          final token = await user.getIdToken(false);
+          if (token != null && token.isNotEmpty) return token;
+        } catch (_) {}
+        // Only force-refresh if cached token failed
+        try {
+          final token = await user.getIdToken(true);
+          if (token != null && token.isNotEmpty) return token;
+        } catch (refreshErr) {
+          AppLogger.w('Token refresh failed (network blocked?): $refreshErr');
+        }
       }
     } catch (e) {
       AppLogger.e('Error getting Firebase token: $e');
     }
-    // Fallback to dev bypass when Firebase token is unavailable
-    // The backend accepts 'dev-bypass-token' in development mode
-    return 'dev-bypass-token';
+    AppLogger.w('No valid Firebase token — request will be unauthenticated');
+    return null;
   }
+
+  /// Returns the current Firebase user's UID (from cache, no network needed)
+  String? get _currentUid => _firebaseAuth.currentUser?.uid;
 
   // GET request with caching support
   Future<Response> get(

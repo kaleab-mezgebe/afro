@@ -42,6 +42,56 @@ import { BarbersService } from '@/lib/api-backend';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/hooks/useAuth';
 
+export type ProfessionalRole =
+  | 'barber'
+  | 'hair_stylist'
+  | 'hair_color_specialist'
+  | 'nail_technician'
+  | 'makeup_artist'
+  | 'eyelash_technician'
+  | 'brow_specialist'
+  | 'esthetician'
+  | 'massage_therapist'
+  | 'beard_specialist'
+  | 'waxing_specialist'
+  | 'threading_specialist'
+  | 'receptionist'
+  | 'manager'
+  | 'owner';
+
+export const PROFESSIONAL_ROLE_LABELS: Record<ProfessionalRole, string> = {
+  barber: 'Barber',
+  hair_stylist: 'Hair Stylist',
+  hair_color_specialist: 'Hair Color Specialist',
+  nail_technician: 'Nail Technician',
+  makeup_artist: 'Makeup Artist',
+  eyelash_technician: 'Eyelash Technician',
+  brow_specialist: 'Brow Specialist',
+  esthetician: 'Esthetician',
+  massage_therapist: 'Massage Therapist',
+  beard_specialist: 'Beard Specialist',
+  waxing_specialist: 'Waxing Specialist',
+  threading_specialist: 'Threading Specialist',
+  receptionist: 'Receptionist',
+  manager: 'Manager',
+  owner: 'Owner',
+};
+
+export const PROFESSIONAL_DEFAULT_SERVICES: Record<string, string[]> = {
+  barber: ['Haircut', 'Beard Trim', 'Beard Shaping', 'Clean Shave', 'Line-up / Edge-up', 'Hair Styling', 'Hair Coloring', 'Kids Haircut', 'Head Massage'],
+  hair_stylist: ['Haircut', 'Blow Dry', 'Hair Styling', 'Hair Coloring', 'Highlights', 'Balayage', 'Hair Wash', 'Hair Treatment', 'Bridal Hairstyling'],
+  hair_color_specialist: ['Full Hair Coloring', 'Root Touch-up', 'Highlights', 'Balayage / Ombre', 'Color Correction', 'Toner Application'],
+  nail_technician: ['Manicure', 'Pedicure', 'Gel Polish', 'Acrylic Nails', 'Nail Extensions', 'Nail Art', 'Nail Repair', 'French Tips'],
+  makeup_artist: ['Full Makeup', 'Bridal Makeup', 'Natural Makeup', 'Party Makeup', 'Makeup Consultation', 'Touch-up Services'],
+  eyelash_technician: ['Eyelash Extensions', 'Lash Lift', 'Lash Tint', 'Lash Removal'],
+  brow_specialist: ['Eyebrow Shaping', 'Threading', 'Brow Tinting', 'Brow Lamination'],
+  esthetician: ['Facial', 'Deep Cleansing Facial', 'Acne Treatment', 'Anti-aging Facial', 'Skin Consultation', 'Exfoliation / Peeling', 'Blackhead Removal'],
+  massage_therapist: ['Full Body Massage', 'Back Massage', 'Head Massage', 'Foot Massage', 'Relaxation Massage', 'Deep Tissue Massage'],
+  beard_specialist: ['Beard Styling', 'Beard Coloring', 'Beard Treatment', 'Precision Shaping'],
+  waxing_specialist: ['Full Body Waxing', 'Arm Waxing', 'Leg Waxing', 'Facial Waxing', 'Bikini Waxing'],
+  threading_specialist: ['Eyebrow Threading', 'Upper Lip Threading', 'Full Face Threading'],
+};
+
 interface BeautyProfessional {
   id: string;
   name: string;
@@ -55,7 +105,7 @@ interface BeautyProfessional {
   joinedDate: string;
   specialization?: string;
   experienceYears?: number;
-  serviceType?: 'hairstylist' | 'makeup_artist' | 'nail_technician' | 'spa_therapist';
+  role?: ProfessionalRole;
 }
 
 export default function BeautyProfessionalsPage() {
@@ -70,6 +120,7 @@ export default function BeautyProfessionalsPage() {
   const [showPortfolioModal, setShowPortfolioModal] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [selectedProfessional, setSelectedProfessional] = useState<BeautyProfessional | null>(null);
+  const [roleFilter, setRoleFilter] = useState<string>('all');
 
   useEffect(() => {
     if (authenticated) {
@@ -178,7 +229,7 @@ export default function BeautyProfessionalsPage() {
           p.phone,
           p.rating,
           p.services.join('; '),
-          p.serviceType,
+          p.role,
           p.status,
           p.joinedDate
         ])
@@ -199,24 +250,26 @@ export default function BeautyProfessionalsPage() {
     }
   };
 
-  const getServiceTypeIcon = (type?: string) => {
-    switch (type) {
-      case 'hairstylist': return <Scissors size={16} />;
-      case 'makeup_artist': return <Palette size={16} />;
+  const getServiceTypeIcon = (role?: string) => {
+    switch (role) {
+      case 'barber': return <Scissors size={16} />;
+      case 'hair_stylist': return <Scissors size={16} />;
+      case 'hair_color_specialist': return <Palette size={16} />;
       case 'nail_technician': return <Sparkles size={16} />;
-      case 'spa_therapist': return <Heart size={16} />;
+      case 'makeup_artist': return <Palette size={16} />;
+      case 'eyelash_technician': return <Sparkles size={16} />;
+      case 'brow_specialist': return <Sparkles size={16} />;
+      case 'esthetician': return <Heart size={16} />;
+      case 'massage_therapist': return <Heart size={16} />;
+      case 'beard_specialist': return <Scissors size={16} />;
+      case 'waxing_specialist': return <Heart size={16} />;
+      case 'threading_specialist': return <Sparkles size={16} />;
       default: return <Crown size={16} />;
     }
   };
 
-  const getServiceTypeName = (type?: string) => {
-    switch (type) {
-      case 'hairstylist': return 'Hair Stylist';
-      case 'makeup_artist': return 'Makeup Artist';
-      case 'nail_technician': return 'Nail Technician';
-      case 'spa_therapist': return 'Spa Therapist';
-      default: return 'Beauty Professional';
-    }
+  const getServiceTypeName = (role?: string) => {
+    return PROFESSIONAL_ROLE_LABELS[role as ProfessionalRole] ?? 'Beauty Professional';
   };
 
   if (authLoading) {
@@ -260,10 +313,17 @@ export default function BeautyProfessionalsPage() {
             </div>
 
             {/* Filter */}
-            <button className="flex items-center gap-2 px-4 py-2 bg-white text-gray-700 rounded-lg border border-gray-200 hover:bg-gray-50">
-              <Filter size={20} />
-              <span>Filter</span>
-            </button>
+            <select
+              aria-label="Filter by professional role"
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="flex items-center gap-2 px-4 py-2 bg-white text-gray-700 rounded-lg border border-gray-200 hover:bg-gray-50 text-sm"
+            >
+              <option value="all">All Roles</option>
+              {(Object.entries(PROFESSIONAL_ROLE_LABELS) as [ProfessionalRole, string][]).map(([key, label]) => (
+                <option key={key} value={key}>{label}</option>
+              ))}
+            </select>
           </div>
 
           <div className="flex items-center gap-4">
@@ -404,7 +464,9 @@ export default function BeautyProfessionalsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {professionals.map((professional) => (
+                    {professionals
+                      .filter(p => roleFilter === 'all' || p.role === roleFilter)
+                      .map((professional) => (
                       <tr key={professional.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
@@ -579,8 +641,8 @@ export default function BeautyProfessionalsPage() {
                       <div>
                         <p className="text-gray-400 text-sm">Service Type</p>
                         <div className="flex items-center gap-2">
-                          {getServiceTypeIcon(selectedProfessional.serviceType)}
-                          <span className="text-white">{getServiceTypeName(selectedProfessional.serviceType)}</span>
+                          {getServiceTypeIcon(selectedProfessional.role)}
+                          <span className="text-white">{getServiceTypeName(selectedProfessional.role)}</span>
                         </div>
                       </div>
                       <div>

@@ -1,11 +1,12 @@
 class ApiConfig {
-  // Base URL - Change this to your backend URL
-  // Your machine's Wi-Fi IP: 192.168.1.9, backend port: 3001
-  static const String baseUrl = 'http://192.168.1.9:3001/api/v1';
+  // ─── CHANGE THIS when your Wi-Fi IP changes ───────────────────────────────
+  // Run in terminal:  ipconfig | findstr "IPv4"   (Windows)
+  //                   ifconfig | grep "inet "      (Mac/Linux)
+  static const String _devHost = '192.168.1.9';
+  static const int _devPort = 3001;
+  // ─────────────────────────────────────────────────────────────────────────
 
-  // For Android emulator use: http://10.0.2.2:3001/api/v1
-  // For iOS simulator use: http://localhost:3001/api/v1
-  // For physical device use: http://YOUR_WIFI_IP:3001/api/v1
+  static const String baseUrl = 'http://$_devHost:$_devPort/api/v1';
 
   // API Endpoints
   static const String auth = '/auth';

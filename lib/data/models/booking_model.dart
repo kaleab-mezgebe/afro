@@ -14,19 +14,61 @@ class BookingModel extends Booking {
   });
 
   factory BookingModel.fromJson(Map<String, dynamic> json) {
+    // Handle enriched shape: { provider: {...}, service: {...}, start, end }
+    // Also handle raw appointment shape: { barberId, serviceType, appointmentDate }
+    final providerRaw = json['provider'];
+    final serviceRaw = json['service'];
+
+    final provider = providerRaw is Map<String, dynamic>
+        ? ProviderModel.fromJson(providerRaw)
+        : ProviderModel(
+            id: json['barberId']?.toString() ?? '',
+            name: json['barberName']?.toString() ?? 'Specialist',
+            category: json['serviceType']?.toString() ?? 'Beauty',
+            rating: 0.0,
+            location: '',
+          );
+
+    final service = serviceRaw is Map<String, dynamic>
+        ? ServiceModel.fromJson(serviceRaw)
+        : ServiceModel(
+            id: json['serviceType']?.toString() ?? 'unknown',
+            providerId: json['barberId']?.toString() ?? '',
+            name:
+                json['serviceName']?.toString() ??
+                json['serviceType']?.toString() ??
+                'Service',
+            durationMinutes: 30,
+            priceCents: 0,
+          );
+
+    // start/end may come as ISO strings or from appointmentDate
+    final startRaw = json['start'] ?? json['appointmentDate'];
+    final start = startRaw != null
+        ? DateTime.parse(startRaw.toString())
+        : DateTime.now();
+
+    final endRaw = json['end'];
+    final end = endRaw != null
+        ? DateTime.parse(endRaw.toString())
+        : start.add(const Duration(minutes: 30));
+
+    final statusStr = json['status']?.toString() ?? 'pending';
+    final status = BookingStatus.values.firstWhere(
+      (e) => e.name == statusStr,
+      orElse: () => BookingStatus.pending,
+    );
+
+    final priceCents = (json['totalPriceCents'] as num?)?.toInt() ?? 0;
+
     return BookingModel(
-      id: json['id'] as String,
-      provider: ProviderModel.fromJson(
-        json['provider'] as Map<String, dynamic>,
-      ),
-      service: ServiceModel.fromJson(json['service'] as Map<String, dynamic>),
-      start: DateTime.parse(json['start'] as String),
-      end: DateTime.parse(json['end'] as String),
-      status: BookingStatus.values.firstWhere(
-        (e) => e.name == json['status'],
-        orElse: () => BookingStatus.pending,
-      ),
-      totalPriceCents: json['totalPriceCents'] as int,
+      id: json['id']?.toString() ?? '',
+      provider: provider,
+      service: service,
+      start: start,
+      end: end,
+      status: status,
+      totalPriceCents: priceCents,
     );
   }
 

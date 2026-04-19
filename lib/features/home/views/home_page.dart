@@ -6,6 +6,7 @@ import '../widgets/promo_banner.dart';
 import '../widgets/category_list.dart';
 import '../widgets/specialist_card.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../routes/app_routes.dart';
 
 class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
@@ -61,7 +62,7 @@ class HomePage extends GetView<HomeController> {
               ),
             ),
             TextButton(
-              onPressed: () {},
+              onPressed: () => Get.toNamed(AppRoutes.search),
               child: const Text(
                 'See All',
                 style: TextStyle(

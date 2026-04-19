@@ -90,14 +90,167 @@ class Staff extends Equatable {
 enum StaffRole {
   barber('barber'),
   hairStylist('hair_stylist'),
-  makeupArtist('makeup_artist'),
+  hairColorSpecialist('hair_color_specialist'),
   nailTechnician('nail_technician'),
+  makeupArtist('makeup_artist'),
+  eyelashTechnician('eyelash_technician'),
+  browSpecialist('brow_specialist'),
+  esthetician('esthetician'),
+  massageTherapist('massage_therapist'),
+  beardSpecialist('beard_specialist'),
+  waxingSpecialist('waxing_specialist'),
+  threadingSpecialist('threading_specialist'),
   receptionist('receptionist'),
   manager('manager'),
   owner('owner');
 
   const StaffRole(this.value);
   final String value;
+
+  String get displayName {
+    switch (this) {
+      case StaffRole.barber:
+        return 'Barber';
+      case StaffRole.hairStylist:
+        return 'Hair Stylist';
+      case StaffRole.hairColorSpecialist:
+        return 'Hair Color Specialist';
+      case StaffRole.nailTechnician:
+        return 'Nail Technician';
+      case StaffRole.makeupArtist:
+        return 'Makeup Artist';
+      case StaffRole.eyelashTechnician:
+        return 'Eyelash Technician';
+      case StaffRole.browSpecialist:
+        return 'Brow Specialist';
+      case StaffRole.esthetician:
+        return 'Esthetician';
+      case StaffRole.massageTherapist:
+        return 'Massage Therapist';
+      case StaffRole.beardSpecialist:
+        return 'Beard Specialist';
+      case StaffRole.waxingSpecialist:
+        return 'Waxing Specialist';
+      case StaffRole.threadingSpecialist:
+        return 'Threading Specialist';
+      case StaffRole.receptionist:
+        return 'Receptionist';
+      case StaffRole.manager:
+        return 'Manager';
+      case StaffRole.owner:
+        return 'Owner';
+    }
+  }
+
+  /// Returns the default services for this professional role
+  List<String> get defaultServices {
+    switch (this) {
+      case StaffRole.barber:
+        return [
+          'Haircut',
+          'Beard Trim',
+          'Beard Shaping',
+          'Clean Shave',
+          'Line-up / Edge-up',
+          'Hair Styling',
+          'Hair Coloring',
+          'Kids Haircut',
+          'Head Massage'
+        ];
+      case StaffRole.hairStylist:
+        return [
+          'Haircut',
+          'Blow Dry',
+          'Hair Styling',
+          'Hair Coloring',
+          'Highlights',
+          'Balayage',
+          'Hair Wash',
+          'Hair Treatment',
+          'Bridal Hairstyling'
+        ];
+      case StaffRole.hairColorSpecialist:
+        return [
+          'Full Hair Coloring',
+          'Root Touch-up',
+          'Highlights',
+          'Balayage / Ombre',
+          'Color Correction',
+          'Toner Application'
+        ];
+      case StaffRole.nailTechnician:
+        return [
+          'Manicure',
+          'Pedicure',
+          'Gel Polish',
+          'Acrylic Nails',
+          'Nail Extensions',
+          'Nail Art',
+          'Nail Repair',
+          'French Tips'
+        ];
+      case StaffRole.makeupArtist:
+        return [
+          'Full Makeup',
+          'Bridal Makeup',
+          'Natural Makeup',
+          'Party Makeup',
+          'Makeup Consultation',
+          'Touch-up Services'
+        ];
+      case StaffRole.eyelashTechnician:
+        return ['Eyelash Extensions', 'Lash Lift', 'Lash Tint', 'Lash Removal'];
+      case StaffRole.browSpecialist:
+        return [
+          'Eyebrow Shaping',
+          'Threading',
+          'Brow Tinting',
+          'Brow Lamination'
+        ];
+      case StaffRole.esthetician:
+        return [
+          'Facial',
+          'Deep Cleansing Facial',
+          'Acne Treatment',
+          'Anti-aging Facial',
+          'Skin Consultation',
+          'Exfoliation / Peeling',
+          'Blackhead Removal'
+        ];
+      case StaffRole.massageTherapist:
+        return [
+          'Full Body Massage',
+          'Back Massage',
+          'Head Massage',
+          'Foot Massage',
+          'Relaxation Massage',
+          'Deep Tissue Massage'
+        ];
+      case StaffRole.beardSpecialist:
+        return [
+          'Beard Styling',
+          'Beard Coloring',
+          'Beard Treatment',
+          'Precision Shaping'
+        ];
+      case StaffRole.waxingSpecialist:
+        return [
+          'Full Body Waxing',
+          'Arm Waxing',
+          'Leg Waxing',
+          'Facial Waxing',
+          'Bikini Waxing'
+        ];
+      case StaffRole.threadingSpecialist:
+        return [
+          'Eyebrow Threading',
+          'Upper Lip Threading',
+          'Full Face Threading'
+        ];
+      default:
+        return [];
+    }
+  }
 }
 
 enum StaffStatus {
@@ -238,19 +391,77 @@ class Service extends Equatable {
 }
 
 enum ServiceCategory {
+  // Hair
   haircut('haircut'),
   beardTrim('beard_trim'),
   hairColoring('hair_coloring'),
   hairStyling('hair_styling'),
-  makeup('makeup'),
+  hairTreatment('hair_treatment'),
+  highlights('highlights'),
+  balayage('balayage'),
+  rootTouchUp('root_touch_up'),
+  colorCorrection('color_correction'),
+  blowDry('blow_dry'),
+  bridalHair('bridal_hair'),
+  // Beard
+  beardShaping('beard_shaping'),
+  cleanShave('clean_shave'),
+  lineUp('line_up'),
+  beardColoring('beard_coloring'),
+  beardTreatment('beard_treatment'),
+  // Nails
+  manicure('manicure'),
+  pedicure('pedicure'),
+  gelPolish('gel_polish'),
+  acrylicNails('acrylic_nails'),
+  nailExtensions('nail_extensions'),
+  nailArt('nail_art'),
+  nailRepair('nail_repair'),
   nailCare('nail_care'),
-  skinCare('skin_care'),
-  waxing('waxing'),
+  // Makeup
+  makeup('makeup'),
+  bridalMakeup('bridal_makeup'),
+  partyMakeup('party_makeup'),
+  naturalMakeup('natural_makeup'),
+  makeupConsultation('makeup_consultation'),
+  // Lashes & Brows
+  eyelashExtensions('eyelash_extensions'),
+  lashLift('lash_lift'),
+  lashTint('lash_tint'),
+  lashRemoval('lash_removal'),
+  eyebrowShaping('eyebrow_shaping'),
+  threading('threading'),
+  browTinting('brow_tinting'),
+  browLamination('brow_lamination'),
+  // Skin
   facial('facial'),
+  skinCare('skin_care'),
+  acneTreatment('acne_treatment'),
+  antiAgingFacial('anti_aging_facial'),
+  exfoliation('exfoliation'),
+  blackheadRemoval('blackhead_removal'),
+  // Massage
+  fullBodyMassage('full_body_massage'),
+  backMassage('back_massage'),
+  headMassage('head_massage'),
+  footMassage('foot_massage'),
+  deepTissueMassage('deep_tissue_massage'),
+  // Waxing
+  waxing('waxing'),
+  fullBodyWaxing('full_body_waxing'),
+  legWaxing('leg_waxing'),
+  armWaxing('arm_waxing'),
+  facialWaxing('facial_waxing'),
+  bikiniWaxing('bikini_waxing'),
   other('other');
 
   const ServiceCategory(this.value);
   final String value;
+
+  String get displayName => value
+      .split('_')
+      .map((w) => w[0].toUpperCase() + w.substring(1))
+      .join(' ');
 }
 
 enum ServiceStatus {

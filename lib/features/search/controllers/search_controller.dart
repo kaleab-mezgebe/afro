@@ -322,21 +322,34 @@ class SearchController extends GetxController {
   }
 
   Future<Marker> _createMarker(Provider provider) async {
+    // Use real lat/lng if available, otherwise scatter around Addis Ababa
+    final double lat = (provider.latitude != null && provider.latitude != 0.0)
+        ? provider.latitude!
+        : 9.02 + (provider.id.hashCode % 100) / 1000.0;
+    final double lng = (provider.longitude != null && provider.longitude != 0.0)
+        ? provider.longitude!
+        : 38.73 + (provider.id.hashCode % 100) / 1000.0;
+
     final icon = await MapHelper.getMarkerIcon(
       provider.imageUrl ?? 'https://picsum.photos/seed/${provider.id}/200/200',
       const Size(100, 100),
+      name: provider.name,
+      rating: provider.rating,
     );
 
     return Marker(
       markerId: MarkerId(provider.id),
-      position: LatLng(
-        9.03 + (double.tryParse(provider.id) ?? 0) * 0.01,
-        38.74 + (double.tryParse(provider.id) ?? 0) * 0.01,
+      position: LatLng(lat, lng),
+      icon: icon,
+      anchor: const Offset(0.5, 0.85), // anchor at bottom of name pill
+      infoWindow: InfoWindow(
+        title: provider.name,
+        snippet:
+            '${provider.category} · ★ ${provider.rating.toStringAsFixed(1)}',
       ),
       onTap: () {
-        // Optional: Show provider detail card or navigate
+        // Scroll the bottom card strip to this provider
       },
-      icon: icon,
     );
   }
 }

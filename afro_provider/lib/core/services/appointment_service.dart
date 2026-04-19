@@ -52,6 +52,54 @@ class AppointmentService {
     }
   }
 
+  // Confirm a pending appointment (provider action)
+  Future<Map<String, dynamic>> confirmAppointment(String appointmentId) async {
+    try {
+      final response = await _apiClient.post(
+        '/appointments/$appointmentId/confirm',
+        data: {},
+      );
+      return response.data;
+    } catch (e) {
+      _logger.e('Error confirming appointment', error: e);
+      rethrow;
+    }
+  }
+
+  // Reject a pending appointment (provider action)
+  Future<Map<String, dynamic>> rejectAppointment(
+    String appointmentId, {
+    String? reason,
+  }) async {
+    try {
+      final response = await _apiClient.post(
+        '/appointments/$appointmentId/reject',
+        data: {'reason': reason},
+      );
+      return response.data;
+    } catch (e) {
+      _logger.e('Error rejecting appointment', error: e);
+      rethrow;
+    }
+  }
+
+  // Get pending appointments for a barber
+  Future<List<dynamic>> getPendingAppointments(String barberId) async {
+    try {
+      final response = await _apiClient.get(
+        '/appointments/barber/$barberId/pending',
+      );
+      final data = response.data;
+      if (data is Map)
+        return (data['data'] ?? data['appointments'] ?? []) as List;
+      if (data is List) return data;
+      return [];
+    } catch (e) {
+      _logger.e('Error getting pending appointments', error: e);
+      rethrow;
+    }
+  }
+
   // Update appointment status
   Future<Map<String, dynamic>> updateAppointmentStatus(
     String appointmentId,

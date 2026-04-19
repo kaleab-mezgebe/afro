@@ -28,6 +28,19 @@ class BookingTimePage extends GetView<AppointmentsController> {
 
   @override
   Widget build(BuildContext context) {
+    // Load availability for today as soon as the page opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (controller.timeSlots.isEmpty &&
+          controller.selectedProvider.value != null &&
+          controller.selectedService.value != null) {
+        controller.loadAvailability(
+          providerId: controller.selectedProvider.value!.id,
+          serviceId: controller.selectedService.value!.id,
+          date: controller.selectedDate.value,
+        );
+      }
+    });
+
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       appBar: AppBar(
