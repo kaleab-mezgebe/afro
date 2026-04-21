@@ -1,0 +1,14 @@
+{
+  "name": "axuride-passenger-simulator",
+  "version": "1.0.0",
+  "description": "Standalone AxuRide passenger-side integration tester",
+  "main": "simulator.js",
+  "scripts": {
+    "start": "node simulator.js",
+    "test": "node simulator.js"
+  },
+  "dependencies": {
+    "@microsoft/signalr": "^8.0.0",
+    "node-fetch": "^2.7.0"
+  }
+}
