@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getAuth } from 'firebase/auth';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.0.201:3001/api/v1';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 // Create axios instance
 const apiClient = axios.create({

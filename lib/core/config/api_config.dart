@@ -2,13 +2,16 @@ class ApiConfig {
   // ─── CHANGE THIS when your Wi-Fi IP changes ───────────────────────────────
   // Run in terminal:  ipconfig | findstr "IPv4"   (Windows)
   //                   ifconfig | grep "inet "      (Mac/Linux)
-  static const String _devHost = '192.168.1.9';
+  //
+  // Physical Android device → your PC's Wi-Fi IP (e.g. 192.168.1.9)
+  // Android emulator        → 10.0.2.2  (special alias for host loopback)
+  // iOS simulator           → 127.0.0.1
+  //
+  // If you're using an EMULATOR, change _devHost to '10.0.2.2'
+  static const String _devHost = '192.168.1.6';
   static const int _devPort = 3001;
   // ─────────────────────────────────────────────────────────────────────────
 
-  // Android emulator  → 10.0.2.2
-  // iOS simulator     → 127.0.0.1
-  // Physical device   → your Wi-Fi IP above
   static const String baseUrl = 'http://$_devHost:$_devPort/api/v1';
 
   // API Endpoints
@@ -20,8 +23,8 @@ class ApiConfig {
   static const String favorites = '/favorites';
   static const String customers = '/customers';
 
-  // Timeout durations — generous for dev/Wi-Fi
-  static const Duration connectTimeout = Duration(seconds: 30);
+  // Timeouts — 10s connect is enough; if the server is reachable it responds fast
+  static const Duration connectTimeout = Duration(seconds: 10);
   static const Duration receiveTimeout = Duration(seconds: 30);
 
   // Pagination

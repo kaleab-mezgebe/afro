@@ -77,22 +77,30 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   Profile _mapToProfile(Map<String, dynamic> data) {
-    // Backend may nest under 'profile' or 'customer' key
-    final d =
-        (data['profile'] ?? data['customer'] ?? data) as Map<String, dynamic>;
-    final user = d['user'] as Map<String, dynamic>? ?? {};
+    // Backend returns { user: { id, name, email, phone, avatar, ... },
+    //                   profile: { id, gender, dateOfBirth, bio, preferredServices, ... } }
+    // Both GET and PUT /customers/profile use this shape.
+    final user = (data['user'] as Map<String, dynamic>?) ?? <String, dynamic>{};
+    final profile =
+        (data['profile'] as Map<String, dynamic>?) ??
+        (data['customer'] as Map<String, dynamic>?) ??
+        <String, dynamic>{};
 
     return Profile(
-      id: d['id']?.toString() ?? user['id']?.toString() ?? '',
-      name: user['name']?.toString() ?? d['name']?.toString() ?? '',
-      email: user['email']?.toString() ?? d['email']?.toString() ?? '',
-      phoneNumber: user['phone']?.toString() ?? d['phone']?.toString(),
-      avatar: d['avatar']?.toString() ?? user['avatar']?.toString(),
-      gender: d['gender']?.toString(),
-      dateOfBirth: d['dateOfBirth'] != null
-          ? DateTime.tryParse(d['dateOfBirth'].toString())
+      // Prefer the user's UUID as the canonical id
+      id: user['id']?.toString() ?? profile['id']?.toString() ?? '',
+      name: user['name']?.toString() ?? '',
+      email: user['email']?.toString() ?? '',
+      phoneNumber: user['phone']?.toString(),
+      // avatar lives on the User entity
+      avatar: user['avatar']?.toString() ?? profile['avatar']?.toString(),
+      // profile-level fields
+      gender: profile['gender']?.toString(),
+      dateOfBirth: profile['dateOfBirth'] != null
+          ? DateTime.tryParse(profile['dateOfBirth'].toString())
           : null,
-      preferences: List<String>.from(d['preferredServices'] ?? []),
+      bio: profile['bio']?.toString(),
+      preferences: List<String>.from(profile['preferredServices'] ?? []),
     );
   }
 }

@@ -36,23 +36,25 @@ class AppointmentApiService {
     int? limit,
   }) async {
     try {
-      final queryParams = <String, dynamic>{};
-      if (status != null) queryParams['status'] = status;
-      if (page != null) queryParams['page'] = page;
-      if (limit != null) queryParams['limit'] = limit;
+      final queryParams = <String, dynamic>{
+        if (status != null) 'status': status,
+        if (page != null) 'page': page,
+        if (limit != null) 'limit': limit,
+      };
 
       final response = await _apiClient.get(
         '/appointments/my',
         queryParameters: queryParams,
       );
 
-      // Response shape: { success, data: { data: [...], total, page, limit } }
-      final outer = response.data;
-      final inner = outer is Map ? (outer['data'] ?? outer) : outer;
-      final list = inner is Map
-          ? (inner['data'] ?? inner['appointments'] ?? [])
-          : inner;
-      return (list is List) ? list : [];
+      // Backend returns { data: [...], total, page, limit } directly
+      final body = response.data;
+      if (body is Map) {
+        final list = body['data'];
+        if (list is List) return list;
+      }
+      if (body is List) return body;
+      return [];
     } catch (e) {
       AppLogger.e('Error getting my appointments: $e');
       rethrow;

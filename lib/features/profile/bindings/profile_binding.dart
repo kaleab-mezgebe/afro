@@ -29,6 +29,7 @@ class ProfileBinding extends Bindings {
         updateProfile: Get.find(),
         changePassword: Get.find(),
         updatePreferences: Get.find(),
+        customerApiService: Get.find<CustomerApiService>(),
       ),
     );
   }

@@ -2,7 +2,7 @@ class ApiConfig {
   // ─── CHANGE THIS when your Wi-Fi IP changes ───────────────────────────────
   // Run in terminal:  ipconfig | findstr "IPv4"   (Windows)
   //                   ifconfig | grep "inet "      (Mac/Linux)
-  static const String _devHost = '192.168.1.9';
+  static const String _devHost = '192.168.1.6';
   static const int _devPort = 3001;
   // ─────────────────────────────────────────────────────────────────────────
 

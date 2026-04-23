@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:get/get.dart';
 import '../../../core/controllers/auth_controller.dart' as core_auth;
+import '../../../core/services/customer_api_service.dart';
 
 import '../../../domain/entities/profile.dart';
 import '../../../domain/usecases/profile/get_profile.dart';
@@ -12,16 +14,19 @@ class ProfileController extends GetxController {
   final UpdateProfile _updateProfile;
   final ChangePassword _changePassword;
   final UpdatePreferences _updatePreferences;
+  final CustomerApiService _customerApiService;
 
   ProfileController({
     required GetProfile getProfile,
     required UpdateProfile updateProfile,
     required ChangePassword changePassword,
     required UpdatePreferences updatePreferences,
-  })  : _getProfile = getProfile,
-        _updateProfile = updateProfile,
-        _changePassword = changePassword,
-        _updatePreferences = updatePreferences;
+    required CustomerApiService customerApiService,
+  }) : _getProfile = getProfile,
+       _updateProfile = updateProfile,
+       _changePassword = changePassword,
+       _updatePreferences = updatePreferences,
+       _customerApiService = customerApiService;
 
   final Rx<Profile?> _profile = Rx<Profile?>(null);
   final RxBool _isLoading = false.obs;
@@ -49,6 +54,18 @@ class ProfileController extends GetxController {
     }
   }
 
+  /// Upload profile picture and return the hosted URL
+  Future<String?> uploadProfilePicture(File imageFile) async {
+    try {
+      final url = await _customerApiService.uploadProfilePicture(imageFile);
+      return url;
+    } catch (e) {
+      _error.value = e.toString();
+      Get.snackbar('Error', 'Failed to upload image: ${e.toString()}');
+      return null;
+    }
+  }
+
   Future<void> updateProfile({
     required String name,
     String? phoneNumber,
@@ -60,7 +77,7 @@ class ProfileController extends GetxController {
     try {
       _isLoading.value = true;
       _error.value = '';
-      
+
       final updatedProfile = await _updateProfile(
         name: name,
         phoneNumber: phoneNumber,
@@ -69,7 +86,7 @@ class ProfileController extends GetxController {
         gender: gender,
         dateOfBirth: dateOfBirth,
       );
-      
+
       _profile.value = updatedProfile;
       Get.snackbar('Success', 'Profile updated successfully');
     } catch (e) {
@@ -87,12 +104,12 @@ class ProfileController extends GetxController {
     try {
       _isLoading.value = true;
       _error.value = '';
-      
+
       await _changePassword(
         currentPassword: currentPassword,
         newPassword: newPassword,
       );
-      
+
       Get.snackbar('Success', 'Password changed successfully');
     } catch (e) {
       _error.value = e.toString();
@@ -106,9 +123,9 @@ class ProfileController extends GetxController {
     try {
       _isLoading.value = true;
       _error.value = '';
-      
+
       await _updatePreferences(preferences);
-      
+
       await loadProfile(); // Reload to get updated profile
       Get.snackbar('Success', 'Preferences updated successfully');
     } catch (e) {

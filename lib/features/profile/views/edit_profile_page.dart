@@ -198,11 +198,22 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
 
+    // Upload image first if a new one was picked
+    String? avatarUrl;
+    if (_pickedImage != null) {
+      avatarUrl = await _ctrl.uploadProfilePicture(_pickedImage!);
+      if (avatarUrl == null) {
+        // Upload failed — error already shown by controller
+        return;
+      }
+    }
+
     await _ctrl.updateProfile(
       name: _nameCtrl.text.trim(),
       phoneNumber: _phoneCtrl.text.trim().isEmpty
           ? null
           : _phoneCtrl.text.trim(),
+      avatar: avatarUrl, // null means no change
       bio: _bioCtrl.text.trim().isEmpty ? null : _bioCtrl.text.trim(),
       gender: _selectedGender,
       dateOfBirth: _selectedDob,
@@ -218,8 +229,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onWillPop,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        if (await _onWillPop()) Get.back();
+      },
       child: Scaffold(
         backgroundColor: _bg,
         appBar: AppBar(

@@ -1,3 +1,4 @@
+import 'dart:io';
 import '../utils/logger.dart';
 import 'enhanced_api_client.dart';
 
@@ -13,6 +14,28 @@ class CustomerApiService {
       return response.data;
     } catch (e) {
       AppLogger.e('Error getting customer profile: $e');
+      rethrow;
+    }
+  }
+
+  /// Upload profile picture — returns the hosted URL string
+  Future<String> uploadProfilePicture(File imageFile) async {
+    try {
+      final response = await _apiClient.uploadFile(
+        '/upload/profile-picture',
+        imageFile,
+        fieldName: 'file',
+      );
+      final data = response.data as Map<String, dynamic>;
+      // Backend returns { success, message, data: { url, key } }
+      final inner = data['data'] as Map<String, dynamic>? ?? data;
+      final url = inner['url']?.toString();
+      if (url == null || url.isEmpty) {
+        throw Exception('Upload succeeded but no URL returned');
+      }
+      return url;
+    } catch (e) {
+      AppLogger.e('Error uploading profile picture: $e');
       rethrow;
     }
   }
@@ -37,14 +60,17 @@ class CustomerApiService {
       if (avatar != null) data['avatar'] = avatar;
       if (bio != null) data['bio'] = bio;
       if (gender != null) data['gender'] = gender;
-      if (dateOfBirth != null)
+      if (dateOfBirth != null) {
         data['dateOfBirth'] = dateOfBirth.toIso8601String();
+      }
       if (hairType != null) data['hairType'] = hairType;
       if (skinType != null) data['skinType'] = skinType;
-      if (preferredServices != null)
+      if (preferredServices != null) {
         data['preferredServices'] = preferredServices;
-      if (notificationPreferences != null)
+      }
+      if (notificationPreferences != null) {
         data['notificationPreferences'] = notificationPreferences;
+      }
 
       final response = await _apiClient.put('/customers/profile', data: data);
       return response.data;

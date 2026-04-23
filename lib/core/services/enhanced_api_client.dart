@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../config/api_config.dart';
@@ -218,6 +219,32 @@ class EnhancedApiClient {
       );
     } catch (e) {
       AppLogger.e('PATCH request failed: $path - $e');
+      rethrow;
+    }
+  }
+
+  // Multipart file upload (POST)
+  Future<Response> uploadFile(
+    String path,
+    File file, {
+    String fieldName = 'file',
+    Map<String, String>? extraFields,
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    try {
+      final fileName = file.path.split('/').last;
+      final formData = FormData.fromMap({
+        fieldName: await MultipartFile.fromFile(file.path, filename: fileName),
+        if (extraFields != null) ...extraFields,
+      });
+      return await _dio.post(
+        path,
+        data: formData,
+        queryParameters: queryParameters,
+        options: Options(headers: {'Content-Type': 'multipart/form-data'}),
+      );
+    } catch (e) {
+      AppLogger.e('File upload failed: $path - $e');
       rethrow;
     }
   }

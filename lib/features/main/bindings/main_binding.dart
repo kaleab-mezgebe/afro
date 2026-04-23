@@ -86,6 +86,7 @@ class MainBinding extends Bindings {
         updateProfile: Get.find<UpdateProfile>(),
         changePassword: Get.find<ChangePassword>(),
         updatePreferences: Get.find<UpdatePreferences>(),
+        customerApiService: Get.find<CustomerApiService>(),
       ),
     );
 
