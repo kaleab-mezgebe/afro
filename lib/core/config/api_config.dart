@@ -8,7 +8,7 @@ class ApiConfig {
   // iOS simulator           → 127.0.0.1
   //
   // If you're using an EMULATOR, change _devHost to '10.0.2.2'
-  static const String _devHost = '192.168.1.6';
+  static const String _devHost = '192.168.0.201';
   static const int _devPort = 3001;
   // ─────────────────────────────────────────────────────────────────────────
 
