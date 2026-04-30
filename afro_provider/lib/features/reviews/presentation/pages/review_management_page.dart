@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:go_router/go_router.dart';
-import 'dart:convert';
-import 'dart:html' as html;
 import '../../../../core/utils/modern_theme.dart';
 import '../../../../core/widgets/modern_card.dart';
 import '../../../../core/widgets/modern_search.dart';
 import '../../../../core/widgets/modern_states.dart';
 import '../../../../core/widgets/modern_responsive.dart';
 import '../../../../core/di/injection_container.dart';
-import '../../../../core/services/review_service.dart';
 
 class ReviewManagementPage extends ConsumerStatefulWidget {
   const ReviewManagementPage({super.key});
@@ -800,24 +796,13 @@ class _ReviewManagementPageState extends ConsumerState<ReviewManagementPage>
       // Convert to CSV string
       final csvString = csvData.map((row) => row.join(',')).join('\n');
 
-      // Create download
-      final bytes = utf8.encode(csvString);
-      final blob = html.Blob([bytes]);
-
-      // Create download link
-      final url = html.Url.createObjectUrlFromBlob(blob);
-      final anchor = html.AnchorElement(href: url)
-        ..setAttribute(
-            'download', 'reviews_${DateTime.now().millisecondsSinceEpoch}.csv')
-        ..click();
-
-      // Cleanup
-      html.document.body?.children.remove(anchor);
-      html.Url.revokeObjectUrl(url);
-
+      // Export functionality - for mobile platforms, show message
+      // TODO: Implement mobile-specific export using share_plus or similar
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Reviews exported successfully')),
+          SnackBar(
+              content: Text(
+                  'Export feature - CSV data ready: ${csvString.length} bytes')),
         );
       }
     } catch (e) {

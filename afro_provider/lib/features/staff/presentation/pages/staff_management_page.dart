@@ -67,9 +67,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage> {
                             ),
                           ),
                           const SizedBox(height: 12),
-                          ...staffState.staff
-                              .map((s) => _buildStaffCard(s))
-                              .toList(),
+                          ...staffState.staff.map((s) => _buildStaffCard(s)),
                         ],
                         const SizedBox(height: 40),
                       ],
@@ -397,7 +395,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage> {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<StaffRole>(
-                  value: selectedRole,
+                  initialValue: selectedRole,
                   decoration: InputDecoration(
                     labelText: 'Role',
                     border: OutlineInputBorder(
@@ -406,13 +404,13 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage> {
                   items: StaffRole.values.map((role) {
                     return DropdownMenuItem(
                       value: role,
-                      child:
-                          Text(role.displayName),
+                      child: Text(role.displayName),
                     );
                   }).toList(),
                   onChanged: (value) {
-                    if (value != null)
+                    if (value != null) {
                       setSheetState(() => selectedRole = value);
+                    }
                   },
                 ),
                 const SizedBox(height: 24),
@@ -576,7 +574,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage> {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<StaffRole>(
-                  value: selectedRole,
+                  initialValue: selectedRole,
                   decoration: InputDecoration(
                     labelText: 'Role',
                     border: OutlineInputBorder(
@@ -585,13 +583,13 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage> {
                   items: StaffRole.values.map((role) {
                     return DropdownMenuItem(
                       value: role,
-                      child:
-                          Text(role.displayName),
+                      child: Text(role.displayName),
                     );
                   }).toList(),
                   onChanged: (value) {
-                    if (value != null)
+                    if (value != null) {
                       setSheetState(() => selectedRole = value);
+                    }
                   },
                 ),
                 const SizedBox(height: 24),
@@ -809,5 +807,3 @@ class _StatusDot extends StatelessWidget {
     );
   }
 }
-
-
