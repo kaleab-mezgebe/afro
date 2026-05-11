@@ -1,8 +1,9 @@
 class ApiConfig {
   // ─── CHANGE THIS when your Wi-Fi IP changes ───────────────────────────────
-  // Run in terminal:  ipconfig | findstr "IPv4"   (Windows)
-  //                   ifconfig | grep "inet "      (Mac/Linux)
-  static const String _devHost = '192.168.0.201';
+  // For Android emulator use: http://10.0.2.2:3001/api/v1
+  // For iOS simulator use: http://localhost:3001/api/v1
+  // For physical device use: http://YOUR_IP:3001/api/v1
+  static const String _devHost = 'localhost';
   static const int _devPort = 3001;
   // ─────────────────────────────────────────────────────────────────────────
 

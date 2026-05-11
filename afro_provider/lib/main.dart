@@ -8,6 +8,7 @@ import 'core/di/injection_container.dart';
 import 'core/utils/modern_theme.dart';
 import 'core/screens/splash_screen.dart';
 import 'core/services/notification_service.dart';
+import 'core/services/api_service.dart';
 
 Future<void> initializeApp() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,6 +25,14 @@ Future<void> initializeApp() async {
     print('✅ GetStorage initialized');
   } catch (e) {
     print('⚠️ GetStorage initialization failed: $e');
+  }
+
+  // Initialize API Service
+  try {
+    ApiService(); // Initialize singleton
+    print('✅ API Service initialized');
+  } catch (e) {
+    print('⚠️ API Service initialization failed: $e');
   }
 
   // Initialize dependencies with error handling

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/modern_theme.dart';
 import '../../../../core/widgets/modern_cards.dart';
-import '../../../../core/models/provider_models.dart';
+import '../../../../core/providers/services_provider.dart';
 
 class ModernServiceManagementPage extends ConsumerStatefulWidget {
   const ModernServiceManagementPage({super.key});
@@ -70,81 +70,28 @@ class _ModernServiceManagementPageState
     super.dispose();
   }
 
-  // Mock services data
-  List<Map<String, dynamic>> get _mockServices => [
-        {
-          'id': '1',
-          'name': 'Classic Haircut',
-          'category': 'Haircut',
-          'price': 25.0,
-          'duration': 30,
-          'description': 'Professional haircut with styling',
-          'isActive': true,
-          'rating': 4.8,
-          'bookings': 156,
-        },
-        {
-          'id': '2',
-          'name': 'Beard Trim',
-          'category': 'Beard',
-          'price': 15.0,
-          'duration': 20,
-          'description': 'Precision beard trimming and shaping',
-          'isActive': true,
-          'rating': 4.9,
-          'bookings': 89,
-        },
-        {
-          'id': '3',
-          'name': 'Hair Coloring',
-          'category': 'Coloring',
-          'price': 80.0,
-          'duration': 120,
-          'description': 'Full hair coloring service',
-          'isActive': true,
-          'rating': 4.7,
-          'bookings': 45,
-        },
-        {
-          'id': '4',
-          'name': 'Deep Conditioning',
-          'category': 'Treatment',
-          'price': 35.0,
-          'duration': 45,
-          'description:': 'Intensive hair treatment',
-          'isActive': false,
-          'rating': 4.6,
-          'bookings': 23,
-        },
-        {
-          'id': '5',
-          'name:': 'Wedding Styling',
-          'category': 'Styling',
-          'price': 150.0,
-          'duration': 180,
-          'description': 'Special occasion hair styling',
-          'isActive': true,
-          'rating': 5.0,
-          'bookings': 12,
-        },
-      ];
-
-  List<Map<String, dynamic>> get _filteredServices {
-    var services = _mockServices;
-    if (_selectedCategory != 'All') {
-      services = services
-          .where((service) => service['category'] == _selectedCategory)
-          .toList();
-    }
-    if (_searchController.text.isNotEmpty) {
-      services = services
-          .where((service) => service['name']
-              .toString()
-              .toLowerCase()
-              .contains(_searchController.text.toLowerCase()))
-          .toList();
-    }
-    return services;
+  List<ServiceItem> get _filteredServices {
+    final servicesAsync = ref.watch(servicesProvider);
+    return servicesAsync.when(
+      loading: () => [],
+      error: (_, __) => [],
+      data: (services) {
+        var filtered = services;
+        if (_selectedCategory != 'All') {
+          filtered = filtered
+              .where((service) => service.category == _selectedCategory)
+              .toList();
+        }
+        if (_searchController.text.isNotEmpty) {
+          filtered = filtered
+              .where((service) => service.name
+                  .toLowerCase()
+                  .contains(_searchController.text.toLowerCase()))
+              .toList();
+        }
+        return filtered;
+      },
+    );
   }
 
   @override
@@ -288,7 +235,10 @@ class _ModernServiceManagementPageState
                   Expanded(
                     child: ModernStatCard(
                       title: 'Total Services',
-                      value: _mockServices.length.toString(),
+                      value: ref
+                          .watch(servicesProvider)
+                          .whenData((data) => data.length.toString())
+                          .toString(),
                       icon: Icons.content_cut,
                       iconColor: ModernTheme.secondary,
                     ),
@@ -297,9 +247,12 @@ class _ModernServiceManagementPageState
                   Expanded(
                     child: ModernStatCard(
                       title: 'Active',
-                      value: _mockServices
-                          .where((service) => service['isActive'])
-                          .length
+                      value: ref
+                          .watch(servicesProvider)
+                          .whenData((data) => data
+                              .where((service) => service.isActive)
+                              .length
+                              .toString())
                           .toString(),
                       icon: Icons.check_circle,
                       iconColor: ModernTheme.success,
@@ -361,7 +314,7 @@ class _ModernServiceManagementPageState
     );
   }
 
-  Widget _buildModernServiceCard(Map<String, dynamic> service) {
+  Widget _buildModernServiceCard(ServiceItem service) {
     return ModernGlassCard(
       onTap: () => _showServiceDetails(context, service),
       padding: const EdgeInsets.all(20),
@@ -394,17 +347,17 @@ class _ModernServiceManagementPageState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      service['name'],
+                      service.name,
                       style: ModernTheme.titleLarge.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 4),
                     ModernChip(
-                      label: service['category'],
-                      selected: service['isActive'],
+                      label: service.category,
+                      selected: service.isActive,
                       backgroundColor: ModernTheme.surfaceVariant,
-                      selectedColor: service['isActive']
+                      selectedColor: service.isActive
                           ? ModernTheme.success
                           : ModernTheme.warning,
                     ),
@@ -445,13 +398,11 @@ class _ModernServiceManagementPageState
                     child: Row(
                       children: [
                         Icon(
-                          service['isActive']
-                              ? Icons.block
-                              : Icons.check_circle,
+                          service.isActive ? Icons.block : Icons.check_circle,
                           size: 20,
                         ),
                         const SizedBox(width: 12),
-                        Text(service['isActive'] ? 'Deactivate' : 'Activate'),
+                        Text(service.isActive ? 'Deactivate' : 'Activate'),
                       ],
                     ),
                   ),
@@ -477,7 +428,7 @@ class _ModernServiceManagementPageState
 
           // Description
           Text(
-            service['description'],
+            service.description,
             style: ModernTheme.bodyMedium.copyWith(
               color: ModernTheme.onSurfaceVariant,
             ),
@@ -491,30 +442,23 @@ class _ModernServiceManagementPageState
             children: [
               _buildStatItem(
                 'Price',
-                '\$${service['price']}',
+                '\$${service.price.toStringAsFixed(2)}',
                 Icons.monetization_on,
                 ModernTheme.success,
               ),
               const SizedBox(width: 24),
               _buildStatItem(
                 'Duration',
-                '${service['duration']}min',
+                '${service.duration}min',
                 Icons.access_time,
                 ModernTheme.info,
               ),
               const SizedBox(width: 24),
               _buildStatItem(
-                'Rating',
-                service['rating'].toString(),
-                Icons.star,
-                ModernTheme.warning,
-              ),
-              const SizedBox(width: 24),
-              _buildStatItem(
-                'Bookings',
-                service['bookings'].toString(),
-                Icons.book_online,
-                ModernTheme.primary,
+                'Status',
+                service.isActive ? 'Active' : 'Inactive',
+                Icons.check_circle,
+                service.isActive ? ModernTheme.success : ModernTheme.warning,
               ),
             ],
           ),
@@ -545,7 +489,7 @@ class _ModernServiceManagementPageState
     );
   }
 
-  void _showServiceDetails(BuildContext context, Map<String, dynamic> service) {
+  void _showServiceDetails(BuildContext context, ServiceItem service) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -573,13 +517,13 @@ class _ModernServiceManagementPageState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    service['name'],
+                    service.name,
                     style: ModernTheme.headlineLarge,
                   ),
                   const SizedBox(height: 16),
                   ModernStatCard(
                     title: 'Category',
-                    value: service['category'],
+                    value: service.category,
                     icon: Icons.category,
                     iconColor: ModernTheme.secondary,
                   ),
@@ -769,30 +713,28 @@ class _ModernServiceManagementPageState
     );
   }
 
-  void _showEditServiceDialog(
-      BuildContext context, Map<String, dynamic> service) {
+  void _showEditServiceDialog(BuildContext context, ServiceItem service) {
     // Similar to create dialog but with pre-filled data
     _showCreateServiceDialog(context);
   }
 
-  void _toggleServiceStatus(Map<String, dynamic> service) {
+  void _toggleServiceStatus(ServiceItem service) {
     // Toggle service status logic
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-            'Service ${service['isActive'] ? 'deactivated' : 'activated'}'),
+        content:
+            Text('Service ${service.isActive ? 'deactivated' : 'activated'}'),
         behavior: SnackBarBehavior.floating,
       ),
     );
   }
 
-  void _showDeleteConfirmation(
-      BuildContext context, Map<String, dynamic> service) {
+  void _showDeleteConfirmation(BuildContext context, ServiceItem service) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Service'),
-        content: Text('Are you sure you want to delete "${service['name']}"?'),
+        content: Text('Are you sure you want to delete "${service.name}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

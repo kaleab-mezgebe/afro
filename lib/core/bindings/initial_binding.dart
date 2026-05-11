@@ -1,10 +1,14 @@
 import 'package:get/get.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 
 import '../../core/controllers/auth_controller.dart';
+import '../../core/services/firebase_user_service.dart';
+import '../../core/services/auth_api_service.dart';
+import '../../core/services/enhanced_api_client.dart';
 import '../../data/datasources/local/local_storage.dart';
 import '../../data/datasources/remote/api_client.dart';
 import '../../data/repositories/booking_repository_impl.dart';
-import '../../data/repositories/auth_repository_impl.dart';
+import '../../data/repositories/firebase_auth_repository_impl.dart';
 import '../../domain/repositories/booking_repository.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/booking/create_booking.dart';
@@ -29,6 +33,12 @@ class InitialBinding extends Bindings {
     // Core
     Get.put<LocalStorage>(LocalStorageImpl());
     Get.lazyPut<ApiClient>(() => ApiClientImpl(baseUrl: ApiConfig.baseUrl));
+    Get.put<auth.FirebaseAuth>(auth.FirebaseAuth.instance);
+    Get.lazyPut<EnhancedApiClient>(
+      () => EnhancedApiClient(Get.find<auth.FirebaseAuth>()),
+    );
+    Get.put<FirebaseUserService>(FirebaseUserService());
+    Get.put<AuthApiService>(AuthApiService(Get.find<EnhancedApiClient>()));
 
     // Repositories
     Get.lazyPut<BookingRepository>(
@@ -38,7 +48,10 @@ class InitialBinding extends Bindings {
       ),
     );
     Get.lazyPut<AuthRepository>(
-      () => AuthRepositoryImpl(localStorage: Get.find<LocalStorage>()),
+      () => FirebaseAuthRepositoryImpl(
+        localStorage: Get.find<LocalStorage>(),
+        firebaseUserService: Get.find<FirebaseUserService>(),
+      ),
     );
     Get.lazyPut<SearchRepository>(
       () => SearchRepositoryImpl(localStorage: Get.find<LocalStorage>()),

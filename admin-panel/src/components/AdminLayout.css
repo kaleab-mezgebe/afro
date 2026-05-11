@@ -1,9 +1,9 @@
-/* Admin Layout Styles */
+/* Admin Layout Styles - White Theme */
 
 .admin-layout {
   display: flex;
   min-height: 100vh;
-  background-color: var(--gray-50);
+  background-color: var(--white);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -21,7 +21,7 @@
 .admin-content {
   flex: 1;
   padding: 24px;
-  background-color: var(--gray-50);
+  background-color: var(--white);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-height: 100vh;
   width: calc(100vw - 260px);

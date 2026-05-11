@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'core/theme/modern_theme.dart';
 import 'core/navigation/modern_navigation.dart';
 import 'core/widgets/modern_cards.dart';
+import 'core/providers/dashboard_provider.dart';
 import 'features/shop/presentation/pages/modern_shop_management_page.dart';
 import 'features/services/presentation/pages/modern_service_management_page.dart';
 import 'features/staff/presentation/pages/modern_staff_management_page.dart';
@@ -216,11 +217,13 @@ class _ModernMainScreenState extends ConsumerState<ModernMainScreen> {
 }
 
 // Modern Dashboard Page
-class ModernDashboardPage extends StatelessWidget {
+class ModernDashboardPage extends ConsumerWidget {
   const ModernDashboardPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dashboardAsync = ref.watch(dashboardProvider);
+
     return ModernDashboardLayout(
       title: 'Dashboard',
       actions: [
@@ -247,117 +250,121 @@ class ModernDashboardPage extends StatelessWidget {
           },
         ),
       ],
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Welcome Section
-            ModernGradientCard(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      child: dashboardAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stack) => Center(child: Text('Error: $error')),
+        data: (stats) => SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Welcome Section
+              ModernGradientCard(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Welcome back!',
+                      style: ModernTheme.headlineMedium.copyWith(
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Here\'s what\'s happening with your shops today',
+                      style: ModernTheme.bodyMedium.copyWith(
+                        color: Colors.white.withOpacity(0.8),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Stats Grid
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 1.5,
                 children: [
-                  Text(
-                    'Welcome back!',
-                    style: ModernTheme.headlineMedium.copyWith(
-                      color: Colors.white,
-                    ),
+                  ModernStatCard(
+                    title: 'Total Shops',
+                    value: stats.totalShops.toString(),
+                    icon: Icons.store,
+                    iconColor: ModernTheme.primary,
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Here\'s what\'s happening with your shops today',
-                    style: ModernTheme.bodyMedium.copyWith(
-                      color: Colors.white.withOpacity(0.8),
-                    ),
+                  ModernStatCard(
+                    title: 'Active Shops',
+                    value: stats.activeShops.toString(),
+                    icon: Icons.check_circle,
+                    iconColor: ModernTheme.success,
+                  ),
+                  ModernStatCard(
+                    title: 'Services',
+                    value: stats.services.toString(),
+                    icon: Icons.content_cut,
+                    iconColor: ModernTheme.secondary,
+                  ),
+                  ModernStatCard(
+                    title: 'Staff',
+                    value: stats.staff.toString(),
+                    icon: Icons.people,
+                    iconColor: ModernTheme.info,
+                  ),
+                  ModernStatCard(
+                    title: 'Customers',
+                    value: stats.customers.toString(),
+                    icon: Icons.person,
+                    iconColor: ModernTheme.secondary,
+                  ),
+                  ModernStatCard(
+                    title: 'Revenue',
+                    value: '\$${stats.revenue.toStringAsFixed(2)}',
+                    icon: Icons.monetization_on,
+                    iconColor: ModernTheme.warning,
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 24),
+              const SizedBox(height: 24),
 
-            // Stats Grid
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 1.5,
-              children: [
-                ModernStatCard(
-                  title: 'Total Shops',
-                  value: '12',
-                  icon: Icons.store,
-                  iconColor: ModernTheme.primary,
-                ),
-                ModernStatCard(
-                  title: 'Active Shops',
-                  value: '8',
-                  icon: Icons.check_circle,
-                  iconColor: ModernTheme.success,
-                ),
-                ModernStatCard(
-                  title: 'Services',
-                  value: '25',
-                  icon: Icons.content_cut,
-                  iconColor: ModernTheme.secondary,
-                ),
-                ModernStatCard(
-                  title: 'Staff',
-                  value: '18',
-                  icon: Icons.people,
-                  iconColor: ModernTheme.info,
-                ),
-                ModernStatCard(
-                  title: 'Customers',
-                  value: '1,234',
-                  icon: Icons.person,
-                  iconColor: ModernTheme.secondary,
-                ),
-                ModernStatCard(
-                  title: 'Revenue',
-                  value: '\$12,345',
-                  icon: Icons.monetization_on,
-                  iconColor: ModernTheme.warning,
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // Recent Activity
-            Text(
-              'Recent Activity',
-              style: ModernTheme.headlineMedium,
-            ),
-            const SizedBox(height: 16),
-            ModernGlassCard(
-              child: Column(
-                children: [
-                  _buildActivityItem(
-                    'New shop created',
-                    'Afro Cuts Premium',
-                    Icons.store,
-                    ModernTheme.primary,
-                  ),
-                  const Divider(height: 1),
-                  _buildActivityItem(
-                    'Customer booked',
-                    'John Doe - Haircut',
-                    Icons.person,
-                    ModernTheme.secondary,
-                  ),
-                  const Divider(height: 1),
-                  _buildActivityItem(
-                    'Payment received',
-                    '\$45.00',
-                    Icons.monetization_on,
-                    ModernTheme.success,
-                  ),
-                ],
+              // Recent Activity
+              Text(
+                'Recent Activity',
+                style: ModernTheme.headlineMedium,
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+              ModernGlassCard(
+                child: Column(
+                  children: [
+                    _buildActivityItem(
+                      'New shop created',
+                      'Afro Cuts Premium',
+                      Icons.store,
+                      ModernTheme.primary,
+                    ),
+                    const Divider(height: 1),
+                    _buildActivityItem(
+                      'Customer booked',
+                      'John Doe - Haircut',
+                      Icons.person,
+                      ModernTheme.secondary,
+                    ),
+                    const Divider(height: 1),
+                    _buildActivityItem(
+                      'Payment received',
+                      '\$45.00',
+                      Icons.monetization_on,
+                      ModernTheme.success,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -2,35 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/modern_theme.dart';
 import '../../../../core/widgets/modern_cards.dart';
-
-// Staff model
-class Staff {
-  final String id;
-  final String name;
-  final String email;
-  final String phone;
-  final String role;
-  final String specialty;
-  final double rating;
-  final int completedServices;
-  final bool isActive;
-  final DateTime joinDate;
-  final String? avatar;
-
-  Staff({
-    required this.id,
-    required this.name,
-    required this.email,
-    required this.phone,
-    required this.role,
-    required this.specialty,
-    required this.rating,
-    required this.completedServices,
-    required this.isActive,
-    required this.joinDate,
-    this.avatar,
-  });
-}
+import '../../../../core/providers/staff_provider.dart';
 
 class ModernStaffManagementPage extends ConsumerStatefulWidget {
   const ModernStaffManagementPage({super.key});
@@ -98,87 +70,31 @@ class _ModernStaffManagementPageState
     super.dispose();
   }
 
-  // Mock staff data
-  List<Staff> get _mockStaff => [
-        Staff(
-          id: '1',
-          name: 'John Smith',
-          email: 'john@afrocuts.com',
-          phone: '+1234567890',
-          role: 'Barber',
-          specialty: 'Classic Cuts',
-          rating: 4.8,
-          completedServices: 156,
-          isActive: true,
-          joinDate: DateTime.now().subtract(const Duration(days: 365)),
-        ),
-        Staff(
-          id: '2',
-          name: 'Sarah Johnson',
-          email: 'sarah@afrocuts.com',
-          phone: '+1234567891',
-          role: 'Stylist',
-          specialty: 'Modern Styles',
-          rating: 4.9,
-          completedServices: 203,
-          isActive: true,
-          joinDate: DateTime.now().subtract(const Duration(days: 280)),
-        ),
-        Staff(
-          id: '3',
-          name: 'Mike Wilson',
-          email: 'mike@afrocuts.com',
-          phone: '+1234567892',
-          role: 'Beard Specialist',
-          specialty: 'Beard Art',
-          rating: 4.7,
-          completedServices: 89,
-          isActive: true,
-          joinDate: DateTime.now().subtract(const Duration(days: 180)),
-        ),
-        Staff(
-          id: '4',
-          name: 'Emily Brown',
-          email: 'emily@afrocuts.com',
-          phone: '+1234567893',
-          role: 'Colorist',
-          specialty: 'Hair Coloring',
-          rating: 5.0,
-          completedServices: 67,
-          isActive: false,
-          joinDate: DateTime.now().subtract(const Duration(days: 120)),
-        ),
-        Staff(
-          id: '5',
-          name: 'David Lee',
-          email: 'david@afrocuts.com',
-          phone: '+1234567894',
-          role: 'Manager',
-          specialty: 'Shop Management',
-          rating: 4.6,
-          completedServices: 0,
-          isActive: true,
-          joinDate: DateTime.now().subtract(const Duration(days: 90)),
-        ),
-      ];
-
-  List<Staff> get _filteredStaff {
-    var staff = _mockStaff;
-    if (_selectedRole != 'All') {
-      staff = staff.where((member) => member.role == _selectedRole).toList();
-    }
-    if (_searchController.text.isNotEmpty) {
-      staff = staff
-          .where((member) =>
-              member.name
-                  .toLowerCase()
-                  .contains(_searchController.text.toLowerCase()) ||
-              member.email
-                  .toLowerCase()
-                  .contains(_searchController.text.toLowerCase()))
-          .toList();
-    }
-    return staff;
+  List<StaffMember> get _filteredStaff {
+    final staffAsync = ref.watch(staffProvider);
+    return staffAsync.when(
+      loading: () => [],
+      error: (_, __) => [],
+      data: (staff) {
+        var filtered = staff;
+        if (_selectedRole != 'All') {
+          filtered =
+              filtered.where((member) => member.role == _selectedRole).toList();
+        }
+        if (_searchController.text.isNotEmpty) {
+          filtered = filtered
+              .where((member) =>
+                  member.name
+                      .toLowerCase()
+                      .contains(_searchController.text.toLowerCase()) ||
+                  member.email
+                      .toLowerCase()
+                      .contains(_searchController.text.toLowerCase()))
+              .toList();
+        }
+        return filtered;
+      },
+    );
   }
 
   @override
@@ -325,7 +241,10 @@ class _ModernStaffManagementPageState
                   Expanded(
                     child: ModernStatCard(
                       title: 'Total Staff',
-                      value: _mockStaff.length.toString(),
+                      value: ref
+                          .watch(staffProvider)
+                          .whenData((data) => data.length.toString())
+                          .toString(),
                       icon: Icons.people,
                       iconColor: ModernTheme.info,
                     ),
@@ -334,9 +253,12 @@ class _ModernStaffManagementPageState
                   Expanded(
                     child: ModernStatCard(
                       title: 'Active',
-                      value: _mockStaff
-                          .where((member) => member.isActive)
-                          .length
+                      value: ref
+                          .watch(staffProvider)
+                          .whenData((data) => data
+                              .where((member) => member.isActive)
+                              .length
+                              .toString())
                           .toString(),
                       icon: Icons.check_circle,
                       iconColor: ModernTheme.success,
@@ -398,7 +320,7 @@ class _ModernStaffManagementPageState
     );
   }
 
-  Widget _buildModernStaffCard(Staff staff) {
+  Widget _buildModernStaffCard(StaffMember staff) {
     return ModernGlassCard(
       onTap: () => _showStaffDetails(context, staff),
       padding: const EdgeInsets.all(20),
@@ -617,7 +539,7 @@ class _ModernStaffManagementPageState
     );
   }
 
-  void _showStaffDetails(BuildContext context, Staff staff) {
+  void _showStaffDetails(BuildContext context, StaffMember staff) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -851,12 +773,12 @@ class _ModernStaffManagementPageState
     );
   }
 
-  void _showEditStaffDialog(BuildContext context, Staff staff) {
+  void _showEditStaffDialog(BuildContext context, StaffMember staff) {
     // Similar to create dialog but with pre-filled data
     _showCreateStaffDialog(context);
   }
 
-  void _toggleStaffStatus(Staff staff) {
+  Future<void> _toggleStaffStatus(StaffMember staff) async {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Staff ${staff.isActive ? 'deactivated' : 'activated'}'),
@@ -865,7 +787,7 @@ class _ModernStaffManagementPageState
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, Staff staff) {
+  void _showDeleteConfirmation(BuildContext context, StaffMember staff) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -894,7 +816,7 @@ class _ModernStaffManagementPageState
     );
   }
 
-  void _showStaffSchedule(BuildContext context, Staff staff) {
+  void _showStaffSchedule(BuildContext context, StaffMember staff) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Schedule for ${staff.name} coming soon'),
