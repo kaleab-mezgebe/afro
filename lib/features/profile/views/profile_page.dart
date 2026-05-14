@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../controllers/profile_controller.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../domain/entities/profile.dart';
+import '../../../core/widgets/loyalty_rewards.dart';
 
 class ProfilePage extends GetView<ProfileController> {
   const ProfilePage({super.key});
@@ -14,7 +15,11 @@ class ProfilePage extends GetView<ProfileController> {
       appBar: AppBar(
         title: const Text(
           'MY PROFILE',
-          style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.5, fontSize: 16),
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+            letterSpacing: 1.5,
+            fontSize: 16,
+          ),
         ),
         backgroundColor: Colors.white,
         foregroundColor: AppTheme.black,
@@ -34,9 +39,15 @@ class ProfilePage extends GetView<ProfileController> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircularProgressIndicator(color: AppTheme.primaryYellow, strokeWidth: 3),
+                CircularProgressIndicator(
+                  color: AppTheme.primaryYellow,
+                  strokeWidth: 3,
+                ),
                 SizedBox(height: 16),
-                Text('Loading profile...', style: TextStyle(color: AppTheme.greyMedium, fontSize: 14)),
+                Text(
+                  'Loading profile...',
+                  style: TextStyle(color: AppTheme.greyMedium, fontSize: 14),
+                ),
               ],
             ),
           );
@@ -64,6 +75,38 @@ class ProfilePage extends GetView<ProfileController> {
 
                 const SizedBox(height: 24),
 
+                // Loyalty Rewards Card
+                LoyaltyRewardsCard(
+                  currentPoints: 1250,
+                  pointsToNextReward: 2000,
+                  currentTier: 'Gold',
+                  nextTier: 'Platinum',
+                  availableRewards: const [
+                    RewardItem(
+                      name: 'Free Service',
+                      icon: Icons.spa_rounded,
+                      pointsRequired: 500,
+                      description: 'Get one free service',
+                    ),
+                    RewardItem(
+                      name: '20% Off',
+                      icon: Icons.local_offer_rounded,
+                      pointsRequired: 300,
+                      description: '20% discount on next booking',
+                    ),
+                    RewardItem(
+                      name: 'Priority Booking',
+                      icon: Icons.flash_on_rounded,
+                      pointsRequired: 400,
+                      description: 'Skip the queue',
+                    ),
+                  ],
+                  onViewRewards: () => Get.toNamed('/rewards'),
+                  onRedeem: () => Get.toNamed('/rewards'),
+                ),
+
+                const SizedBox(height: 24),
+
                 // Account Information Section
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -73,9 +116,17 @@ class ProfilePage extends GetView<ProfileController> {
                       _buildSectionTitle('ACCOUNT INFORMATION'),
                       const SizedBox(height: 12),
                       _buildInfoCard([
-                        _buildInfoRow(Icons.person_outline_rounded, 'Full Name', profile.name),
+                        _buildInfoRow(
+                          Icons.person_outline_rounded,
+                          'Full Name',
+                          profile.name,
+                        ),
                         _buildDivider(),
-                        _buildInfoRow(Icons.email_outlined, 'Email Address', profile.email),
+                        _buildInfoRow(
+                          Icons.email_outlined,
+                          'Email Address',
+                          profile.email,
+                        ),
                         _buildDivider(),
                         _buildInfoRow(
                           Icons.phone_outlined,
@@ -86,7 +137,11 @@ class ProfilePage extends GetView<ProfileController> {
                         ),
                         if (profile.gender?.isNotEmpty == true) ...[
                           _buildDivider(),
-                          _buildInfoRow(Icons.wc_rounded, 'Gender', profile.gender!),
+                          _buildInfoRow(
+                            Icons.wc_rounded,
+                            'Gender',
+                            profile.gender!,
+                          ),
                         ],
                         if (profile.dateOfBirth != null) ...[
                           _buildDivider(),
@@ -106,12 +161,17 @@ class ProfilePage extends GetView<ProfileController> {
                         child: ElevatedButton.icon(
                           onPressed: () => Get.toNamed('/editProfile'),
                           icon: const Icon(Icons.edit_outlined, size: 18),
-                          label: const Text('Edit Profile', style: TextStyle(fontWeight: FontWeight.bold)),
+                          label: const Text(
+                            'Edit Profile',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppTheme.black,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                             elevation: 0,
                           ),
                         ),
@@ -151,7 +211,11 @@ class ProfilePage extends GetView<ProfileController> {
                         width: double.infinity,
                         child: OutlinedButton.icon(
                           onPressed: () => _confirmLogout(context),
-                          icon: const Icon(Icons.logout_rounded, size: 18, color: AppTheme.error),
+                          icon: const Icon(
+                            Icons.logout_rounded,
+                            size: 18,
+                            color: AppTheme.error,
+                          ),
                           label: const Text(
                             'SIGN OUT',
                             style: TextStyle(
@@ -162,8 +226,13 @@ class ProfilePage extends GetView<ProfileController> {
                           ),
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
-                            side: const BorderSide(color: AppTheme.error, width: 1.5),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            side: const BorderSide(
+                              color: AppTheme.error,
+                              width: 1.5,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                           ),
                         ),
                       ),
@@ -208,8 +277,11 @@ class ProfilePage extends GetView<ProfileController> {
                           width: 96,
                           height: 96,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, e, __) =>
-                              const Icon(Icons.person, size: 48, color: AppTheme.black),
+                          errorBuilder: (_, e, __) => const Icon(
+                            Icons.person,
+                            size: 48,
+                            color: AppTheme.black,
+                          ),
                         ),
                       )
                     : const Icon(Icons.person, size: 48, color: AppTheme.black),
@@ -225,7 +297,11 @@ class ProfilePage extends GetView<ProfileController> {
                     shape: BoxShape.circle,
                     border: Border.all(color: AppTheme.black, width: 2),
                   ),
-                  child: const Icon(Icons.edit_rounded, size: 14, color: AppTheme.black),
+                  child: const Icon(
+                    Icons.edit_rounded,
+                    size: 14,
+                    color: AppTheme.black,
+                  ),
                 ),
               ),
             ],
@@ -327,11 +403,22 @@ class ProfilePage extends GetView<ProfileController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(color: AppTheme.greyMedium, fontSize: 11, fontWeight: FontWeight.w500)),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: AppTheme.greyMedium,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
                 const SizedBox(height: 2),
                 Text(
                   value,
-                  style: const TextStyle(color: AppTheme.black, fontWeight: FontWeight.w700, fontSize: 14),
+                  style: const TextStyle(
+                    color: AppTheme.black,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
@@ -343,7 +430,12 @@ class ProfilePage extends GetView<ProfileController> {
   }
 
   Widget _buildDivider() {
-    return const Divider(height: 1, indent: 66, endIndent: 16, color: Color(0xFFF0F0F0));
+    return const Divider(
+      height: 1,
+      indent: 66,
+      endIndent: 16,
+      color: Color(0xFFF0F0F0),
+    );
   }
 
   Widget _buildMenuCard(List<Widget> children) {
@@ -363,7 +455,12 @@ class ProfilePage extends GetView<ProfileController> {
     );
   }
 
-  Widget _buildMenuTile(IconData icon, String title, String subtitle, VoidCallback onTap) {
+  Widget _buildMenuTile(
+    IconData icon,
+    String title,
+    String subtitle,
+    VoidCallback onTap,
+  ) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
@@ -385,12 +482,29 @@ class ProfilePage extends GetView<ProfileController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.black)),
-                  Text(subtitle, style: const TextStyle(color: AppTheme.greyMedium, fontSize: 12)),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                      color: AppTheme.black,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      color: AppTheme.greyMedium,
+                      fontSize: 12,
+                    ),
+                  ),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppTheme.greyMedium),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 14,
+              color: AppTheme.greyMedium,
+            ),
           ],
         ),
       ),
@@ -398,7 +512,12 @@ class ProfilePage extends GetView<ProfileController> {
   }
 
   Widget _buildMenuDivider() {
-    return const Divider(height: 1, indent: 66, endIndent: 16, color: Color(0xFFF0F0F0));
+    return const Divider(
+      height: 1,
+      indent: 66,
+      endIndent: 16,
+      color: Color(0xFFF0F0F0),
+    );
   }
 
   Widget _buildEmptyState() {
@@ -415,12 +534,20 @@ class ProfilePage extends GetView<ProfileController> {
                 color: const Color(0xFFF5F5F5),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Icon(Icons.person_off_outlined, size: 40, color: AppTheme.greyMedium),
+              child: const Icon(
+                Icons.person_off_outlined,
+                size: 40,
+                color: AppTheme.greyMedium,
+              ),
             ),
             const SizedBox(height: 20),
             const Text(
               'Profile Not Available',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.black),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.black,
+              ),
             ),
             const SizedBox(height: 8),
             const Text(
@@ -434,9 +561,14 @@ class ProfilePage extends GetView<ProfileController> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryYellow,
                 foregroundColor: AppTheme.black,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-              child: const Text('Try Again', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Try Again',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -458,12 +590,20 @@ class ProfilePage extends GetView<ProfileController> {
                 color: AppTheme.error.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Icon(Icons.cloud_off_rounded, size: 40, color: AppTheme.error),
+              child: const Icon(
+                Icons.cloud_off_rounded,
+                size: 40,
+                color: AppTheme.error,
+              ),
             ),
             const SizedBox(height: 20),
             const Text(
               'Connection Error',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.black),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.black,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -478,11 +618,16 @@ class ProfilePage extends GetView<ProfileController> {
                 controller.loadProfile();
               },
               icon: const Icon(Icons.refresh_rounded, size: 18),
-              label: const Text('Retry', style: TextStyle(fontWeight: FontWeight.bold)),
+              label: const Text(
+                'Retry',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryYellow,
                 foregroundColor: AppTheme.black,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ],
@@ -496,12 +641,20 @@ class ProfilePage extends GetView<ProfileController> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Sign Out', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: const Text('Are you sure you want to sign out of your account?'),
+        title: const Text(
+          'Sign Out',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'Are you sure you want to sign out of your account?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: AppTheme.greyMedium)),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: AppTheme.greyMedium),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
@@ -511,9 +664,14 @@ class ProfilePage extends GetView<ProfileController> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.error,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-            child: const Text('Sign Out', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Sign Out',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -533,12 +691,17 @@ class ProfilePage extends GetView<ProfileController> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           title: const Row(
             children: [
               Icon(Icons.lock_outline_rounded, color: AppTheme.black),
               SizedBox(width: 10),
-              Text('Change Password', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              Text(
+                'Change Password',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
             ],
           ),
           content: SizedBox(
@@ -555,12 +718,21 @@ class ProfilePage extends GetView<ProfileController> {
                       labelText: 'Current Password',
                       prefixIcon: const Icon(Icons.lock_outline_rounded),
                       suffixIcon: IconButton(
-                        icon: Icon(obscureCurrent ? Icons.visibility_off_outlined : Icons.visibility_outlined),
-                        onPressed: () => setState(() => obscureCurrent = !obscureCurrent),
+                        icon: Icon(
+                          obscureCurrent
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                        ),
+                        onPressed: () =>
+                            setState(() => obscureCurrent = !obscureCurrent),
                       ),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                    validator: (v) => v == null || v.isEmpty ? 'Enter current password' : null,
+                    validator: (v) => v == null || v.isEmpty
+                        ? 'Enter current password'
+                        : null,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
@@ -570,10 +742,17 @@ class ProfilePage extends GetView<ProfileController> {
                       labelText: 'New Password',
                       prefixIcon: const Icon(Icons.lock_outline_rounded),
                       suffixIcon: IconButton(
-                        icon: Icon(obscureNew ? Icons.visibility_off_outlined : Icons.visibility_outlined),
-                        onPressed: () => setState(() => obscureNew = !obscureNew),
+                        icon: Icon(
+                          obscureNew
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                        ),
+                        onPressed: () =>
+                            setState(() => obscureNew = !obscureNew),
                       ),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                     validator: (v) {
                       if (v == null || v.isEmpty) return 'Enter new password';
@@ -589,14 +768,23 @@ class ProfilePage extends GetView<ProfileController> {
                       labelText: 'Confirm New Password',
                       prefixIcon: const Icon(Icons.lock_outline_rounded),
                       suffixIcon: IconButton(
-                        icon: Icon(obscureConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined),
-                        onPressed: () => setState(() => obscureConfirm = !obscureConfirm),
+                        icon: Icon(
+                          obscureConfirm
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                        ),
+                        onPressed: () =>
+                            setState(() => obscureConfirm = !obscureConfirm),
                       ),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                     validator: (v) {
-                      if (v == null || v.isEmpty) return 'Confirm your password';
-                      if (v != newPasswordController.text) return 'Passwords do not match';
+                      if (v == null || v.isEmpty)
+                        return 'Confirm your password';
+                      if (v != newPasswordController.text)
+                        return 'Passwords do not match';
                       return null;
                     },
                   ),
@@ -612,7 +800,10 @@ class ProfilePage extends GetView<ProfileController> {
                 confirmPasswordController.dispose();
                 Navigator.pop(ctx);
               },
-              child: const Text('Cancel', style: TextStyle(color: AppTheme.greyMedium)),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: AppTheme.greyMedium),
+              ),
             ),
             Obx(
               () => ElevatedButton(
@@ -635,15 +826,23 @@ class ProfilePage extends GetView<ProfileController> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.black,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 child: controller.isLoading
                     ? const SizedBox(
                         width: 18,
                         height: 18,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
                       )
-                    : const Text('Update', style: TextStyle(fontWeight: FontWeight.bold)),
+                    : const Text(
+                        'Update',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
               ),
             ),
           ],

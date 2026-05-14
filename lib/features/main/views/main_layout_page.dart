@@ -39,7 +39,15 @@ class MainLayoutPage extends GetView<MainController> {
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
-          title: const Text('MY BOOKINGS', style: TextStyle(color: AppTheme.black, fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1)),
+          title: const Text(
+            'MY BOOKINGS',
+            style: TextStyle(
+              color: AppTheme.black,
+              fontWeight: FontWeight.w900,
+              fontSize: 16,
+              letterSpacing: 1,
+            ),
+          ),
           centerTitle: true,
           bottom: TabBar(
             onTap: (index) => controller.changeBookingTab(index),
@@ -47,7 +55,11 @@ class MainLayoutPage extends GetView<MainController> {
             indicatorWeight: 4,
             labelColor: AppTheme.black,
             unselectedLabelColor: AppTheme.greyMedium,
-            labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 0.5),
+            labelStyle: const TextStyle(
+              fontWeight: FontWeight.w900,
+              fontSize: 13,
+              letterSpacing: 0.5,
+            ),
             tabs: const [
               Tab(text: 'HISTORY'),
               Tab(text: 'BOOK NEW'),
@@ -55,10 +67,7 @@ class MainLayoutPage extends GetView<MainController> {
           ),
         ),
         body: const TabBarView(
-          children: [
-            BookingHistoryPage(),
-            BookingServicePage(),
-          ],
+          children: [BookingHistoryPage(), BookingServicePage()],
         ),
       ),
     );
@@ -66,7 +75,7 @@ class MainLayoutPage extends GetView<MainController> {
 
   Widget _buildBottomBar() {
     return Container(
-      height: 90,
+      height: 95, // Increased from 90 for better touch targets
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -77,53 +86,94 @@ class MainLayoutPage extends GetView<MainController> {
           ),
         ],
       ),
-      child: Obx(() => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _buildNavItem(0, Icons.home_outlined, Icons.home_rounded, 'Home'),
-            _buildNavItem(1, Icons.search_rounded, Icons.search_rounded, 'Search'),
-            _buildNavItem(2, Icons.favorite_outline_rounded, Icons.favorite_rounded, 'Saved'),
-            _buildNavItem(3, Icons.calendar_today_outlined, Icons.calendar_today_rounded, 'Book'),
-            _buildNavItem(4, Icons.person_outline_rounded, Icons.person_rounded, 'Profile'),
-          ],
+      child: Obx(
+        () => Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 8,
+          ), // Increased horizontal padding
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildNavItem(0, Icons.home_outlined, Icons.home_rounded, 'Home'),
+              _buildNavItem(
+                1,
+                Icons.search_rounded,
+                Icons.search_rounded,
+                'Search',
+              ),
+              _buildNavItem(
+                2,
+                Icons.favorite_outline_rounded,
+                Icons.favorite_rounded,
+                'Saved',
+              ),
+              _buildNavItem(
+                3,
+                Icons.calendar_today_outlined,
+                Icons.calendar_today_rounded,
+                'Book',
+              ),
+              _buildNavItem(
+                4,
+                Icons.person_outline_rounded,
+                Icons.person_rounded,
+                'Profile',
+              ),
+            ],
+          ),
         ),
-      )),
+      ),
     );
   }
 
-  Widget _buildNavItem(int index, IconData icon, IconData activeIcon, String label) {
+  Widget _buildNavItem(
+    int index,
+    IconData icon,
+    IconData activeIcon,
+    String label,
+  ) {
     final isSelected = controller.currentIndex.value == index;
-    return InkWell(
-      onTap: () => controller.changePage(index),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isSelected ? AppTheme.primaryYellow : Colors.white,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(
-              isSelected ? activeIcon : icon,
-              color: isSelected ? AppTheme.black : AppTheme.greyMedium,
-              size: 24,
-            ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => controller.changePage(index),
+        splashColor: AppTheme.primaryYellow.withValues(alpha: 0.1),
+        highlightColor: AppTheme.primaryYellow.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.all(
+                  14,
+                ), // Increased from 12 for better touch target
+                decoration: BoxDecoration(
+                  color: isSelected ? AppTheme.primaryYellow : Colors.white,
+                  borderRadius: BorderRadius.circular(18), // Increased from 16
+                ),
+                child: Icon(
+                  isSelected ? activeIcon : icon,
+                  color: isSelected ? AppTheme.black : AppTheme.greyMedium,
+                  size: 26, // Increased from 24 for better visibility
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 11, // Increased from 10 for better readability
+                  fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold,
+                  color: isSelected ? AppTheme.black : AppTheme.greyMedium,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            label.toUpperCase(),
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold,
-              color: isSelected ? AppTheme.black : AppTheme.greyMedium,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

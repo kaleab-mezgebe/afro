@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../providers/dashboard_provider.dart';
 import '../../../../core/utils/app_theme.dart';
+import '../../../../core/widgets/analytics_dashboard.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -72,6 +73,60 @@ class DashboardPage extends ConsumerWidget {
 
                     // Quick Shortcuts Section
                     _QuickActions(),
+                    const SizedBox(height: 40),
+
+                    // Comprehensive Analytics Dashboard
+                    AnalyticsDashboard(
+                      data: const AnalyticsData(
+                        totalRevenue: 4520.50,
+                        revenueChange: '+12.5%',
+                        totalBookings: 156,
+                        bookingsChange: '+8.3%',
+                        newClients: 23,
+                        clientsChange: '+15.2%',
+                        averageRating: 4.7,
+                        ratingChange: '+0.2',
+                        revenueData: [
+                          RevenueDataPoint(label: 'Mon', value: 450),
+                          RevenueDataPoint(label: 'Tue', value: 620),
+                          RevenueDataPoint(label: 'Wed', value: 580),
+                          RevenueDataPoint(label: 'Thu', value: 720),
+                          RevenueDataPoint(label: 'Fri', value: 890),
+                          RevenueDataPoint(label: 'Sat', value: 1100),
+                          RevenueDataPoint(label: 'Sun', value: 980),
+                        ],
+                        confirmedBookings: 142,
+                        pendingBookings: 8,
+                        cancelledBookings: 6,
+                        topServices: [
+                          PerformanceItem(name: 'Haircut', value: 0.85),
+                          PerformanceItem(name: 'Beard Trim', value: 0.72),
+                          PerformanceItem(name: 'Hair Color', value: 0.65),
+                        ],
+                        peakHours: [
+                          PerformanceItem(name: '10 AM', value: 0.45),
+                          PerformanceItem(name: '2 PM', value: 0.78),
+                          PerformanceItem(name: '6 PM', value: 0.92),
+                        ],
+                        teamPerformance: [
+                          TeamMember(
+                            name: 'John Doe',
+                            avatar: 'https://i.pravatar.cc/150?img=1',
+                            bookings: 45,
+                            revenue: 1250.0,
+                            rating: 4.8,
+                          ),
+                          TeamMember(
+                            name: 'Jane Smith',
+                            avatar: 'https://i.pravatar.cc/150?img=2',
+                            bookings: 38,
+                            revenue: 980.0,
+                            rating: 4.9,
+                          ),
+                        ],
+                      ),
+                      period: 'This Month',
+                    ),
                     const SizedBox(height: 40),
                   ],
                 ),

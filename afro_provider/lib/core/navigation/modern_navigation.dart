@@ -61,7 +61,7 @@ class ModernNavigationRail extends StatelessWidget {
   }
 }
 
-// Modern Bottom Navigation
+// Modern Bottom Navigation - Improved accessibility
 class ModernBottomNavigation extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onDestinationSelected;
@@ -77,6 +77,7 @@ class ModernBottomNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 90, // Increased from default for better touch targets
       decoration: BoxDecoration(
         color: ModernTheme.surface,
         boxShadow: [
@@ -94,6 +95,9 @@ class ModernBottomNavigation extends StatelessWidget {
         type: BottomNavigationBarType.fixed,
         selectedItemColor: ModernTheme.primary,
         unselectedItemColor: ModernTheme.onSurfaceVariant,
+        selectedFontSize: 13, // Increased from default
+        unselectedFontSize: 12, // Increased from default
+        iconSize: 26, // Increased from default for better visibility
         items: items.asMap().entries.map((entry) {
           final index = entry.key;
           final item = entry.value;
@@ -179,7 +183,8 @@ class _ModernAppShellState extends State<ModernAppShell> {
                     _selectedIndex = index;
                   });
                 },
-                children: widget.navigationItems.map((item) => item.page).toList(),
+                children:
+                    widget.navigationItems.map((item) => item.page).toList(),
               ),
             ),
           ],
@@ -213,7 +218,8 @@ class _ModernAppShellState extends State<ModernAppShell> {
                     _selectedIndex = index;
                   });
                 },
-                children: widget.navigationItems.map((item) => item.page).toList(),
+                children:
+                    widget.navigationItems.map((item) => item.page).toList(),
               ),
             ),
           ],
@@ -288,7 +294,7 @@ class ModernDashboardLayout extends StatelessWidget {
   }
 }
 
-// Modern Tab Bar
+// Modern Tab Bar - Improved accessibility
 class ModernTabBar extends StatelessWidget {
   final List<String> tabs;
   final int selectedIndex;
@@ -304,33 +310,46 @@ class ModernTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 48,
+      height: 56, // Increased from 48 for better touch targets
       decoration: BoxDecoration(
         color: ModernTheme.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16), // Increased from 12
       ),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.all(4),
+        padding: const EdgeInsets.all(6), // Increased from 4
         itemCount: tabs.length,
         itemBuilder: (context, index) {
           final isSelected = index == selectedIndex;
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: GestureDetector(
-              onTap: () => onTabSelected(index),
-              child: AnimatedContainer(
-                duration: ModernAnimations.fast,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isSelected ? ModernTheme.primary : Colors.transparent,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  tabs[index],
-                  style: ModernTheme.labelMedium.copyWith(
-                    color: isSelected ? Colors.white : ModernTheme.onSurfaceVariant,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            padding:
+                const EdgeInsets.symmetric(horizontal: 6), // Increased from 4
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => onTabSelected(index),
+                borderRadius: BorderRadius.circular(12),
+                splashColor: ModernTheme.primary.withValues(alpha: 0.1),
+                highlightColor: ModernTheme.primary.withValues(alpha: 0.05),
+                child: AnimatedContainer(
+                  duration: ModernAnimations.fast,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 18, vertical: 12), // Increased padding
+                  decoration: BoxDecoration(
+                    color:
+                        isSelected ? ModernTheme.primary : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    tabs[index],
+                    style: ModernTheme.labelMedium.copyWith(
+                      color: isSelected
+                          ? Colors.white
+                          : ModernTheme.onSurfaceVariant,
+                      fontWeight:
+                          isSelected ? FontWeight.w700 : FontWeight.w600,
+                      fontSize: 14, // Increased from default
+                    ),
                   ),
                 ),
               ),
@@ -342,7 +361,7 @@ class ModernTabBar extends StatelessWidget {
   }
 }
 
-// Modern Drawer
+// Modern Drawer - Improved accessibility
 class ModernDrawer extends StatelessWidget {
   final List<ModernNavItem> items;
   final int selectedIndex;
@@ -364,7 +383,7 @@ class ModernDrawer extends StatelessWidget {
         children: [
           // Header
           Container(
-            height: 200,
+            height: 220, // Increased from 200
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
@@ -379,14 +398,14 @@ class ModernDrawer extends StatelessWidget {
                   Icon(
                     Icons.store,
                     color: Colors.white,
-                    size: 48,
+                    size: 56, // Increased from 48
                   ),
-                  SizedBox(height: 8),
+                  SizedBox(height: 12),
                   Text(
                     'AFRO Provider',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 20,
+                      fontSize: 22, // Increased from 20
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -398,20 +417,35 @@ class ModernDrawer extends StatelessWidget {
           ...items.asMap().entries.map((entry) {
             final index = entry.key;
             final item = entry.value;
-            return ListTile(
-              leading: Icon(
-                item.icon,
-                color: selectedIndex == index
-                    ? (item.color ?? ModernTheme.primary)
-                    : ModernTheme.onSurfaceVariant,
+            return Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                  onItemSelected(index);
+                },
+                splashColor: ModernTheme.primary.withValues(alpha: 0.1),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20, vertical: 12), // Increased padding
+                  leading: Icon(
+                    item.icon,
+                    color: selectedIndex == index
+                        ? (item.color ?? ModernTheme.primary)
+                        : ModernTheme.onSurfaceVariant,
+                    size: 26, // Increased from default
+                  ),
+                  title: Text(
+                    item.label,
+                    style: ModernTheme.labelLarge.copyWith(
+                      fontSize: 15, // Increased from default
+                    ),
+                  ),
+                  selected: index == selectedIndex,
+                  selectedTileColor:
+                      (item.color ?? ModernTheme.primary).withOpacity(0.1),
+                ),
               ),
-              title: Text(item.label),
-              selected: index == selectedIndex,
-              selectedTileColor: (item.color ?? ModernTheme.primary).withOpacity(0.1),
-              onTap: () {
-                Navigator.pop(context);
-                onItemSelected(index);
-              },
             );
           }).toList(),
         ],

@@ -157,80 +157,84 @@ class ModernTheme {
         surfaceTintColor: primary,
       ),
 
-      // Modern Elevated Button Theme
+      // Modern Elevated Button Theme - Improved accessibility
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
           ),
           backgroundColor: primary,
           foregroundColor: Colors.white,
-          textStyle: labelLarge,
+          textStyle: labelLarge.copyWith(fontSize: 15),
+          minimumSize:
+              const Size(120, 56), // Minimum touch target for accessibility
         ),
       ),
 
-      // Modern Filled Button Theme
+      // Modern Filled Button Theme - Improved accessibility
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
           ),
           backgroundColor: primary,
           foregroundColor: Colors.white,
-          textStyle: labelLarge,
+          textStyle: labelLarge.copyWith(fontSize: 15),
+          minimumSize: const Size(120, 56),
         ),
       ),
 
-      // Modern Text Button Theme
+      // Modern Text Button Theme - Improved accessibility
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(12),
           ),
           foregroundColor: primary,
-          textStyle: labelMedium,
+          textStyle: labelMedium.copyWith(fontSize: 14),
+          minimumSize: const Size(80, 48),
         ),
       ),
 
-      // Modern Input Decoration Theme
+      // Modern Input Decoration Theme - Improved accessibility
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: surfaceVariant,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(color: surfaceVariant, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: error, width: 2),
         ),
         contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        labelStyle: labelMedium,
-        hintStyle: bodyMedium.copyWith(color: onSurfaceVariant),
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        labelStyle: labelMedium.copyWith(fontSize: 13),
+        hintStyle: bodyMedium.copyWith(color: onSurfaceVariant, fontSize: 15),
       ),
 
-      // Modern Chip Theme
+      // Modern Chip Theme - Improved accessibility
       chipTheme: ChipThemeData(
         backgroundColor: surfaceVariant,
         selectedColor: primary.withOpacity(0.1),
         disabledColor: surfaceVariant.withOpacity(0.5),
-        labelStyle: labelMedium,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        labelStyle: labelMedium.copyWith(fontSize: 13),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
         ),
       ),
 
@@ -243,20 +247,35 @@ class ModernTheme {
         ),
       ),
 
-      // Modern Dialog Theme
+      // Modern Dialog Theme - Improved accessibility
       dialogTheme: const DialogThemeData(
         backgroundColor: surface,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(16)),
+          borderRadius: BorderRadius.all(Radius.circular(20)),
         ),
         titleTextStyle: headlineLarge,
         contentTextStyle: bodyMedium,
+        actionsPadding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      ),
+
+      // Modern FAB Theme - Improved accessibility
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        elevation: 8,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(20)),
+        ),
+        sizeConstraints: BoxConstraints(
+          minWidth: 64,
+          minHeight: 64,
+          maxWidth: 64,
+          maxHeight: 64,
+        ),
       ),
     );
   }
 
-  // Dark Theme
+  // Dark Theme - Improved accessibility to match light theme
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
@@ -286,6 +305,45 @@ class ModernTheme {
         bodyMedium: bodyMedium,
         labelLarge: labelLarge,
         labelMedium: labelMedium,
+      ),
+      // Apply same accessibility improvements to dark theme
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          backgroundColor: primary,
+          foregroundColor: Colors.white,
+          textStyle: labelLarge.copyWith(fontSize: 15),
+          minimumSize: const Size(120, 56),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: const Color(0xFF2C2C2E),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFF3C3C3E), width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: primary, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: error, width: 2),
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        labelStyle: labelMedium.copyWith(fontSize: 13),
+        hintStyle:
+            bodyMedium.copyWith(color: const Color(0xFF8E8E93), fontSize: 15),
       ),
     );
   }

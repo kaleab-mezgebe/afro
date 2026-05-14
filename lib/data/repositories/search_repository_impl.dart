@@ -50,6 +50,9 @@ class SearchRepositoryImpl implements SearchRepository {
           isVerified: json['isVerified'] ?? false,
           latitude: _toDouble(json['latitude']),
           longitude: _toDouble(json['longitude']),
+          averageServiceDuration: json['averageServiceDuration'] != null
+              ? int.tryParse(json['averageServiceDuration'].toString())
+              : null,
         );
       }).toList();
     } catch (e) {

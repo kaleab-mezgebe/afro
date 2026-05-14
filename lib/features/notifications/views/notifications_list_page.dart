@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/notifications_list_controller.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/push_notification.dart' as pn;
 
 class NotificationsListPage extends GetView<NotificationsListController> {
   const NotificationsListPage({super.key});
@@ -61,118 +62,31 @@ class NotificationsListPage extends GetView<NotificationsListController> {
   }
 
   Widget _buildNotificationItem(NotificationItem notification) {
-    return InkWell(
-      onTap: () => controller.onNotificationTap(notification),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: notification.isRead ? Colors.white : AppTheme.grey100,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: notification.isRead
-                ? AppTheme.grey200
-                : AppTheme.primaryYellow.withValues(alpha: 0.3),
-            width: 1,
-          ),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildNotificationIcon(notification.type),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          notification.title,
-                          style: TextStyle(
-                            color: AppTheme.black,
-                            fontSize: 15,
-                            fontWeight: notification.isRead
-                                ? FontWeight.w600
-                                : FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      if (!notification.isRead)
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: AppTheme.primaryYellow,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    notification.message,
-                    style: const TextStyle(
-                      color: AppTheme.textSecondary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    notification.timeAgo,
-                    style: TextStyle(
-                      color: AppTheme.textSecondary.withValues(alpha: 0.7),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNotificationIcon(NotificationType type) {
-    IconData icon;
-    Color backgroundColor;
-    Color iconColor;
-
-    switch (type) {
+    // Convert notification type
+    pn.NotificationType type;
+    switch (notification.type) {
       case NotificationType.booking:
-        icon = Icons.calendar_today_rounded;
-        backgroundColor = AppTheme.primaryYellow.withValues(alpha: 0.1);
-        iconColor = AppTheme.primaryYellow;
+        type = pn.NotificationType.booking;
         break;
       case NotificationType.promotion:
-        icon = Icons.local_offer_rounded;
-        backgroundColor = Colors.green.withValues(alpha: 0.1);
-        iconColor = Colors.green;
+        type = pn.NotificationType.promotion;
         break;
       case NotificationType.reminder:
-        icon = Icons.notifications_active_rounded;
-        backgroundColor = Colors.orange.withValues(alpha: 0.1);
-        iconColor = Colors.orange;
+        type = pn.NotificationType.reminder;
         break;
       case NotificationType.update:
-        icon = Icons.info_rounded;
-        backgroundColor = Colors.blue.withValues(alpha: 0.1);
-        iconColor = Colors.blue;
+        type = pn.NotificationType.info;
         break;
     }
 
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Icon(icon, color: iconColor, size: 24),
+    return pn.ModernPushNotification(
+      title: notification.title,
+      body: notification.message,
+      type: type,
+      timestamp: DateTime.now().subtract(
+        const Duration(minutes: 5),
+      ), // Parse from notification.timeAgo
+      onTap: () => controller.onNotificationTap(notification),
     );
   }
 

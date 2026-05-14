@@ -166,23 +166,25 @@ class AppTheme {
     letterSpacing: 0.5,
   );
 
-  // Button Styles - White & Yellow focused
+  // Button Styles - White & Yellow focused with improved accessibility
   static ButtonStyle primaryButton = ElevatedButton.styleFrom(
     backgroundColor: primaryYellow,
     foregroundColor: textOnYellow,
     elevation: 0,
     shadowColor: Colors.transparent,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-    textStyle: button,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+    padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 18),
+    textStyle: button.copyWith(fontSize: 17),
+    minimumSize: const Size(120, 56), // Minimum touch target for accessibility
   );
 
   static ButtonStyle secondaryButton = OutlinedButton.styleFrom(
     foregroundColor: primaryYellow,
     side: const BorderSide(color: primaryYellow, width: 2),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-    textStyle: button.copyWith(color: primaryYellow),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+    padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 18),
+    textStyle: button.copyWith(color: primaryYellow, fontSize: 17),
+    minimumSize: const Size(120, 56),
   );
 
   static ButtonStyle whiteButton = ElevatedButton.styleFrom(
@@ -190,10 +192,11 @@ class AppTheme {
     foregroundColor: primaryYellow,
     elevation: 0,
     shadowColor: Colors.transparent,
-    side: const BorderSide(color: primaryYellow, width: 1),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-    textStyle: button.copyWith(color: primaryYellow),
+    side: const BorderSide(color: primaryYellow, width: 1.5),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+    padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 18),
+    textStyle: button.copyWith(color: primaryYellow, fontSize: 17),
+    minimumSize: const Size(120, 56),
   );
 
   // Card Styles - Clean white with subtle shadows

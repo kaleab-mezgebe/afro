@@ -1032,6 +1032,26 @@ class _SpecialistCard extends StatelessWidget {
                         ),
                       ],
                     ),
+                    // Service duration
+                    if (provider.averageServiceDuration != null)
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.access_time_rounded,
+                            size: 12,
+                            color: AppTheme.grey400,
+                          ),
+                          const SizedBox(width: 3),
+                          Text(
+                            '~${provider.averageServiceDuration} min avg',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: AppTheme.grey500,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
                     // Price + Book button
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

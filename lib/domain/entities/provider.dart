@@ -14,6 +14,7 @@ class Provider {
   final int? reviewCount;
   final double? latitude;
   final double? longitude;
+  final int? averageServiceDuration; // in minutes
 
   const Provider({
     required this.id,
@@ -31,5 +32,6 @@ class Provider {
     this.reviewCount,
     this.latitude,
     this.longitude,
+    this.averageServiceDuration,
   });
 }
