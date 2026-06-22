@@ -163,7 +163,7 @@ class _TransactionManagementPageState
           final dateA = DateTime.tryParse(a['createdAt'] ?? '');
           final dateB = DateTime.tryParse(b['createdAt'] ?? '');
           if (dateA == null || dateB == null) return 0;
-          return dateB!.compareTo(dateA!);
+          return dateB.compareTo(dateA);
         });
         break;
       case 'amount':

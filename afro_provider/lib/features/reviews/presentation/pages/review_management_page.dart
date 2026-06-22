@@ -153,7 +153,7 @@ class _ReviewManagementPageState extends ConsumerState<ReviewManagementPage>
           final dateA = DateTime.tryParse(a['createdAt'] ?? '');
           final dateB = DateTime.tryParse(b['createdAt'] ?? '');
           if (dateA == null || dateB == null) return 0;
-          return dateB!.compareTo(dateA!);
+          return dateB.compareTo(dateA);
         });
         break;
       case 'rating':
@@ -825,7 +825,6 @@ class _ReviewCard extends StatelessWidget {
   final VoidCallback onRespond;
 
   const _ReviewCard({
-    super.key,
     required this.review,
     required this.onView,
     required this.onApprove,
@@ -842,7 +841,6 @@ class _ReviewCard extends StatelessWidget {
     final isPending = status == 'Pending';
     final isApproved = status == 'Approved';
     final isHidden = status == 'Hidden';
-    final isFlagged = status == 'Flagged';
 
     return ModernCard(
       margin: const EdgeInsets.only(bottom: 12),

@@ -19,7 +19,7 @@ class _ProviderProfilePageState extends ConsumerState<ProviderProfilePage>
   // Profile data
   Map<String, dynamic> _providerData = {};
   Map<String, dynamic> _shopData = {};
-  Map<String, dynamic> _settings = {
+  final Map<String, dynamic> _settings = {
     'notifications': true,
     'emailNotifications': true,
     'pushNotifications': true,
@@ -48,7 +48,7 @@ class _ProviderProfilePageState extends ConsumerState<ProviderProfilePage>
 
     try {
       // Load provider data from SharedPreferences or API
-      final prefs = await SharedPreferences.getInstance();
+      await SharedPreferences.getInstance();
 
       // Mock data for now - in real app, this would come from API
       setState(() {

@@ -66,7 +66,7 @@ class CustomerNotifier extends StateNotifier<CustomerState> {
 
     try {
       // Get provider profile to get shop ID
-      final providerProfile = await providerService.getProfile();
+      await providerService.getProfile();
 
       // For now, we'll use a mock shop ID since we don't have shops setup yet
       // In a real implementation, you'd get the shop ID from provider profile
@@ -86,10 +86,8 @@ class CustomerNotifier extends StateNotifier<CustomerState> {
         } else {
           customersData = [];
         }
-      } else if (response is List) {
-        customersData = response as List<dynamic>;
       } else {
-        customersData = [];
+        customersData = response;
       }
 
       // Convert API response to Customer models
@@ -143,17 +141,9 @@ class CustomerNotifier extends StateNotifier<CustomerState> {
 
     try {
       // Get provider profile to get shop ID
-      final providerProfile = await providerService.getProfile();
-      const shopId = 'default-shop';
+      await providerService.getProfile();
 
       // Convert customer to API format
-      final customerData = {
-        'firstName': customer.firstName,
-        'lastName': customer.lastName,
-        'email': customer.email,
-        'phoneNumber': customer.phoneNumber,
-        'shopId': shopId,
-      };
 
       // Create customer via API (this endpoint might need to be created)
       // For now, we'll simulate adding to the local list
@@ -188,17 +178,9 @@ class CustomerNotifier extends StateNotifier<CustomerState> {
 
     try {
       // Get provider profile to get shop ID
-      final providerProfile = await providerService.getProfile();
-      const shopId = 'default-shop';
+      await providerService.getProfile();
 
       // Convert customer to API format
-      final customerData = {
-        'firstName': customer.firstName,
-        'lastName': customer.lastName,
-        'email': customer.email,
-        'phoneNumber': customer.phoneNumber,
-        'shopId': shopId,
-      };
 
       // Update customer via API (this endpoint might need to be created)
       // For now, we'll simulate updating the local list

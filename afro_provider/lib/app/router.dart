@@ -8,7 +8,6 @@ import '../features/staff/presentation/pages/staff_management_page.dart';
 import '../features/appointments/presentation/pages/appointments_page.dart';
 import '../features/services/presentation/pages/service_management_page.dart';
 import '../features/analytics/presentation/pages/analytics_page.dart';
-import '../features/profile/presentation/pages/provider_profile_page.dart';
 import '../features/reviews/presentation/pages/review_management_page.dart';
 import '../features/transactions/presentation/pages/transaction_management_page.dart';
 import '../core/utils/modern_theme.dart';

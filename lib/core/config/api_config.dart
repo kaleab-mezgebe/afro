@@ -8,7 +8,7 @@ class ApiConfig {
   // iOS simulator           → 127.0.0.1
   //
   // If you're using an EMULATOR, change _devHost to '10.0.2.2'
-  static const String _devHost = '192.168.0.201';
+  static const String _devHost = '10.0.2.2'; // Changed from '192.168.0.201' for Docker/Docker Compose compatibility
   static const int _devPort = 3001;
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -23,9 +23,9 @@ class ApiConfig {
   static const String favorites = '/favorites';
   static const String customers = '/customers';
 
-  // Timeouts — 10s connect is enough; if the server is reachable it responds fast
-  static const Duration connectTimeout = Duration(seconds: 10);
-  static const Duration receiveTimeout = Duration(seconds: 30);
+  // Timeouts — Increased to handle slower connections and server responses
+  static const Duration connectTimeout = Duration(seconds: 30); // Increased from 10
+  static const Duration receiveTimeout = Duration(minutes: 2); // Increased from 30 seconds to 2 minutes
 
   // Pagination
   static const int defaultPageSize = 20;

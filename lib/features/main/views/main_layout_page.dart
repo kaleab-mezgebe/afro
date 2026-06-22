@@ -75,7 +75,7 @@ class MainLayoutPage extends GetView<MainController> {
 
   Widget _buildBottomBar() {
     return Container(
-      height: 95, // Increased from 90 for better touch targets
+      height: 85, // Reduced from 95 to prevent overflow
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -87,40 +87,45 @@ class MainLayoutPage extends GetView<MainController> {
         ],
       ),
       child: Obx(
-        () => Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 8,
-          ), // Increased horizontal padding
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildNavItem(0, Icons.home_outlined, Icons.home_rounded, 'Home'),
-              _buildNavItem(
-                1,
-                Icons.search_rounded,
-                Icons.search_rounded,
-                'Search',
-              ),
-              _buildNavItem(
-                2,
-                Icons.favorite_outline_rounded,
-                Icons.favorite_rounded,
-                'Saved',
-              ),
-              _buildNavItem(
-                3,
-                Icons.calendar_today_outlined,
-                Icons.calendar_today_rounded,
-                'Book',
-              ),
-              _buildNavItem(
-                4,
-                Icons.person_outline_rounded,
-                Icons.person_rounded,
-                'Profile',
-              ),
-            ],
+        () => SafeArea(
+          // Added SafeArea to handle notches and bottom bars properly
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildNavItem(
+                  0,
+                  Icons.home_outlined,
+                  Icons.home_rounded,
+                  'Home',
+                ),
+                _buildNavItem(
+                  1,
+                  Icons.search_rounded,
+                  Icons.search_rounded,
+                  'Search',
+                ),
+                _buildNavItem(
+                  2,
+                  Icons.favorite_outline_rounded,
+                  Icons.favorite_rounded,
+                  'Saved',
+                ),
+                _buildNavItem(
+                  3,
+                  Icons.calendar_today_outlined,
+                  Icons.calendar_today_rounded,
+                  'Book',
+                ),
+                _buildNavItem(
+                  4,
+                  Icons.person_outline_rounded,
+                  Icons.person_rounded,
+                  'Profile',
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -134,41 +139,37 @@ class MainLayoutPage extends GetView<MainController> {
     String label,
   ) {
     final isSelected = controller.currentIndex.value == index;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () => controller.changePage(index),
-        splashColor: AppTheme.primaryYellow.withValues(alpha: 0.1),
-        highlightColor: AppTheme.primaryYellow.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        child: SizedBox(
+          height: 70, // ⬅️ slightly increased (important fix)
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.all(
-                  14,
-                ), // Increased from 12 for better touch target
+                padding: const EdgeInsets.all(10), // ⬅️ reduced
                 decoration: BoxDecoration(
                   color: isSelected ? AppTheme.primaryYellow : Colors.white,
-                  borderRadius: BorderRadius.circular(18), // Increased from 16
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(
                   isSelected ? activeIcon : icon,
+                  size: 22, // ⬅️ reduced
                   color: isSelected ? AppTheme.black : AppTheme.greyMedium,
-                  size: 26, // Increased from 24 for better visibility
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 1), // ⬅️ minimal spacing
               Text(
                 label.toUpperCase(),
                 style: TextStyle(
-                  fontSize: 11, // Increased from 10 for better readability
+                  fontSize: 9, // ⬅️ slightly smaller
                   fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold,
                   color: isSelected ? AppTheme.black : AppTheme.greyMedium,
-                  letterSpacing: 0.5,
                 ),
               ),
             ],

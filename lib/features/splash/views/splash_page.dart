@@ -67,7 +67,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     bool showOnboarding = true;
     try {
       final prefs = await SharedPreferences.getInstance().timeout(
-        const Duration(seconds: 2),
+        const Duration(seconds: 10),
         onTimeout: () => throw Exception('Timeout'),
       );
       showOnboarding = prefs.getBool('show_onboarding') ?? true;

@@ -212,7 +212,7 @@ class MapHelper {
       },
     );
     stream.addListener(listener);
-    return completer.future.timeout(const Duration(seconds: 5));
+    return completer.future.timeout(const Duration(seconds: 15)); // Increased from 5
   }
 
   static void _drawText(
